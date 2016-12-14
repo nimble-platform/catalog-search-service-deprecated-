@@ -12,7 +12,7 @@ The Example API was designed using the [swagger.io editor](http://editor.swagger
  # standalone
  mvn clean spring-boot:run
  
- # in docker environment from core cloud infrastructure
+ # in docker environment from core cloud infrastructure using 8085 as internal port
  mvn clean package docker:build -P docker
  docker run -p8081:8085 nimbleplatform/java-microservice-example
  ```
