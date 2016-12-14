@@ -6,13 +6,15 @@ The Example API was designed using the [swagger.io editor](http://editor.swagger
 
 ## How-to
 
-### Service startup
+### Service build and startup
 
  ```bash
  # standalone
  mvn clean spring-boot:run
  
  # in docker environment from core cloud infrastructure
+ mvn clean package docker:build -P docker
+ docker run -p8081:8085 nimbleplatform/java-microservice-example
  ```
  
 ### Example requests
@@ -23,3 +25,4 @@ The Example API was designed using the [swagger.io editor](http://editor.swagger
  # post
  curl -H "Content-Type: application/json" -d '{"prop1":"Jorge Lorenzo","prop2":99}' http://localhost:8081/example
  ```
+    

@@ -31,11 +31,13 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>1.4.1.RELEASE</version>
     </parent>
-
-    <developer>
-        <id>iot365</id>
-        <name>fstroh</name>
-    </developer>
+    
+    <developers>
+        <developer>
+            <id>iot365</id>
+            <name>fstroh</name>
+        </developer>
+    </developers>
 
     <dependencyManagement>
         <dependencies>
