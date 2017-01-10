@@ -1,8 +1,7 @@
 package eu.nimble.service.example.impl;
 
-import eu.nimble.service.example.api.VersionApi;
-import eu.nimble.service.example.model.Version;
-
+import eu.nimble.service.example.swagger.model.Version;
+import eu.nimble.service.example.swagger.api.VersionApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

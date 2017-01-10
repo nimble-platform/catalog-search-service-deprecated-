@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-@ComponentScan
 @Configuration
 @EnableCircuitBreaker
 @EnableAutoConfiguration

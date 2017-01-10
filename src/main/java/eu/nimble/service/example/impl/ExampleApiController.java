@@ -1,7 +1,7 @@
 package eu.nimble.service.example.impl;
 
-import eu.nimble.service.example.api.ExampleApi;
-import eu.nimble.service.example.model.Example;
+import eu.nimble.service.example.swagger.model.Example;
+import eu.nimble.service.example.swagger.api.ExampleApi;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
