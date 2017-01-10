@@ -25,6 +25,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <springfox.version>2.5.0</springfox.version>
         <default.package>eu.nimble.service.example</default.package>
+        <swagger.api.src>src/main/resources/api.yml</swagger.api.src>
     </properties>
 
     <parent>
@@ -138,11 +139,12 @@
                 <version>2.2.1</version>
                 <executions>
                     <execution>
+                        <id>code</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>src/main/resources/api.yml</inputSpec>
+                            <inputSpec>${swagger.api.src}</inputSpec>
                             <language>spring</language>
                             <modelPackage>${default.package}.swagger.model</modelPackage>
                             <apiPackage>${default.package}.swagger.api</apiPackage>
@@ -150,6 +152,16 @@
                             <configOptions>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
                             </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>doc</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.api.src}</inputSpec>
+                            <language>html</language>
                         </configuration>
                     </execution>
                 </executions>
