@@ -10,8 +10,8 @@ and injected during startup.
 
 ## Swagger
 
-The Example API was designed using the [swagger.io editor](http://editor.swagger.io) (file: src/main/resources/api.yml) and the code generator for the Spring framework. 
-The Maven plugin (swagger-codegen-maven-plugin) was used to generate defined interfaces automatically in each Maven build.
+The Example API is designed using the [swagger.io editor](http://editor.swagger.io) (file: src/main/resources/api.yml) and the code generator for the Spring framework. 
+The Maven plugin (swagger-codegen-maven-plugin) is used to generate defined interfaces automatically in each Maven build.
 
 ## How-to
 
