@@ -1,7 +1,6 @@
 package eu.nimble.service.example.impl;
 
 import eu.nimble.service.example.swagger.model.Example;
-import eu.nimble.service.example.swagger.api.ExampleApi;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,12 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.SpringCodegen", date = "2016-12-12T13:45:55.427Z")
-
 @Controller
-public class ExampleApiController implements ExampleApi {
+public class ApiController { // implements ExampleApi {
 
-    private static Logger log = LoggerFactory.getLogger(ExampleApiController.class);
+    private static Logger log = LoggerFactory.getLogger(ApiController.class);
 
     public ResponseEntity<Void> addExample(@ApiParam(value = "Example object that needs to be added"  ) @RequestBody Example body) {
         // do some magic!

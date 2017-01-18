@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
-            <scope>provided</scope>
+            <version>1.4.2.RELEASE</version>
         </dependency>
         <!--SpringFox dependencies -->
         <dependency>
@@ -124,6 +124,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>eu.nimble.service.example.ExampleApp</mainClass>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -151,6 +154,8 @@
                             <invokerPackage>${default.package}.swagger.invoker</invokerPackage>
                             <configOptions>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
+                                <interfaceOnly>true</interfaceOnly>
+                                <library>spring-cloud</library>
                             </configOptions>
                         </configuration>
                     </execution>
