@@ -39,6 +39,10 @@
             <id>iot365</id>
             <name>fstroh</name>
         </developer>
+        <developer>
+            <id>jinnerbi</id>
+            <name>Johannes Innerbichler</name>
+        </developer>
     </developers>
 
     <dependencyManagement>
