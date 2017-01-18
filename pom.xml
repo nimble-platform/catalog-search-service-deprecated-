@@ -155,7 +155,6 @@
                             <configOptions>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
                                 <interfaceOnly>true</interfaceOnly>
-                                <library>spring-cloud</library>
                             </configOptions>
                         </configuration>
                     </execution>
