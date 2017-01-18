@@ -25,6 +25,7 @@ The Maven plugin (swagger-codegen-maven-plugin) is used to generate defined inte
  mvn clean package docker:build -P docker
  docker run -p 8081:8085 nimbleplatform/java-microservice-example
  ```
+ The according Dockerfile can be found at src/main/docker/Dockerfile.
  
 ### Example requests
  ```bash
