@@ -1,5 +1,6 @@
 package eu.nimble.service.example.impl;
 
+import eu.nimble.service.example.swagger.api.ExampleApi;
 import eu.nimble.service.example.swagger.model.Example;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
-public class ApiController { // implements ExampleApi {
+public class ApiController implements ExampleApi {
 
     private static Logger log = LoggerFactory.getLogger(ApiController.class);
 

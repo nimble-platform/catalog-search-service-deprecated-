@@ -2,6 +2,7 @@ server:
   port: ${PORT:8081}
 spring:
   application:
+    # the name of the service represents the global identifier of this microservice.
     name: java-microservice-example
   cloud:
     config:
