@@ -1,4 +1,5 @@
 # Microservice Example using Java 8
+**ServiceID**: java-microservice-example
 
 Example implementation for a microservice written in Java and the Spring Boot framework.
   
