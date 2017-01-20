@@ -36,4 +36,5 @@ The Maven plugin (swagger-codegen-maven-plugin) is used to generate defined inte
  # post
  curl -H "Content-Type: application/json" -d '{"prop1":"Jorge Lorenzo","prop2":99}' http://localhost:8081/example
  ```
-    
+ ---
+The project leading to this application has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 723810.
