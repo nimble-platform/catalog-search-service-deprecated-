@@ -10,6 +10,8 @@
     <name>Nimble Java Microservice Example</name>
     <description>This is an example service implemented for NIMBLE based on the java-microservice-template.
         It can run either standalone, or as a microservice inside the NIMBLE cloud.
+        It also demonstrates, how a Swagger specification to design an Open API and the code generator
+        can be used to automatically generate the Java Interface Classes for Spring.
     </description>
     <packaging>jar</packaging>
 

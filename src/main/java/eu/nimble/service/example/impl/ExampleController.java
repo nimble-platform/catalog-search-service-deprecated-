@@ -11,21 +11,23 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
-public class ApiController implements ExampleApi {
+public class ExampleController implements ExampleApi {
 
-    private static Logger log = LoggerFactory.getLogger(ApiController.class);
+    private static Logger log = LoggerFactory.getLogger(ExampleController.class);
 
     public ResponseEntity<Void> addExample(@ApiParam(value = "Example object that needs to be added"  ) @RequestBody Example body) {
-        // do some magic!
-        log.info("example added: {}", body);
-        return new ResponseEntity<Void>(HttpStatus.OK);
+        if (body == null || body.getProp1() == null || body.getProp2() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } else {
+            log.info("example added: {}", body);
+            return ResponseEntity.ok(null);
+        }
     }
 
     public ResponseEntity<Example> getExample() {
         final Example example = ExampleFactory.create();
-        // do some magic!
         log.info("example returned: {}", example);
-        return new ResponseEntity<Example>(example, HttpStatus.OK);
+        return ResponseEntity.ok(example);
     }
 
     private static class ExampleFactory {
