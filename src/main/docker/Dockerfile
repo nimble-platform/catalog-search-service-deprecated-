@@ -9,4 +9,4 @@ RUN touch $JAR
 ENV PORT 8085
 EXPOSE $PORT
 CMD [${JAR}]
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/java-microservice-example.jar"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-jar", $finalName]

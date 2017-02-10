@@ -3,7 +3,7 @@ server:
 spring:
   application:
     # the name of the application represents the global identifier of this microservice.
-    name: java-microservice-example
+    name: catalog-search-service
   cloud:
     config:
       uri: ${vcap.services.config-service.credentials.url:${CONFIG_SERVER_URI:http://localhost:8888}}

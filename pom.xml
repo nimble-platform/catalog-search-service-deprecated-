@@ -5,13 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>eu.nimble.services</groupId>
-    <artifactId>java-microservice-example</artifactId>
+    <artifactId>catalog-search-service</artifactId>
     <version>0.0.1</version>
-    <name>Nimble Java Microservice Example</name>
-    <description>This is an example service implemented for NIMBLE based on the java-microservice-template.
-        It can run either standalone, or as a microservice inside the NIMBLE cloud.
-        It also demonstrates, how a Swagger specification to design an Open API and the code generator
-        can be used to automatically generate the Java Interface Classes for Spring.
+    <name>Nimble Catalog Search Service</name>
+    <description>
+        Search functionalities are provides by this service. It communicates with the Catalog Service, which stores products and user services persistently.
     </description>
     <packaging>jar</packaging>
 

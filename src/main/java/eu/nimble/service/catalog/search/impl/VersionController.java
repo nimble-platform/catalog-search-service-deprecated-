@@ -1,4 +1,4 @@
-package eu.nimble.service.example.impl;
+package eu.nimble.service.catalog.search.impl;
 
 import eu.nimble.service.example.swagger.model.Version;
 import eu.nimble.service.example.swagger.api.VersionApi;
