@@ -24,7 +24,7 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <springfox.version>2.5.0</springfox.version>
-        <default.package>eu.nimble.service.example</default.package>
+        <default.package>eu.nimble.service.catalog.search</default.package>
         <swagger.api.src>src/main/resources/api.yml</swagger.api.src>
     </properties>
 
@@ -35,14 +35,6 @@
     </parent>
     
     <developers>
-        <developer>
-            <id>iot365</id>
-            <name>fstroh</name>
-        </developer>
-        <developer>
-            <id>jinnerbi</id>
-            <name>Johannes Innerbichler</name>
-        </developer>
     </developers>
 
     <dependencyManagement>
@@ -129,7 +121,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>eu.nimble.service.example.ExampleApp</mainClass>
+                    <mainClass>eu.nimble.service.catalog.search.CatalogSearchApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

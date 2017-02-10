@@ -1,6 +1,6 @@
 package eu.nimble.service.catalog.search.impl;
 
-import eu.nimble.service.example.swagger.model.Example;
+import eu.nimble.service.catalog.search.swagger.model.Example;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
