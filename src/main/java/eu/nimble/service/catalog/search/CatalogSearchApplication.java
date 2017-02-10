@@ -21,8 +21,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @RestController
 @SpringBootApplication
 @EnableSwagger2
-@ComponentScan(basePackages = "eu.nimble.service.example")
-public class ExampleApp implements CommandLineRunner {
+@ComponentScan(basePackages = "eu.nimble.service.catalog.search")
+public class CatalogSearchApplication implements CommandLineRunner {
 
     @Override
     public void run(String... arg0) throws Exception {
@@ -32,7 +32,7 @@ public class ExampleApp implements CommandLineRunner {
     }
 
     public static void main(String[] args) throws Exception {
-        new SpringApplication(ExampleApp.class).run(args);
+        new SpringApplication(CatalogSearchApplication.class).run(args);
     }
 
     class ExitException extends RuntimeException implements ExitCodeGenerator {
