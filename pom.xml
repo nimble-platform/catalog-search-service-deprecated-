@@ -92,6 +92,71 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<version>1.4.2.RELEASE</version><!--$NO-MVN-MAN-VER$ -->
 		</dependency>
+		<!-- Mediator dependencies -->
+		<dependency>
+			<groupId>de.biba.mediator</groupId>
+			<artifactId>de.biba.reasoning.mediator</artifactId>
+			<version>0.0.4-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/de.biba.reasoning.mediator-0.0.4-SNAPSHOT.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>de.biba.mediator</groupId>
+			<artifactId>de.biba.wrapper.xmlwrapper</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<version>3.1.0</version>
+			<type>pom</type>
+		</dependency>
+	<dependency>
+			<groupId>de.biba.mediator</groupId>
+			<artifactId>de.biba.triple.store.access</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/de.biba.triple.store.access-0.0.1-SNAPSHOT-jar-with-dependencies.jar</systemPath>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
+			<version>1.0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160212</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jdom</groupId>
+			<artifactId>jdom2</artifactId>
+			<version>2.0.6</version>
+		</dependency>
+		<dependency>
+			<groupId>de.biba.mediator</groupId>
+			<artifactId>de.biba.wrapper.xmlwrapper</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>de.biba.mediator</groupId>
+			<artifactId>de.biba.wrapper.simplehttpWrapper</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/de.biba.wrapper.simplehttpWrapper.jar</systemPath>
+		</dependency>
+
+
 		<!--SpringFox dependencies -->
 		<dependency>
 			<groupId>io.springfox</groupId>
