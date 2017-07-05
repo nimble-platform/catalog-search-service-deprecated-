@@ -97,15 +97,13 @@
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.reasoning.mediator</artifactId>
 			<version>0.0.4-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/de.biba.reasoning.mediator-0.0.4-SNAPSHOT.jar</systemPath>
+			<!--<scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.reasoning.mediator-0.0.4-SNAPSHOT.jar</systemPath> -->
 		</dependency>
 		<dependency>
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.wrapper.xmlwrapper</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath>
+			<!-- <scope>system</scope> <systemPath>$pom.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath> -->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -118,12 +116,11 @@
 			<version>3.1.0</version>
 			<type>pom</type>
 		</dependency>
-	<dependency>
+		<dependency>
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.triple.store.access</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/de.biba.triple.store.access-0.0.1-SNAPSHOT-jar-with-dependencies.jar</systemPath>
+			<!-- <scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.triple.store.access-0.0.1-SNAPSHOT-jar-with-dependencies.jar</systemPath> -->
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
 		<dependency>
@@ -145,17 +142,12 @@
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.wrapper.xmlwrapper</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>de.biba.mediator</groupId>
-			<artifactId>de.biba.wrapper.simplehttpWrapper</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/de.biba.wrapper.simplehttpWrapper.jar</systemPath>
+			<!-- <scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath> -->
 		</dependency>
 
+		<!-- <dependency> <groupId>de.biba.mediator</groupId> <artifactId>de.biba.wrapper.simplehttpWrapper</artifactId> 
+			<version>0.0.1-SNAPSHOT</version> <scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.wrapper.simplehttpWrapper.jar</systemPath> 
+			</dependency> -->
 
 		<!--SpringFox dependencies -->
 		<dependency>
@@ -191,6 +183,13 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<mainClass>eu.nimble.service.catalog.search.CatalogSearchApplication</mainClass>
+					<resource>
+						<directory>lib</directory>
+						<targetPath>/lib</targetPath>
+						<includes>
+							<include>**/*.jar</include>
+						</includes>
+					</resource>
 				</configuration>
 				<executions>
 					<execution>
@@ -261,6 +260,7 @@
 						<configuration>
 							<imageName>${docker.image.prefix}/${project.artifactId}</imageName>
 							<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+							<includeSystemScope>true</includeSystemScope>
 							<buildArgs>
 								<finalName>${project.build.finalName}.jar</finalName>
 							</buildArgs>
@@ -268,6 +268,11 @@
 								<resource>
 									<targetPath>/</targetPath>
 									<directory>${project.build.directory}</directory>
+									<include>${project.build.finalName}.jar</include>
+								</resource>
+								<resource>
+									<targetPath>/</targetPath>
+									<directory>${project.build.directory}lib/</directory>
 									<include>${project.build.finalName}.jar</include>
 								</resource>
 								<resource>
@@ -284,6 +289,7 @@
 							<registryUrl>https://index.docker.io/v1/</registryUrl>
 						</configuration>
 					</plugin>
+
 				</plugins>
 			</build>
 			<dependencies>
@@ -295,5 +301,12 @@
 			</dependencies>
 		</profile>
 	</profiles>
+	<repositories>
 
+		<repository>
+			<id>in-project</id>
+			<name>In Project Repo</name>
+			<url>file://${pom.basedir}/libRepo</url>
+		</repository>
+	</repositories>
 </project>
