@@ -15,9 +15,10 @@ import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 
 public class MediatorSPARQLDerivation {
 
-	private static final String FURNITURE2_OWL = "furniture2.owl";
+	public static final String FURNITURE2_OWL = "furniture2.owl";
 	private Reader reader = null;
 	private PropertyValuesCrawler propertyValuesCrawler = null;
+	private boolean ontologyFromOutside = false;
 
 	public MediatorSPARQLDerivation() {
 		reader = new Reader();
@@ -27,6 +28,17 @@ public class MediatorSPARQLDerivation {
 		propertyValuesCrawler = new PropertyValuesCrawler();
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(FURNITURE2_OWL);
+	}
+	
+	public MediatorSPARQLDerivation(String pntologyFile) {
+		reader = new Reader();
+		reader.setModeToLocal();
+		reader.loadOntologyModel(pntologyFile);
+		
+		propertyValuesCrawler = new PropertyValuesCrawler();
+		propertyValuesCrawler.setModeToLocal();
+		propertyValuesCrawler.loadOntologyModel(pntologyFile);
+		
 	}
 
 	public List<String> detectPossibleConcepts(String regex) {

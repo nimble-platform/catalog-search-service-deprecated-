@@ -97,13 +97,11 @@
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.reasoning.mediator</artifactId>
 			<version>0.0.4-SNAPSHOT</version>
-			<!--<scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.reasoning.mediator-0.0.4-SNAPSHOT.jar</systemPath> -->
 		</dependency>
 		<dependency>
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.wrapper.xmlwrapper</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<!-- <scope>system</scope> <systemPath>$pom.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath> -->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -120,7 +118,6 @@
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.triple.store.access</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<!-- <scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.triple.store.access-0.0.1-SNAPSHOT-jar-with-dependencies.jar</systemPath> -->
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
 		<dependency>
@@ -142,9 +139,9 @@
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.wrapper.xmlwrapper</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<!-- <scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.wrapper.xmlwrapper-0.0.1-SNAPSHOT.jar</systemPath> -->
 		</dependency>
 
+		<!-- Mujst be clarified why it cannot be imported like the others -->
 		<!-- <dependency> <groupId>de.biba.mediator</groupId> <artifactId>de.biba.wrapper.simplehttpWrapper</artifactId> 
 			<version>0.0.1-SNAPSHOT</version> <scope>system</scope> <systemPath>${pom.basedir}/lib/de.biba.wrapper.simplehttpWrapper.jar</systemPath> 
 			</dependency> -->

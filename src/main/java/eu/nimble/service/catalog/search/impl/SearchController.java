@@ -1,9 +1,14 @@
 package eu.nimble.service.catalog.search.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -29,8 +34,32 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 @Controller
 public class SearchController {
 
+	private static final String NULL_ASSIGNED_VALUE = "null";
+
 	@Value("${nimble.shared.property.config.d:C:/Resources/NIMBLE/config.xml}")
 	private String configPath;
+
+	@Value("${nimble.shared.property.ontologyfile:null}")
+	private String ontologyFile;
+
+	private MediatorSPARQLDerivation sparqlDerivation = null;
+
+	@PostConstruct
+	public void init() {
+		if (ontologyFile.equals(NULL_ASSIGNED_VALUE)) {
+			sparqlDerivation = new MediatorSPARQLDerivation();
+		} else {
+			File f = new File(ontologyFile);
+			if (f.exists()){
+				Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
+				sparqlDerivation = new MediatorSPARQLDerivation(ontologyFile);
+			}
+			else{
+				Logger.getAnonymousLogger().log(Level.INFO, "Load STANDARD ontology file: " +MediatorSPARQLDerivation.FURNITURE2_OWL );
+				sparqlDerivation = new MediatorSPARQLDerivation();
+			}
+		}
+	}
 
 	@RequestMapping(value = "/query", method = RequestMethod.GET)
 	HttpEntity<Object> query(@RequestParam("query") String query) {
@@ -48,7 +77,6 @@ public class SearchController {
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
 	HttpEntity<Object> query() {
 		{
-			System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!: Have called");
 			return new ResponseEntity<Object>("hallo, Back and Front", HttpStatus.OK);
 		}
 	}
@@ -56,7 +84,6 @@ public class SearchController {
 	@CrossOrigin
 	@RequestMapping(value = "/detectMeaning", method = RequestMethod.GET)
 	HttpEntity<Object> detectMeaning(@RequestParam("keyword") String keyword) {
-		MediatorSPARQLDerivation sparqlDerivation = new MediatorSPARQLDerivation();
 
 		List<String> concepts = sparqlDerivation.detectPossibleConcepts(keyword);
 		MeaningResult meaningResult = new MeaningResult();
@@ -75,9 +102,6 @@ public class SearchController {
 			}
 			index++;
 			String concept2 = concept.substring(index);
-			// List<String> properies =
-			// sparqlDerivation.detectPossibleProperties(concept);
-			// List<String> properiesCleaned = postprocessProperties(properies);
 			data.add(concept2);
 		}
 
@@ -103,7 +127,6 @@ public class SearchController {
 	@RequestMapping(value = "/getLogicalView", method = RequestMethod.GET)
 	HttpEntity<Object> getLogicalView(@RequestParam("inputAsJson") String inputAsJson) {
 		try {
-			MediatorSPARQLDerivation sparqlDerivation = new MediatorSPARQLDerivation();
 			Gson gson = new Gson();
 			InputParamterForGetLogicalView paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParamterForGetLogicalView.class);
@@ -130,7 +153,6 @@ public class SearchController {
 						allAdressedConceptsHelper.add(view.getObjectproperties().get(key));
 					}
 
-					// wie muss ich es jetzt verheiraten
 				}
 				allAdressedConcepts.clear();
 				allAdressedConcepts.addAll(allAdressedConceptsHelper);
@@ -164,7 +186,6 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterForgetPropertyValuesDiscretised paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParameterForgetPropertyValuesDiscretised.class);
-			MediatorSPARQLDerivation sparqlDerivation = new MediatorSPARQLDerivation();
 			Map<String, List<Group>> mapOfPropertyGroups = sparqlDerivation.generateGroup(
 					paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
 					paramterForGetLogicalView.getProperty());
