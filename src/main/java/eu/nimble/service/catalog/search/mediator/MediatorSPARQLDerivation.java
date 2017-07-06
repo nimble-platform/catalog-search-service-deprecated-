@@ -40,6 +40,24 @@ public class MediatorSPARQLDerivation {
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
 		
 	}
+	
+	public MediatorSPARQLDerivation(String uri, boolean remote) {
+		if (!remote){
+		reader = new Reader();
+		reader.setModeToLocal();
+		reader.loadOntologyModel(uri);
+		
+		propertyValuesCrawler = new PropertyValuesCrawler();
+		propertyValuesCrawler.setModeToLocal();
+		propertyValuesCrawler.loadOntologyModel(uri);
+		
+		}
+		else{
+			//de.biba.triple.store.access.MarmottaReader reader = null;
+		}
+		
+	}
+	
 
 	public List<String> detectPossibleConcepts(String regex) {
 		return reader.getAllConcepts(regex);

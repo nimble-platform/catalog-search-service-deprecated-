@@ -42,21 +42,30 @@ public class SearchController {
 	@Value("${nimble.shared.property.ontologyfile:null}")
 	private String ontologyFile;
 
+	@Value("${nimble.shared.property.marmottauri:null}")
+	private String marmottaUri;
+
 	private MediatorSPARQLDerivation sparqlDerivation = null;
 
 	@PostConstruct
 	public void init() {
-		if (ontologyFile.equals(NULL_ASSIGNED_VALUE)) {
+		if (ontologyFile.equals(NULL_ASSIGNED_VALUE) && (marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
 			sparqlDerivation = new MediatorSPARQLDerivation();
 		} else {
-			File f = new File(ontologyFile);
-			if (f.exists()){
-				Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
-				sparqlDerivation = new MediatorSPARQLDerivation(ontologyFile);
-			}
-			else{
-				Logger.getAnonymousLogger().log(Level.INFO, "Load STANDARD ontology file: " +MediatorSPARQLDerivation.FURNITURE2_OWL );
-				sparqlDerivation = new MediatorSPARQLDerivation();
+
+			if (!ontologyFile.equals(NULL_ASSIGNED_VALUE)) {
+
+				File f = new File(ontologyFile);
+				if (f.exists()) {
+					Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
+					sparqlDerivation = new MediatorSPARQLDerivation(ontologyFile);
+				} else {
+					Logger.getAnonymousLogger().log(Level.INFO,
+							"Load STANDARD ontology file: " + MediatorSPARQLDerivation.FURNITURE2_OWL);
+					sparqlDerivation = new MediatorSPARQLDerivation();
+				}
+			} else {
+				sparqlDerivation = new MediatorSPARQLDerivation(marmottaUri,true);
 			}
 		}
 	}
