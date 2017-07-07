@@ -82,7 +82,8 @@ public class MediatorSPARQLDerivation {
 		}
 
 		String conceptAsUri = getURIOfConcept(concept);
-		List<String> properties = reader.getAllDirectProperties(conceptAsUri);
+		Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " + conceptAsUri);
+		List<String> properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
 		for (String proeprty : properties) {
 			PropertyType pType = reader.getPropertyType(proeprty);
 			if (pType == PropertyType.DATATYPEPROPERTY) {
