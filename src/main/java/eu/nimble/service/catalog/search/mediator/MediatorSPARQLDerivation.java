@@ -145,6 +145,7 @@ public class MediatorSPARQLDerivation {
 	 */
 	public Map<String, List<Group>> generateGroup(int amountOfGroups, String concept, String property) {
 		concept = getURIOfConcept(concept);
+		String shortPropertyName = property;
 		property = getURIOfProperty(property);
 		List<String> values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
 		for (int i = 0; i < values.size(); i++) {
@@ -170,10 +171,10 @@ public class MediatorSPARQLDerivation {
 					group.setDescription("From: " + newMin + " to " + newMax);
 					group.setMin(newMin);
 					group.setMax(newMax);
-					group.setProperty(property);
+					group.setProperty(shortPropertyName);
 					discreditedGroups.add(group);
 				}
-				result.put(property, discreditedGroups);
+				result.put(shortPropertyName, discreditedGroups);
 				return result;
 			} catch (Exception e) {
 				Logger.getAnonymousLogger().log(Level.WARNING,
