@@ -7,57 +7,60 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.biba.triple.store.access.PropertyValuesCrawler;
-import de.biba.triple.store.access.Reader;
+import de.biba.triple.store.access.IPropertyValuesCrawler;
+import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.enums.PropertyType;
+import de.biba.triple.store.access.jena.PropertyValuesCrawler;
+import de.biba.triple.store.access.jena.Reader;
+import de.biba.triple.store.access.marmotta.MarmottaPropertyValuesCrawler;
+import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 
 public class MediatorSPARQLDerivation {
 
 	public static final String FURNITURE2_OWL = "furniture2.owl";
-	private Reader reader = null;
-	private PropertyValuesCrawler propertyValuesCrawler = null;
-	private boolean ontologyFromOutside = false;
+	private IReader reader = null;
+	private IPropertyValuesCrawler propertyValuesCrawler = null;
 
 	public MediatorSPARQLDerivation() {
 		reader = new Reader();
 		reader.setModeToLocal();
 		reader.loadOntologyModel(FURNITURE2_OWL);
-		
+
 		propertyValuesCrawler = new PropertyValuesCrawler();
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(FURNITURE2_OWL);
 	}
-	
+
 	public MediatorSPARQLDerivation(String pntologyFile) {
 		reader = new Reader();
 		reader.setModeToLocal();
 		reader.loadOntologyModel(pntologyFile);
-		
+
 		propertyValuesCrawler = new PropertyValuesCrawler();
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
-		
+
 	}
-	
+
 	public MediatorSPARQLDerivation(String uri, boolean remote) {
-		if (!remote){
-		reader = new Reader();
-		reader.setModeToLocal();
-		reader.loadOntologyModel(uri);
-		
-		propertyValuesCrawler = new PropertyValuesCrawler();
-		propertyValuesCrawler.setModeToLocal();
-		propertyValuesCrawler.loadOntologyModel(uri);
-		
+		if (!remote) {
+			reader = new Reader();
+			reader.setModeToLocal();
+			reader.loadOntologyModel(uri);
+
+			propertyValuesCrawler = new PropertyValuesCrawler();
+			propertyValuesCrawler.setModeToLocal();
+			propertyValuesCrawler.loadOntologyModel(uri);
+
+		} else {
+			reader = new MarmottaReader(uri);
+			propertyValuesCrawler = new MarmottaPropertyValuesCrawler(uri);
+
 		}
-		else{
-			//de.biba.triple.store.access.MarmottaReader reader = null;
-		}
-		
+
 	}
-	
 
 	public List<String> detectPossibleConcepts(String regex) {
 		return reader.getAllConcepts(regex);
@@ -74,8 +77,7 @@ public class MediatorSPARQLDerivation {
 
 		if (instance == null) {
 			localOntologyView = new LocalOntologyView();
-		}
-		else{
+		} else {
 			localOntologyView = instance;
 		}
 
@@ -120,7 +122,7 @@ public class MediatorSPARQLDerivation {
 		Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + concept);
 		return concept;
 	}
-	
+
 	private String getURIOfProperty(String property) {
 		List<String> allPossibleProperties = reader.getAllProperties(property);
 		for (String propertyURI : allPossibleProperties) {
@@ -132,74 +134,78 @@ public class MediatorSPARQLDerivation {
 		Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + property);
 		return property;
 	}
-	
 
 	/**
-	 * Die Methode nimmt den REader/Search um das zu machen 
+	 * Die Methode nimmt den REader/Search um das zu machen
+	 * 
 	 * @param amountOfGroups
 	 * @param concept
 	 * @param property
 	 * @return
 	 */
 	public Map<String, List<Group>> generateGroup(int amountOfGroups, String concept, String property) {
-		// TODO Auto-generated method stub
 		concept = getURIOfConcept(concept);
 		property = getURIOfProperty(property);
 		List<String> values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
-		for (int i =0; i < values.size();i++){
+		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
-			int index =  str.lastIndexOf("^");
-			if (index > -1){
-				str = str.substring(0, index-1);
+			int index = str.lastIndexOf("^");
+			if (index > -1) {
+				str = str.substring(0, index - 1);
 			}
 			str = str.replace(",", ".");
 			values.set(i, str);
 		}
-		try{
-			Map<String, List<Group>> result = new HashMap<String, List<Group>>();
-			float min = getMinOfData(values);
-			float max = getMaxOfData(values);
-			float stepRate = (max -min) / (float)amountOfGroups;
-			List<Group> discreditedGroups = new ArrayList<Group>();
-			for (int i = 0; i < amountOfGroups; i++){
-				Group group = new Group();
-				float newMin = min + (stepRate*i);
-				float newMax = min + (stepRate* (i+1));
-				group.setDescription("From: " + newMin + " to "+ newMax);
-				group.setMin(newMin);
-				group.setMax(newMax);
-				group.setProperty(property);
-				discreditedGroups.add(group);
+		if (values != null && values.size() > 0) {
+			try {
+				Map<String, List<Group>> result = new HashMap<String, List<Group>>();
+				float min = getMinOfData(values);
+				float max = getMaxOfData(values);
+				float stepRate = (max - min) / (float) amountOfGroups;
+				List<Group> discreditedGroups = new ArrayList<Group>();
+				for (int i = 0; i < amountOfGroups; i++) {
+					Group group = new Group();
+					float newMin = min + (stepRate * i);
+					float newMax = min + (stepRate * (i + 1));
+					group.setDescription("From: " + newMin + " to " + newMax);
+					group.setMin(newMin);
+					group.setMax(newMax);
+					group.setProperty(property);
+					discreditedGroups.add(group);
+				}
+				result.put(property, discreditedGroups);
+				return result;
+			} catch (Exception e) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Cannot transform data from " + property + " into floats");
 			}
-			result.put(property, discreditedGroups);
-			return result;
+		} else {
+			return new HashMap<String, List<Group>>();
 		}
-		catch (Exception e){
-			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot transform data from " + property + " into floats");
-		}
-		return null;
+		return new HashMap<String, List<Group>>();
 	}
 
 	private float getMinOfData(List<String> values) {
 		float min = 999999;
-		for (String value: values){
+		for (String value : values) {
 			float number = Float.valueOf(value);
-			if (number < min){
+			if (number < min) {
 				min = number;
 			}
 		}
-			
+
 		return min;
 	}
+
 	private float getMaxOfData(List<String> values) {
 		float max = -999999;
-		for (String value: values){
+		for (String value : values) {
 			float number = Float.valueOf(value);
-			if (number > max){
+			if (number > max) {
 				max = number;
 			}
 		}
-			
+
 		return max;
 	}
 }
