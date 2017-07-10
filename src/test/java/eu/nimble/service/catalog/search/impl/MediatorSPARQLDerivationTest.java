@@ -46,7 +46,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	}
 
 	@Test
-	//@Ignore
+	@Ignore
 	public void testCreateSPARQL() {
 		initForSpecificOntology(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		String concept = "HighChair";
@@ -71,7 +71,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	}
 	
 	@Test
-	//@Ignore
+	@Ignore
 	public void testcreateSPARQLAndExecuteIT(){
 		initForSpecificOntology(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		String concept = "HighChair";
