@@ -30,8 +30,7 @@ public class MediatorSPARQLDerivation {
 		File f = new File(FURNITURE2_OWL);
 		if (f.exists()) {
 			initForSpecificOntology(FURNITURE2_OWL);
-		}
-		else{
+		} else {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot load default ontology: " + FURNITURE2_OWL);
 		}
 	}
@@ -63,15 +62,28 @@ public class MediatorSPARQLDerivation {
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
 		outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
-		for (int i =0; i < resultList.size();i++){
-			ArrayList<String>  row = new ArrayList<String>();
-			 for (int a =0; a < resultList.get(i).length; a++){
-				 row.add(resultList.get(i)[a]);
-			 }
-			 outputForExecuteSelect.getRows().add(row);
-		}
+		addRowsToOutputForExecuteSelect(resultList, outputForExecuteSelect);
 
-		return  outputForExecuteSelect;
+		return outputForExecuteSelect;
+	}
+
+	public void addRowsToOutputForExecuteSelect(List<String[]> resultList,
+			OutputForExecuteSelect outputForExecuteSelect) {
+		for (int i = 0; i < resultList.size(); i++) {
+			ArrayList<String> row = new ArrayList<String>();
+			for (int a = 0; a < resultList.get(i).length; a++) {
+				String value = resultList.get(i)[a];
+				if (value != null && value.length() > 0) {
+					int index = -1;
+					index = value.indexOf("^^");
+					if (index > -1) {
+						value = value.substring(0, index);
+					}
+				}
+				row.add(value);
+			}
+			outputForExecuteSelect.getRows().add(row);
+		}
 	}
 
 	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
