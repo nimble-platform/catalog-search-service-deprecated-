@@ -10,13 +10,15 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
+import eu.nimble.service.catalog.search.impl.dao.Filter;
+import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.MeaningResult;
 
-public class TestINputParameter {
+public class TestInputParamters {
 
 	@Test
 	public void doJson() {
@@ -79,6 +81,24 @@ public class TestINputParameter {
 	}
 	
 	@Test
+	public void doJson_InputParamaterForExecuteSelect(){
+		InputParamaterForExecuteSelect test = new InputParamaterForExecuteSelect();
+		test.setConcept("AirBed");
+		test.getParameters().add("hieght");
+		test.getParameters().add("size");
+		
+		Filter f1 = new Filter();
+		f1.setMax(5.2f);
+		f1.setMin(3.0f);
+		
+		test.getFilters().add(f1);
+		
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(test));
+	}
+	
+	
+	@Test
 	public void doJson_MeaningResult() {
 		MeaningResult parameter = new MeaningResult();
 		Map<String, List<String>> map = new HashMap<String, List<String>>();
@@ -92,5 +112,38 @@ public class TestINputParameter {
 
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(parameter));
+	}
+	
+	@Test
+	public void OutputForExecuteSelect() {
+		
+		InputParamaterForExecuteSelect test = new InputParamaterForExecuteSelect();
+		test.setConcept("AirBed");
+		test.getParameters().add("hieght");
+		test.getParameters().add("size");
+		Filter f1 = new Filter();
+		f1.setMax(5.2f);
+		f1.setMin(3.0f);
+		test.getFilters().add(f1);
+		
+		eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect output = new eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect();
+		output.setInput(test);
+		output.getColumns().add("height");
+		output.getColumns().add("size");
+		
+		ArrayList<String> row1 = new ArrayList<String>();
+		row1.add("100");
+		row1.add("34");
+		
+		ArrayList<String> row2 = new ArrayList<String>();
+		row2.add("1009");
+		row2.add("37");
+		
+		output.getRows().add(row1);
+		output.getRows().add(row2);
+		
+		
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(output));
 	}
 }

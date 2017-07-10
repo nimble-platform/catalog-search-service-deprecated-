@@ -1,5 +1,6 @@
 package eu.nimble.service.catalog.search.mediator;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,9 @@ import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaPropertyValuesCrawler;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect;
 
 public class MediatorSPARQLDerivation {
 
@@ -24,16 +27,21 @@ public class MediatorSPARQLDerivation {
 	private IPropertyValuesCrawler propertyValuesCrawler = null;
 
 	public MediatorSPARQLDerivation() {
-		reader = new Reader();
-		reader.setModeToLocal();
-		reader.loadOntologyModel(FURNITURE2_OWL);
-
-		propertyValuesCrawler = new PropertyValuesCrawler();
-		propertyValuesCrawler.setModeToLocal();
-		propertyValuesCrawler.loadOntologyModel(FURNITURE2_OWL);
+		File f = new File(FURNITURE2_OWL);
+		if (f.exists()) {
+			initForSpecificOntology(FURNITURE2_OWL);
+		}
+		else{
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot load default ontology: " + FURNITURE2_OWL);
+		}
 	}
 
 	public MediatorSPARQLDerivation(String pntologyFile) {
+		initForSpecificOntology(pntologyFile);
+
+	}
+
+	public void initForSpecificOntology(String pntologyFile) {
 		reader = new Reader();
 		reader.setModeToLocal();
 		reader.loadOntologyModel(pntologyFile);
@@ -41,18 +49,63 @@ public class MediatorSPARQLDerivation {
 		propertyValuesCrawler = new PropertyValuesCrawler();
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
+	}
 
+	public OutputForExecuteSelect createSPARQLAndExecuteIT(
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+
+		String sparql = createSparql(inputParamaterForExecuteSelect);
+
+		Object ouObject = reader.query(sparql);
+		String[] params = new String[inputParamaterForExecuteSelect.getParameters().size()];
+		inputParamaterForExecuteSelect.getParameters().toArray(params);
+		List<String[]> resultList = reader.createResultListArray(ouObject, params);
+		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
+		outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
+		for (int i =0; i < resultList.size();i++){
+			ArrayList<String>  row = new ArrayList<String>();
+			 for (int a =0; a < resultList.get(i).length; a++){
+				 row.add(resultList.get(i)[a]);
+			 }
+			 outputForExecuteSelect.getRows().add(row);
+		}
+
+		return  outputForExecuteSelect;
+	}
+
+	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+		// TODO Auto-generated method stub
+		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
+
+		Map<String, String> resolvedProperties = new HashMap<String, String>();
+		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+			String parameter = getURIOfProperty(param);
+			resolvedProperties.put(param, parameter);
+		}
+
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ";
+		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+			sparql += " ?" + param;
+		}
+
+		sparql += " where{";
+
+		// add cocnept mapping:
+		sparql += "?x rdfs:subClassOf*  <" + concept + ">. ";
+		sparql += "?instance a ?x.";
+		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+			String property = resolvedProperties.get(param);
+
+			sparql += "?instance" + "<" + property + "> " + "?" + param + ".";
+		}
+		sparql += "}";
+		return sparql;
 	}
 
 	public MediatorSPARQLDerivation(String uri, boolean remote) {
 		if (!remote) {
-			reader = new Reader();
-			reader.setModeToLocal();
-			reader.loadOntologyModel(uri);
-
-			propertyValuesCrawler = new PropertyValuesCrawler();
-			propertyValuesCrawler.setModeToLocal();
-			propertyValuesCrawler.loadOntologyModel(uri);
+			initForSpecificOntology(uri);
 
 		} else {
 			reader = new MarmottaReader(uri);

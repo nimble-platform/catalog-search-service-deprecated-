@@ -23,11 +23,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.Gson;
 
 import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.MeaningResult;
+import eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 
@@ -65,7 +67,7 @@ public class SearchController {
 					sparqlDerivation = new MediatorSPARQLDerivation();
 				}
 			} else {
-				sparqlDerivation = new MediatorSPARQLDerivation(marmottaUri,true);
+				sparqlDerivation = new MediatorSPARQLDerivation(marmottaUri, true);
 			}
 		}
 	}
@@ -200,6 +202,37 @@ public class SearchController {
 					paramterForGetLogicalView.getProperty());
 			String result = "";
 			result = gson.toJson(mapOfPropertyGroups);
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
+
+	/**
+	 * Returns from a given concept the data properties and obejctproperties and
+	 * to each objecproperty a concept in the case the step range is greater 1
+	 * 
+	 * @param concept
+	 * @param step
+	 *            range
+	 * @param
+	 * @return
+	 */
+	@CrossOrigin
+	@RequestMapping(value = "/executeSPARQLSelect", method = RequestMethod.GET)
+	HttpEntity<Object> executeSPARQLSelect(@RequestParam("inputAsJson") String inputAsJson) {
+		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+		try {
+			Gson gson = new Gson();
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
+					InputParamaterForExecuteSelect.class);
+
+			outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+
+			String result = "";
+			result = gson.toJson(outputForExecuteSelect);
+
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
