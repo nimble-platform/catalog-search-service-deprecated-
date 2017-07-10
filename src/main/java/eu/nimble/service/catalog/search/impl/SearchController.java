@@ -95,32 +95,35 @@ public class SearchController {
 	@CrossOrigin
 	@RequestMapping(value = "/detectMeaning", method = RequestMethod.GET)
 	HttpEntity<Object> detectMeaning(@RequestParam("keyword") String keyword) {
+		try {
+			List<String> concepts = sparqlDerivation.detectPossibleConcepts(keyword);
+			MeaningResult meaningResult = new MeaningResult();
+			List<String> data = new ArrayList<String>();
 
-		List<String> concepts = sparqlDerivation.detectPossibleConcepts(keyword);
-		MeaningResult meaningResult = new MeaningResult();
-		List<String> data = new ArrayList<String>();
+			meaningResult.setConceptOverview(data);
+			meaningResult.setSearchTyp("ExplorativeSearch");
 
-		meaningResult.setConceptOverview(data);
-		meaningResult.setSearchTyp("ExplorativeSearch");
-
-		for (String concept : concepts) {
-			int index = -1;
-			if (index == -1) {
-				index = concept.indexOf("#");
+			for (String concept : concepts) {
+				int index = -1;
+				if (index == -1) {
+					index = concept.indexOf("#");
+				}
+				if (index == -1) {
+					index = concept.lastIndexOf("/");
+				}
+				index++;
+				String concept2 = concept.substring(index);
+				data.add(concept2);
 			}
-			if (index == -1) {
-				index = concept.lastIndexOf("/");
-			}
-			index++;
-			String concept2 = concept.substring(index);
-			data.add(concept2);
+
+			Gson gson = new Gson();
+			String result = "";
+			result = gson.toJson(meaningResult);
+
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
-		Gson gson = new Gson();
-		String result = "";
-		result = gson.toJson(meaningResult);
-
-		return new ResponseEntity<Object>(result, HttpStatus.OK);
 
 	}
 
