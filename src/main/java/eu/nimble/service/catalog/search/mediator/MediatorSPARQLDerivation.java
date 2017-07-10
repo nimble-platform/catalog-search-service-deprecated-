@@ -15,6 +15,7 @@ import de.biba.triple.store.access.jena.PropertyValuesCrawler;
 import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaPropertyValuesCrawler;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
@@ -106,12 +107,33 @@ public class MediatorSPARQLDerivation {
 		// add cocnept mapping:
 		sparql += "?x rdfs:subClassOf*  <" + concept + ">. ";
 		sparql += "?instance a ?x.";
+		sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+		sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+		sparql += "}";
+		return sparql;
+	}
+
+	private String addFilters(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
+			Map<String, String> resolvedProperties, String sparql) {
+		String filter = "";
+		for (Filter fil : inputParamaterForExecuteSelect.getFilters()) {
+			String filterText = "";
+			String shortName = fil.getProperty();
+			filterText += "FILTER ( xsd:decimal(?"+ shortName +") <  xsd:decimal(" +fil.getMax() +"))." ;
+			filterText += "FILTER ( xsd:decimal(?"+ shortName +") >=  xsd:decimal(" +fil.getMin() +"))." ;
+			filter += filterText;
+		}
+
+		return sparql + filter;
+	}
+
+	public String addProperties(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
+			Map<String, String> resolvedProperties, String sparql) {
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
 			String property = resolvedProperties.get(param);
 
 			sparql += "?instance" + "<" + property + "> " + "?" + param + ".";
 		}
-		sparql += "}";
 		return sparql;
 	}
 
