@@ -150,6 +150,7 @@ public class MediatorSPARQLDerivation {
 	}
 
 	public List<String> detectPossibleConcepts(String regex) {
+		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		return reader.getAllConcepts(regex);
 	}
 
