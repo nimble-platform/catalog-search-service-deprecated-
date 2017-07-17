@@ -1,5 +1,8 @@
 package eu.nimble.service.catalog.search.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +14,7 @@ import org.junit.Test;
 import com.google.gson.Gson;
 
 import eu.nimble.service.catalog.search.impl.dao.Filter;
+import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.InputParameterForgetPropertyValuesDiscretised;
@@ -94,6 +98,22 @@ public class TestInputParamters {
 		
 		test.getFilters().add(f1);
 		
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(test));
+	}
+	
+	@Test
+	public void doJson_InputParamaterForExecuteOptionalSelect(){
+		InputParamaterForExecuteOptionalSelect test = new InputParamaterForExecuteOptionalSelect();
+		test.setUuid(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural"));
+		
+		try {
+			String result = URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural", "UTF-8");
+			System.out.println(result);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(test));
 	}

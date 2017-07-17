@@ -13,10 +13,12 @@ import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.enums.PropertyType;
 import de.biba.triple.store.access.jena.PropertyValuesCrawler;
 import de.biba.triple.store.access.jena.Reader;
+import de.biba.triple.store.access.jena.Search;
 import de.biba.triple.store.access.marmotta.MarmottaPropertyValuesCrawler;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect;
@@ -57,25 +59,71 @@ public class MediatorSPARQLDerivation {
 		String sparql = createSparql(inputParamaterForExecuteSelect);
 
 		Object ouObject = reader.query(sparql);
-		//This is necessary to get the uuid for each instance
+		// This is necessary to get the uuid for each instance
 		inputParamaterForExecuteSelect.getParameters().add(0, "instance");
 		String[] params = new String[inputParamaterForExecuteSelect.getParameters().size()];
-		
+
 		inputParamaterForExecuteSelect.getParameters().toArray(params);
 		List<String[]> resultList = reader.createResultListArray(ouObject, params);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
-		
-		inputParamaterForExecuteSelect.getParameters().remove(0); //Must be removed the uuid is not part of the result
+
+		inputParamaterForExecuteSelect.getParameters().remove(0); // Must be
+																	// removed
+																	// the uuid
+																	// is not
+																	// part of
+																	// the
+																	// result
 		outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
-		
-		//add uuid to result data structures
-		for (String[] row: resultList){
+
+		// add uuid to result data structures
+		for (String[] row : resultList) {
 			outputForExecuteSelect.getUuids().add(row[0]);
 		}
-		
-		addRowsToOutputForExecuteSelect(resultList, outputForExecuteSelect,1); //NO uuid should be inserted
 
+		addRowsToOutputForExecuteSelect(resultList, outputForExecuteSelect, 1); // NO
+																				// uuid
+																				// should
+																				// be
+																				// inserted
+
+		return outputForExecuteSelect;
+	}
+
+	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
+			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect) {
+
+		// This  is/ necessary  to  get		the  uuid  for  each  instance
+		Map<String, String> result = reader
+				.getPropertyValuesOfAIndividium(inputParamaterForExecuteOptionalSelect.getUuid());
+
+		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+		
+		
+
+		ArrayList<String> row = new ArrayList<String>();
+		for (String key : result.keySet()) {
+			String column = key.substring( key.indexOf("#")+1);
+			outputForExecuteSelect.getColumns().add(column);
+	
+				String value = result.get(key);
+				if (value != null && value.length() > 0) {
+					int index = -1;
+					index = value.indexOf("^^");
+					if (index > -1) {
+						value = value.substring(0, index);
+					}
+				
+				row.add(value);
+			}
+			
+		}
+
+		
+		
+		
+		outputForExecuteSelect.getRows().add(row);
 		return outputForExecuteSelect;
 	}
 
@@ -130,8 +178,8 @@ public class MediatorSPARQLDerivation {
 		for (Filter fil : inputParamaterForExecuteSelect.getFilters()) {
 			String filterText = "";
 			String shortName = fil.getProperty();
-			filterText += "FILTER ( xsd:decimal(?"+ shortName +") <  xsd:decimal(" +fil.getMax() +"))." ;
-			filterText += "FILTER ( xsd:decimal(?"+ shortName +") >=  xsd:decimal(" +fil.getMin() +"))." ;
+			filterText += "FILTER ( xsd:decimal(?" + shortName + ") <  xsd:decimal(" + fil.getMax() + ")).";
+			filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + fil.getMin() + ")).";
 			filter += filterText;
 		}
 

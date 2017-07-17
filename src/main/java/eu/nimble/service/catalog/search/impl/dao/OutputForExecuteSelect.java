@@ -15,6 +15,9 @@ public class OutputForExecuteSelect {
 	public void setInput(InputParamaterForExecuteSelect input) {
 		this.input = input;
 	}
+	
+	
+	
 	public List<String> getColumns() {
 		return columns;
 	}

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.Gson;
 
 import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.InputParameterForgetPropertyValuesDiscretised;
@@ -242,7 +243,7 @@ public class SearchController {
 		}
 
 	}
-	
+
 	/**
 	 * Returns from a given concept the data properties and obejctproperties and
 	 * to each objecproperty a concept in the case the step range is greater 1
@@ -254,15 +255,21 @@ public class SearchController {
 	 * @return
 	 */
 	@CrossOrigin
-	@RequestMapping(value = "/executeSPARQLSelect", method = RequestMethod.GET)
+	@RequestMapping(value = "/executeSPARQLOptionalSelect", method = RequestMethod.GET)
 	HttpEntity<Object> executeSPARQLWithOptionalSelect(@RequestParam("inputAsJson") String inputAsJson) {
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+		if (inputAsJson == null){
+			String example = "inputAsJson: {\"uuid\":\"http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural\"}";
+			return new ResponseEntity<Object>(example, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		else{
 		try {
 			Gson gson = new Gson();
-			InputParamaterForExecuteSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
-					InputParamaterForExecuteSelect.class);
+			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
+					InputParamaterForExecuteOptionalSelect.class);
+			
 
-			outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+			outputForExecuteSelect = sparqlDerivation.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 
 			String result = "";
 			result = gson.toJson(outputForExecuteSelect);
@@ -271,7 +278,7 @@ public class SearchController {
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
+		}
 	}
 
 	private List<String> postprocessProperties(List<String> properies) {
