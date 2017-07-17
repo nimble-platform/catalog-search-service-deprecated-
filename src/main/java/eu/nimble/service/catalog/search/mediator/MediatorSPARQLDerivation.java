@@ -57,22 +57,33 @@ public class MediatorSPARQLDerivation {
 		String sparql = createSparql(inputParamaterForExecuteSelect);
 
 		Object ouObject = reader.query(sparql);
+		//This is necessary to get the uuid for each instance
+		inputParamaterForExecuteSelect.getParameters().add(0, "instance");
 		String[] params = new String[inputParamaterForExecuteSelect.getParameters().size()];
+		
 		inputParamaterForExecuteSelect.getParameters().toArray(params);
 		List<String[]> resultList = reader.createResultListArray(ouObject, params);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
+		
+		inputParamaterForExecuteSelect.getParameters().remove(0); //Must be removed the uuid is not part of the result
 		outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
-		addRowsToOutputForExecuteSelect(resultList, outputForExecuteSelect);
+		
+		//add uuid to result data structures
+		for (String[] row: resultList){
+			outputForExecuteSelect.getUuids().add(row[0]);
+		}
+		
+		addRowsToOutputForExecuteSelect(resultList, outputForExecuteSelect,1); //NO uuid should be inserted
 
 		return outputForExecuteSelect;
 	}
 
 	public void addRowsToOutputForExecuteSelect(List<String[]> resultList,
-			OutputForExecuteSelect outputForExecuteSelect) {
+			OutputForExecuteSelect outputForExecuteSelect, int startIndex) {
 		for (int i = 0; i < resultList.size(); i++) {
 			ArrayList<String> row = new ArrayList<String>();
-			for (int a = 0; a < resultList.get(i).length; a++) {
+			for (int a = startIndex; a < resultList.get(i).length; a++) {
 				String value = resultList.get(i)[a];
 				if (value != null && value.length() > 0) {
 					int index = -1;
@@ -97,7 +108,7 @@ public class MediatorSPARQLDerivation {
 			resolvedProperties.put(param, parameter);
 		}
 
-		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ";
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
 			sparql += " ?" + param;
 		}

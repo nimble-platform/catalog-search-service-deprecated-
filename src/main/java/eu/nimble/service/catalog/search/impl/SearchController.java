@@ -242,6 +242,37 @@ public class SearchController {
 		}
 
 	}
+	
+	/**
+	 * Returns from a given concept the data properties and obejctproperties and
+	 * to each objecproperty a concept in the case the step range is greater 1
+	 * 
+	 * @param concept
+	 * @param step
+	 *            range
+	 * @param
+	 * @return
+	 */
+	@CrossOrigin
+	@RequestMapping(value = "/executeSPARQLSelect", method = RequestMethod.GET)
+	HttpEntity<Object> executeSPARQLWithOptionalSelect(@RequestParam("inputAsJson") String inputAsJson) {
+		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+		try {
+			Gson gson = new Gson();
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
+					InputParamaterForExecuteSelect.class);
+
+			outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+
+			String result = "";
+			result = gson.toJson(outputForExecuteSelect);
+
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
 
 	private List<String> postprocessProperties(List<String> properies) {
 

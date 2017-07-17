@@ -7,6 +7,7 @@ public class OutputForExecuteSelect {
 
 	private InputParamaterForExecuteSelect input;
 	private List<String> columns = new ArrayList<String>();
+	private List<String> uuids = new ArrayList<String>();
 	private List<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
 	public InputParamaterForExecuteSelect getInput() {
 		return input;
@@ -28,7 +29,11 @@ public class OutputForExecuteSelect {
 	}
 	@Override
 	public String toString() {
-		return "OutputForExecuteSelect [input=" + input + ", columns=" + columns + ", rows=" + rows + "]";
+		return "OutputForExecuteSelect [input=" + input + ", columns=" + columns + ", uuids=" + uuids + ", rows=" + rows
+				+ "]";
+	}
+	public List<String> getUuids() {
+		return uuids;
 	}
 
 	

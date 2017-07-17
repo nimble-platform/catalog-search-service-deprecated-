@@ -88,6 +88,7 @@ public class TestInputParamters {
 		test.getParameters().add("size");
 		
 		Filter f1 = new Filter();
+		f1.setProperty("hasHeight");
 		f1.setMax(5.2f);
 		f1.setMin(3.0f);
 		
