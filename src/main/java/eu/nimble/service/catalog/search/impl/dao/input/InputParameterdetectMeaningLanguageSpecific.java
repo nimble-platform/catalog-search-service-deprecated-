@@ -1,4 +1,4 @@
-package eu.nimble.service.catalog.search.impl.dao;
+package eu.nimble.service.catalog.search.impl.dao.input;
 
 import eu.nimble.service.catalog.search.impl.enums.Language;
 

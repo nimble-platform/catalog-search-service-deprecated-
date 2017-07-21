@@ -1,7 +1,9 @@
-package eu.nimble.service.catalog.search.impl.dao;
+package eu.nimble.service.catalog.search.impl.dao.input;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import eu.nimble.service.catalog.search.impl.dao.Filter;
 
 public class InputParamaterForExecuteSelect {
 

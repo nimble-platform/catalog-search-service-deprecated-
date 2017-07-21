@@ -2,7 +2,7 @@ package eu.nimble.service.catalog.search.mediator;
 
 import com.google.gson.Gson;
 
-import eu.nimble.service.catalog.search.impl.dao.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
 import eu.nimble.service.catalog.search.mediator.datatypes.MediatorResult;
 
 public class MediatorEntryPoint {

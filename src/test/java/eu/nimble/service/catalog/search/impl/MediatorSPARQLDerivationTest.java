@@ -10,10 +10,10 @@ import org.junit.Test;
 
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
-import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptionalSelect;
-import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
-import eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 
 public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {

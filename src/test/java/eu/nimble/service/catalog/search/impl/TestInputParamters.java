@@ -14,13 +14,13 @@ import org.junit.Test;
 import com.google.gson.Gson;
 
 import eu.nimble.service.catalog.search.impl.dao.Filter;
-import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptionalSelect;
-import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
-import eu.nimble.service.catalog.search.impl.dao.InputParameter;
-import eu.nimble.service.catalog.search.impl.dao.InputParameterForgetPropertyValuesDiscretised;
-import eu.nimble.service.catalog.search.impl.dao.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.MeaningResult;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 
 public class TestInputParamters {
 
@@ -147,7 +147,7 @@ public class TestInputParamters {
 		f1.setMin(3.0f);
 		test.getFilters().add(f1);
 		
-		eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect output = new eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect();
+		eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect output = new eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect();
 		output.setInput(test);
 		output.getColumns().add("height");
 		output.getColumns().add("size");

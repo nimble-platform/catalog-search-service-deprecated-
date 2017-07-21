@@ -23,15 +23,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.Gson;
 
 import eu.nimble.service.catalog.search.impl.dao.Group;
-import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptionalSelect;
-import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
-import eu.nimble.service.catalog.search.impl.dao.InputParameter;
-import eu.nimble.service.catalog.search.impl.dao.InputParameterForgetPropertyValuesDiscretised;
-import eu.nimble.service.catalog.search.impl.dao.InputParameterdetectMeaningLanguageSpecific;
-import eu.nimble.service.catalog.search.impl.dao.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.MeaningResult;
-import eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 
