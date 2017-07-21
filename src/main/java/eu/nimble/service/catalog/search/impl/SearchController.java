@@ -27,6 +27,7 @@ import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptiona
 import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.InputParameterForgetPropertyValuesDiscretised;
+import eu.nimble.service.catalog.search.impl.dao.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.MeaningResult;
@@ -127,7 +128,46 @@ public class SearchController {
 		}
 
 	}
+	
+	@CrossOrigin
+	@RequestMapping(value = "/detectMeaningLanguageSpecific", method = RequestMethod.GET)
+	HttpEntity<Object> detectMeaningLanguageSpecific(@RequestParam("inputAsJson") String inputAsJson) {
+		try {
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: detectMeaningLanguageSpecific: " + inputAsJson );
+			Gson gson = new Gson();
+			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson.fromJson(inputAsJson,
+					InputParameterdetectMeaningLanguageSpecific.class);
+			List<String> concepts = sparqlDerivation.detectPossibleConcepts(inputParameterdetectMeaningLanguageSpecific);
+			MeaningResult meaningResult = new MeaningResult();
+			List<String> data = new ArrayList<String>();
 
+			meaningResult.setConceptOverview(data);
+			meaningResult.setSearchTyp("ExplorativeSearch");
+
+			for (String concept : concepts) {
+				int index = -1;
+				if (index == -1) {
+					index = concept.indexOf("#");
+				}
+				if (index == -1) {
+					index = concept.lastIndexOf("/");
+				}
+				index++;
+				String concept2 = concept.substring(index);
+				data.add(concept2);
+			}
+
+			Gson output = new Gson();
+			String result = "";
+			result = output.toJson(meaningResult);
+
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	
+}
 	/**
 	 * Returns from a given concept the data properties and obejctproperties and
 	 * to each objecproperty a concept in the case the step range is greater 1
@@ -142,6 +182,7 @@ public class SearchController {
 	@RequestMapping(value = "/getLogicalView", method = RequestMethod.GET)
 	HttpEntity<Object> getLogicalView(@RequestParam("inputAsJson") String inputAsJson) {
 		try {
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getLogicalView: " + inputAsJson );
 			Gson gson = new Gson();
 			InputParamterForGetLogicalView paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParamterForGetLogicalView.class);
@@ -198,6 +239,7 @@ public class SearchController {
 	@RequestMapping(value = "/getPropertyValuesDiscretised", method = RequestMethod.GET)
 	HttpEntity<Object> getPropertyValuesDiscretised(@RequestParam("inputAsJson") String inputAsJson) {
 		try {
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getPropertyValuesDiscretised: " + inputAsJson );
 			Gson gson = new Gson();
 			InputParameterForgetPropertyValuesDiscretised paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParameterForgetPropertyValuesDiscretised.class);
@@ -226,6 +268,7 @@ public class SearchController {
 	@CrossOrigin
 	@RequestMapping(value = "/executeSPARQLSelect", method = RequestMethod.GET)
 	HttpEntity<Object> executeSPARQLSelect(@RequestParam("inputAsJson") String inputAsJson) {
+		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLSelect: " + inputAsJson );
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		try {
 			Gson gson = new Gson();
@@ -257,6 +300,7 @@ public class SearchController {
 	@CrossOrigin
 	@RequestMapping(value = "/executeSPARQLOptionalSelect", method = RequestMethod.GET)
 	HttpEntity<Object> executeSPARQLWithOptionalSelect(@RequestParam("inputAsJson") String inputAsJson) {
+		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLWithOptionalSelect: " + inputAsJson );
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		if (inputAsJson == null){
 			String example = "inputAsJson: {\"uuid\":\"http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural\"}";

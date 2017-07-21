@@ -5,6 +5,18 @@ public class InputParamterForGetLogicalView {
 	private String concept ="";
 	private int stepRange = 0;
 	private String frozenConcept ="";
+	private String language ="";
+	@Override
+	public String toString() {
+		return "InputParamterForGetLogicalView [concept=" + concept + ", stepRange=" + stepRange + ", frozenConcept="
+				+ frozenConcept + ", language=" + language + "]";
+	}
+	public String getLanguage() {
+		return language;
+	}
+	public void setLanguage(String language) {
+		this.language = language;
+	}
 	public String getConcept() {
 		return concept;
 	}

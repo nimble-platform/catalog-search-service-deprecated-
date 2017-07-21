@@ -5,7 +5,7 @@
 
 	<groupId>eu.nimble.services</groupId>
 	<artifactId>catalog-search-service</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>Nimble Catalog Search Service</name>
 	<description>
         Search functionalities are provides by this service. It communicates with the Catalog Service, which stores products and user services persistently.

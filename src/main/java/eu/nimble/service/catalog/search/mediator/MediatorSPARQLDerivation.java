@@ -20,6 +20,7 @@ import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.OutputForExecuteSelect;
 
@@ -207,7 +208,14 @@ public class MediatorSPARQLDerivation {
 		}
 
 	}
-
+	
+	
+//InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific
+	public List<String> detectPossibleConcepts(InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific) {
+		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
+		return reader.getAllConcepts(inputParameterdetectMeaningLanguageSpecific.getKeyword());
+	}
+	
 	public List<String> detectPossibleConcepts(String regex) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		return reader.getAllConcepts(regex);
