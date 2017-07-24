@@ -22,16 +22,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.gson.Gson;
 
+import de.biba.triple.store.access.dmo.Entity;
+import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
-import eu.nimble.service.catalog.search.impl.dao.MeaningResult;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.MeaningResult;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 
@@ -48,6 +51,9 @@ public class SearchController {
 
 	@Value("${nimble.shared.property.marmottauri:null}")
 	private String marmottaUri;
+	
+	@Value("${nimble.shared.property.languagelabel:http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation}")
+	private String languageLabel;
 
 	private MediatorSPARQLDerivation sparqlDerivation = null;
 
@@ -72,6 +78,7 @@ public class SearchController {
 				sparqlDerivation = new MediatorSPARQLDerivation(marmottaUri, true);
 			}
 		}
+		sparqlDerivation.setLanguagelabel(languageLabel);
 	}
 
 	@RequestMapping(value = "/query", method = RequestMethod.GET)
@@ -100,7 +107,7 @@ public class SearchController {
 		try {
 			List<String> concepts = sparqlDerivation.detectPossibleConcepts(keyword);
 			MeaningResult meaningResult = new MeaningResult();
-			List<String> data = new ArrayList<String>();
+			List<Entity> data = new ArrayList<Entity>();
 
 			meaningResult.setConceptOverview(data);
 			meaningResult.setSearchTyp("ExplorativeSearch");
@@ -115,7 +122,14 @@ public class SearchController {
 				}
 				index++;
 				String concept2 = concept.substring(index);
-				data.add(concept2);
+				
+				Entity entity = new Entity();
+				entity.setLanguage(Language.UNKNOWN);
+				entity.setUrl(concept);
+				entity.setTranslatedURL(concept2);
+				data.add(entity);
+				
+				
 			}
 
 			Gson gson = new Gson();
@@ -137,26 +151,12 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson.fromJson(inputAsJson,
 					InputParameterdetectMeaningLanguageSpecific.class);
-			List<String> concepts = sparqlDerivation.detectPossibleConcepts(inputParameterdetectMeaningLanguageSpecific);
+			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific.getKeyword(), inputParameterdetectMeaningLanguageSpecific.getLanguage());
 			MeaningResult meaningResult = new MeaningResult();
-			List<String> data = new ArrayList<String>();
 
-			meaningResult.setConceptOverview(data);
+			meaningResult.setConceptOverview(concepts);
 			meaningResult.setSearchTyp("ExplorativeSearch");
-
-			for (String concept : concepts) {
-				int index = -1;
-				if (index == -1) {
-					index = concept.indexOf("#");
-				}
-				if (index == -1) {
-					index = concept.lastIndexOf("/");
-				}
-				index++;
-				String concept2 = concept.substring(index);
-				data.add(concept2);
-			}
-
+			
 			Gson output = new Gson();
 			String result = "";
 			result = output.toJson(meaningResult);

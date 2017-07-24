@@ -1,6 +1,6 @@
 package eu.nimble.service.catalog.search.impl.dao.output;
 
-public class outputdetectPossibleConcepts {
+public class OutputdetectPossibleConcepts {
 
 	private String conceptName ="";
 	private String conceptLabel ="";

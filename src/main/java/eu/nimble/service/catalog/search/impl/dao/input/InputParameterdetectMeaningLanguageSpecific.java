@@ -1,6 +1,6 @@
 package eu.nimble.service.catalog.search.impl.dao.input;
 
-import eu.nimble.service.catalog.search.impl.enums.Language;
+import de.biba.triple.store.access.enums.Language;
 
 public class InputParameterdetectMeaningLanguageSpecific {
 

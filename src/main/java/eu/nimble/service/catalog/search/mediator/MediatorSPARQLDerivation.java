@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 
 import de.biba.triple.store.access.IPropertyValuesCrawler;
 import de.biba.triple.store.access.IReader;
+import de.biba.triple.store.access.dmo.Entity;
+import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import de.biba.triple.store.access.jena.PropertyValuesCrawler;
 import de.biba.triple.store.access.jena.Reader;
@@ -23,12 +25,15 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteO
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
+import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 public class MediatorSPARQLDerivation {
 
 	public static final String FURNITURE2_OWL = "furniture2.owl";
 	private IReader reader = null;
 	private IPropertyValuesCrawler propertyValuesCrawler = null;
+	private String languagelabel = null;
 
 	public MediatorSPARQLDerivation() {
 		File f = new File(FURNITURE2_OWL);
@@ -48,6 +53,7 @@ public class MediatorSPARQLDerivation {
 		reader = new Reader();
 		reader.setModeToLocal();
 		reader.loadOntologyModel(pntologyFile);
+		reader.setLanguageLabel(languagelabel);
 
 		propertyValuesCrawler = new PropertyValuesCrawler();
 		propertyValuesCrawler.setModeToLocal();
@@ -95,35 +101,30 @@ public class MediatorSPARQLDerivation {
 	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
 			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect) {
 
-		// This  is/ necessary  to  get		the  uuid  for  each  instance
+		// This is/ necessary to get the uuid for each instance
 		Map<String, String> result = reader
 				.getPropertyValuesOfAIndividium(inputParamaterForExecuteOptionalSelect.getUuid());
 
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
-		
-		
 
 		ArrayList<String> row = new ArrayList<String>();
 		for (String key : result.keySet()) {
-			String column = key.substring( key.indexOf("#")+1);
+			String column = key.substring(key.indexOf("#") + 1);
 			outputForExecuteSelect.getColumns().add(column);
-	
-				String value = result.get(key);
-				if (value != null && value.length() > 0) {
-					int index = -1;
-					index = value.indexOf("^^");
-					if (index > -1) {
-						value = value.substring(0, index);
-					}
-				
+
+			String value = result.get(key);
+			if (value != null && value.length() > 0) {
+				int index = -1;
+				index = value.indexOf("^^");
+				if (index > -1) {
+					value = value.substring(0, index);
+				}
+
 				row.add(value);
 			}
-			
+
 		}
 
-		
-		
-		
 		outputForExecuteSelect.getRows().add(row);
 		return outputForExecuteSelect;
 	}
@@ -204,21 +205,99 @@ public class MediatorSPARQLDerivation {
 		} else {
 			reader = new MarmottaReader(uri);
 			propertyValuesCrawler = new MarmottaPropertyValuesCrawler(uri);
+			reader.setLanguageLabel(languagelabel);
 
 		}
 
 	}
-	
-	
-//InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific
-	public List<String> detectPossibleConcepts(InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific) {
+
+	// InputParameterdetectMeaningLanguageSpecific
+	// inputParameterdetectMeaningLanguageSpecific
+	public List<String> detectPossibleConcepts(
+			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		return reader.getAllConcepts(inputParameterdetectMeaningLanguageSpecific.getKeyword());
 	}
-	
+
+	/**
+	 * Translation Concept: Returns the translation if available as String.
+	 * Otherwise it delivers NA
+	 * 
+	 * @param uri
+	 * @param language
+	 * @param languagelabel
+	 *            The label in which the translations are codified. if no label
+	 *            property available, please set to null
+	 * @return Returns the translation if available as String. Otherwise it
+	 *         delivers uri
+	 */
+	public TranslationResult translateConcept(String uri, Language language, String languageLabel) {
+		return translateEntity(uri, language, languageLabel);
+
+	}
+
+	/**
+	 * Translation Property: Returns the translation if available as String.
+	 * Otherwise it delivers uri
+	 * 
+	 * @param uri
+	 * @param language
+	 * @param languagelabel
+	 *            The label in which the translations are codified. if no label
+	 *            property available, please set to null
+	 * @return Returns the translation if available as String. Otherwise it
+	 *         delivers NA
+	 */
+	public TranslationResult translateProperty(String uri, Language language, String languageLabel) {
+		return translateEntity(uri, language, languageLabel);
+	}
+
+	private TranslationResult translateEntity(String uri, Language language, String languageLabel) {
+		TranslationResult translationResult = new TranslationResult();
+		translationResult.setSuccess(false);
+		translationResult.setOriginal(uri);
+		String namespace = uri.substring(0, uri.indexOf("#"));
+		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>SELECT   ?subject ?object WHERE { <"
+				+ uri + "> <" + languageLabel + "> ?object.}";
+		Object result = reader.query(query);
+		List<String> translations = reader.createResultList(result, "object");
+		if (translations.size() > 0) {
+			String postfix = Language.toOntologyPostfix(language);
+			if (postfix != null) {
+				for (String lang : translations) {
+					if (lang.contains(postfix)) {
+
+						translationResult.setTranslation(lang.substring(0, lang.indexOf(postfix)));
+						translationResult.setSuccess(true);
+						return translationResult;
+					}
+				}
+			}
+		}
+		translationResult.setTranslation(uri.substring(uri.indexOf("#") + 1));
+		return translationResult;
+	}
+
 	public List<String> detectPossibleConcepts(String regex) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		return reader.getAllConcepts(regex);
+	}
+
+	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language) {
+		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
+		Logger.getAnonymousLogger().log(Level.INFO, "Language specific serach for:  " + language.toString());
+		List<de.biba.triple.store.access.enums.Language> langaues = reader.getNativeSupportedLangauges();
+		
+		List<Entity> concepts = null;
+		if (langaues.contains(language)) {
+			Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
+			concepts = reader.getAllConceptsLanguageSpecific(regex, language);
+		} else {
+			Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + language.UNKNOWN);
+			concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
+		}
+
+		return concepts;
 	}
 
 	public List<String> detectPossibleProperties(String regex) {
@@ -365,4 +444,16 @@ public class MediatorSPARQLDerivation {
 
 		return max;
 	}
+
+	public String getLanguagelabel() {
+		return languagelabel;
+	}
+
+	public void setLanguagelabel(String languagelabel) {
+		this.languagelabel = languagelabel;
+		if (reader != null) {
+			reader.setLanguageLabel(languagelabel);
+		}
+	}
+
 }
