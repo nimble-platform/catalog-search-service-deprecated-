@@ -169,7 +169,7 @@ public class SearchController {
 	
 }
 	/**
-	 * Returns from a given concept the data properties and obejctproperties and
+	 * Returns from a given concept (must be the unique url) the data properties and obejctproperties and
 	 * to each objecproperty a concept in the case the step range is greater 1
 	 * 
 	 * @param concept
@@ -197,7 +197,7 @@ public class SearchController {
 			for (int i = 0; i < paramterForGetLogicalView.getStepRange(); i++) {
 
 				for (LocalOntologyView concept : allAdressedConcepts) {
-					LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept.getConcept(), concept);
+					LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept.getConcept(), concept, Language.fromString(paramterForGetLogicalView.getLanguage()));
 					if (i == 0) {
 						referenceLocalViewRoot = view;
 

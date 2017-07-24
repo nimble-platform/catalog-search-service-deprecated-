@@ -306,7 +306,7 @@ public class MediatorSPARQLDerivation {
 		// return reader.getAllProperties(regex);
 	}
 
-	public LocalOntologyView getViewForOneStepRange(String concept, LocalOntologyView instance) {
+	public LocalOntologyView getViewForOneStepRange(String concept, LocalOntologyView instance, Language language) {
 		LocalOntologyView localOntologyView = null;
 
 		if (instance == null) {
@@ -321,15 +321,19 @@ public class MediatorSPARQLDerivation {
 		for (String proeprty : properties) {
 			PropertyType pType = reader.getPropertyType(proeprty);
 			if (pType == PropertyType.DATATYPEPROPERTY) {
-				proeprty = reduceUROJustToName(proeprty);
-				localOntologyView.addDataproperties(proeprty);
+				String translatedName = reduceURIJustToName(proeprty,language);
+				Entity entity = new Entity();
+				entity.setUrl(proeprty);
+				entity.setTranslatedURL(translatedName);
+				
+				localOntologyView.addDataproperties(entity);
 			} else {
 				// It is a object property which means I must return the name of
 				// the concept
 				List<String> ranges = reader.getRangeOfProperty(proeprty);
 				for (int i = 0; i < ranges.size(); i++) {
 					String range = ranges.get(i);
-					range = reduceUROJustToName(range);
+					range = reduceURIJustToName(range, language);
 					LocalOntologyView localOntologyView2 = new LocalOntologyView();
 					localOntologyView2.setConcept(range);
 					localOntologyView.getObjectproperties().put(range, localOntologyView2);
@@ -341,12 +345,18 @@ public class MediatorSPARQLDerivation {
 
 	}
 
-	private String reduceUROJustToName(String range) {
-		range = range.substring(range.indexOf("#") + 1);
-		return range;
+	private String reduceURIJustToName(String uri, Language language) {
+		TranslationResult range = translateConcept(uri, language, languagelabel);
+		//range = range.substring(range.indexOf("#") + 1);
+		return range.getTranslation();
 	}
 
 	private String getURIOfConcept(String concept) {
+		
+		if (concept.contains("#")){
+			return concept;
+		}
+		
 		List<String> allPossibleConcepts = reader.getAllConcepts(concept);
 		for (String conceptURI : allPossibleConcepts) {
 			String conceptURIShortened = conceptURI.substring(conceptURI.indexOf("#") + 1);

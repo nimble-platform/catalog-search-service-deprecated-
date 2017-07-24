@@ -42,7 +42,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 				C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		LocalOntologyView helper = new LocalOntologyView();
 		helper.setConcept("HighChair");
-		LocalOntologyView result = mediatorSPARQLDerivation.getViewForOneStepRange(helper.getConcept(), helper);
+		LocalOntologyView result = mediatorSPARQLDerivation.getViewForOneStepRange(helper.getConcept(), helper, Language.SPANISH);
 		assertTrue(result.getDataproperties().size() > 0);
 		System.out.println(result.getDataproperties());
 		System.out.println(result.getObjectproperties());

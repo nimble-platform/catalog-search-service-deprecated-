@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
+import de.biba.triple.store.access.dmo.Entity;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
@@ -49,8 +50,14 @@ public class TestInputParamters {
 	public void doLocalOntologyView() {
 		LocalOntologyView parameter = new LocalOntologyView();
 		parameter.setConcept("blupp");
-		List<String> pros = new ArrayList<>();
-		pros.add("price");
+		List<Entity> pros = new ArrayList<>();
+		
+		
+		Entity entity = new Entity();
+		entity.setUrl("http://blupp");
+		entity.setTranslatedURL("bla2");
+		
+		pros.add(entity);
 		parameter.setDataproperties(pros);
 		
 		Map<String,LocalOntologyView> map   = new HashMap<String,LocalOntologyView>();
@@ -59,13 +66,13 @@ public class TestInputParamters {
 		
 
 		Gson gson = new Gson();
-		System.out.println(gson.toJson(parameter));
+		System.out.println(URLEncoder.encode(gson.toJson(parameter)));
 	}
 	
 	@Test
 	public void doJson_InputParamterForGetLogicalView(){
 		InputParamterForGetLogicalView InputParamterForGetLogicalView = new InputParamterForGetLogicalView();
-		InputParamterForGetLogicalView.setConcept("ContactPerson");
+		InputParamterForGetLogicalView.setConcept(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#ContactPerson"));
 		InputParamterForGetLogicalView.setFrozenConcept("ddd");
 		InputParamterForGetLogicalView.setStepRange(2);
 		Gson gson = new Gson();
