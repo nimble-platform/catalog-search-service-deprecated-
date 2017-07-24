@@ -356,14 +356,14 @@ public class MediatorSPARQLDerivation {
 				List<String> ranges = reader.getRangeOfProperty(proeprty);
 				for (int i = 0; i < ranges.size(); i++) {
 					String range = ranges.get(i);
-					range = reduceURIJustToName(range, language);
+					String rangeReduced = reduceURIJustToName(range, language);
 					LocalOntologyView localOntologyView2 = new LocalOntologyView();
 					
 					
 					Entity conceptRange = new Entity();
-					conceptRange.setUrl(conceptAsUri);
-					String label = translateConcept(conceptAsUri, language, this.languagelabel).getTranslation();
-					conceptRange.setTranslatedURL(label);
+					conceptRange.setUrl(range);
+					String label = translateConcept(range, language, this.languagelabel).getTranslation();
+					conceptRange.setTranslatedURL(rangeReduced);
 					
 					
 					localOntologyView2.setConcept(conceptRange);
