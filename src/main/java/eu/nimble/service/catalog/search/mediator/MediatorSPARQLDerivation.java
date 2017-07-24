@@ -15,7 +15,6 @@ import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import de.biba.triple.store.access.jena.PropertyValuesCrawler;
 import de.biba.triple.store.access.jena.Reader;
-import de.biba.triple.store.access.jena.Search;
 import de.biba.triple.store.access.marmotta.MarmottaPropertyValuesCrawler;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
@@ -25,7 +24,6 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteO
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
-import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 public class MediatorSPARQLDerivation {
@@ -71,6 +69,13 @@ public class MediatorSPARQLDerivation {
 		String[] params = new String[inputParamaterForExecuteSelect.getParameters().size()];
 
 		inputParamaterForExecuteSelect.getParameters().toArray(params);
+		
+		for (int i =0; i < params.length; i++){
+			if (params[i].contains("#")){
+				params[i] = params[i].substring(params[i].indexOf("#")+1);
+			}
+		}
+		
 		List<String[]> resultList = reader.createResultListArray(ouObject, params);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
@@ -82,7 +87,7 @@ public class MediatorSPARQLDerivation {
 																	// part of
 																	// the
 																	// result
-		outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
+		createLanguageSpecificHeader(inputParamaterForExecuteSelect, outputForExecuteSelect);
 
 		// add uuid to result data structures
 		for (String[] row : resultList) {
@@ -98,6 +103,19 @@ public class MediatorSPARQLDerivation {
 		return outputForExecuteSelect;
 	}
 
+	public void createLanguageSpecificHeader(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
+			OutputForExecuteSelect outputForExecuteSelect) {
+		for (String prop: inputParamaterForExecuteSelect.getParameters()){
+			if (!prop.contains("#")){
+				prop = getURIOfProperty(prop);
+			}
+			
+			String label = translateConcept(prop, inputParamaterForExecuteSelect.getLanguage(), this.languagelabel).getTranslation();
+			outputForExecuteSelect.getColumns().add(label);
+		}
+		//outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
+	}
+
 	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
 			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect) {
 
@@ -109,7 +127,8 @@ public class MediatorSPARQLDerivation {
 
 		ArrayList<String> row = new ArrayList<String>();
 		for (String key : result.keySet()) {
-			String column = key.substring(key.indexOf("#") + 1);
+			Language language = inputParamaterForExecuteOptionalSelect.getLanguage();
+			String column = translateProperty(key, language, this.languagelabel).getTranslation();
 			outputForExecuteSelect.getColumns().add(column);
 
 			String value = result.get(key);
@@ -160,6 +179,10 @@ public class MediatorSPARQLDerivation {
 
 		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+			
+			if (param.contains("#")){
+				param = param.substring(param.indexOf("#")+1);
+			}
 			sparql += " ?" + param;
 		}
 
@@ -256,7 +279,7 @@ public class MediatorSPARQLDerivation {
 		TranslationResult translationResult = new TranslationResult();
 		translationResult.setSuccess(false);
 		translationResult.setOriginal(uri);
-		String namespace = uri.substring(0, uri.indexOf("#"));
+		//String namespace = uri.substring(0, uri.indexOf("#"));
 		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>SELECT   ?subject ?object WHERE { <"
 				+ uri + "> <" + languageLabel + "> ?object.}";
 		Object result = reader.query(query);
@@ -293,7 +316,7 @@ public class MediatorSPARQLDerivation {
 			Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
 			concepts = reader.getAllConceptsLanguageSpecific(regex, language);
 		} else {
-			Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + language.UNKNOWN);
+			Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + Language.UNKNOWN);
 			concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
 		}
 

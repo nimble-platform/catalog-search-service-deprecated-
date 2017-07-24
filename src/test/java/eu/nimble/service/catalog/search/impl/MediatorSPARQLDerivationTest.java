@@ -20,7 +20,7 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 
 public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 
-	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/ontology/FurnitureTaxonomy-v1.4-biba.owl";
+	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/ontology/FurnitureOntology-v1.5-biba_edited.owl";
 
 	@Test
 	@Ignore
@@ -80,10 +80,13 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		String concept = "HighChair";
 		String prop1 = "hasHeight";
 		String prop2 = "hasWidth";
+		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
+		this.setLanguagelabel(translationLabel);
 		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
 		inputParamaterForExecuteSelect.setConcept(concept);
 		inputParamaterForExecuteSelect.getParameters().add(prop1);
 		inputParamaterForExecuteSelect.getParameters().add(prop2);
+		inputParamaterForExecuteSelect.setLanguage("es");
 		OutputForExecuteSelect result = createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 		assertTrue(result.getColumns().size() > 0);
 		System.out.println(result);
@@ -92,12 +95,15 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 
 	//http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural
 	@Test
-	@Ignore
+	//@Ignore
 	public void testcreateOptionalSPARQLAndExecuteIT(){
 		initForSpecificOntology(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		String indi = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural";
 		
 		InputParamaterForExecuteOptionalSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteOptionalSelect();
+		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
+		this.setLanguagelabel(translationLabel);
+		inputParamaterForExecuteSelect.setLanguage("es");
 		inputParamaterForExecuteSelect.setUuid(indi);
 		OutputForExecuteSelect result = createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 		assertTrue(result.getColumns().size() > 0);
@@ -107,7 +113,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	
 	//<http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#ContactPerson>
 	@Test
-	//@Ignore
+	@Ignore
 	public void testgetLabelToConcept(){
 		initForSpecificOntology("C:/ontology/FurnitureOntology-v1.5-biba_edited.owl");
 		String indi = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural";
