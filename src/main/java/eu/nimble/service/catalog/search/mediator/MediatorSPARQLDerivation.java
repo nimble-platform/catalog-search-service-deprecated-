@@ -358,7 +358,15 @@ public class MediatorSPARQLDerivation {
 					String range = ranges.get(i);
 					range = reduceURIJustToName(range, language);
 					LocalOntologyView localOntologyView2 = new LocalOntologyView();
-					localOntologyView2.setConcept(range);
+					
+					
+					Entity conceptRange = new Entity();
+					conceptRange.setUrl(conceptAsUri);
+					String label = translateConcept(conceptAsUri, language, this.languagelabel).getTranslation();
+					conceptRange.setTranslatedURL(label);
+					
+					
+					localOntologyView2.setConcept(conceptRange);
 					localOntologyView.getObjectproperties().put(range, localOntologyView2);
 				}
 			}
@@ -374,7 +382,7 @@ public class MediatorSPARQLDerivation {
 		return range.getTranslation();
 	}
 
-	private String getURIOfConcept(String concept) {
+	protected String getURIOfConcept(String concept) {
 		
 		if (concept.contains("#")){
 			return concept;
@@ -391,7 +399,7 @@ public class MediatorSPARQLDerivation {
 		return concept;
 	}
 
-	private String getURIOfProperty(String property) {
+	protected String getURIOfProperty(String property) {
 		List<String> allPossibleProperties = reader.getAllProperties(property);
 		for (String propertyURI : allPossibleProperties) {
 			String propertyURIShortened = propertyURI.substring(propertyURI.indexOf("#") + 1);

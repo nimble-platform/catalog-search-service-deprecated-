@@ -1,5 +1,7 @@
 package eu.nimble.service.catalog.search.impl.dao.input;
 
+import de.biba.triple.store.access.enums.Language;
+
 public class InputParamterForGetLogicalView {
 
 	private String concept ="";
@@ -13,6 +15,10 @@ public class InputParamterForGetLogicalView {
 	}
 	public String getLanguage() {
 		return language;
+	}
+	
+	public Language getLanguageAsLanguage() {
+		return Language.fromString(language);
 	}
 	public void setLanguage(String language) {
 		this.language = language;

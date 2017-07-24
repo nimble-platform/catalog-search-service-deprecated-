@@ -9,13 +9,13 @@ import de.biba.triple.store.access.dmo.Entity;
 
 public class LocalOntologyView {
 
-	String concept;
+	Entity concept;
 	List<Entity> dataproperties = new ArrayList<Entity>();
 	Map<String, LocalOntologyView> objectproperties = new HashMap<String, LocalOntologyView>();
-	public String getConcept() {
+	public Entity getConcept() {
 		return concept;
 	}
-	public void setConcept(String concept) {
+	public void setConcept(Entity concept) {
 		this.concept = concept;
 	}
 	public List<Entity> getDataproperties() {
@@ -33,6 +33,11 @@ public class LocalOntologyView {
 	}
 	public void setObjectproperties(Map<String, LocalOntologyView> objectproperties) {
 		this.objectproperties = objectproperties;
+	}
+	@Override
+	public String toString() {
+		return "LocalOntologyView [concept=" + concept + ", dataproperties=" + dataproperties + ", objectproperties="
+				+ objectproperties + "]";
 	}
 	
 	

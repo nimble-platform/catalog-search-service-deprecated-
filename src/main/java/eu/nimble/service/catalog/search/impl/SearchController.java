@@ -187,17 +187,23 @@ public class SearchController {
 			InputParamterForGetLogicalView paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParamterForGetLogicalView.class);
 			LocalOntologyView ontologyView = new LocalOntologyView();
-			ontologyView.setConcept(paramterForGetLogicalView.getConcept());
+			
+			Entity concept = new Entity();
+			concept.setUrl(paramterForGetLogicalView.getConcept());
+			String label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(), paramterForGetLogicalView.getLanguageAsLanguage(), languageLabel).getTranslation();
+			concept.setTranslatedURL(label);
+			
+			ontologyView.setConcept(concept);
 			List<LocalOntologyView> allAdressedConcepts = new ArrayList<LocalOntologyView>();
 			List<LocalOntologyView> allAdressedConceptsHelper = new ArrayList<LocalOntologyView>();
 			LocalOntologyView referenceLocalViewRoot = null;
 			LocalOntologyView helper = new LocalOntologyView();
-			helper.setConcept(paramterForGetLogicalView.getConcept());
+			helper.setConcept(concept);
 			allAdressedConcepts.add(helper);
 			for (int i = 0; i < paramterForGetLogicalView.getStepRange(); i++) {
 
-				for (LocalOntologyView concept : allAdressedConcepts) {
-					LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept.getConcept(), concept, Language.fromString(paramterForGetLogicalView.getLanguage()));
+				for (LocalOntologyView concept2 : allAdressedConcepts) {
+					LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(), concept2, Language.fromString(paramterForGetLogicalView.getLanguage()));
 					if (i == 0) {
 						referenceLocalViewRoot = view;
 

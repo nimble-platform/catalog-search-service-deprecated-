@@ -49,7 +49,12 @@ public class TestInputParamters {
 	@Test
 	public void doLocalOntologyView() {
 		LocalOntologyView parameter = new LocalOntologyView();
-		parameter.setConcept("blupp");
+		Entity cocnept = new Entity();
+		cocnept.setUrl("http://blupp");
+		cocnept.setTranslatedURL("bla2");
+		
+		
+		parameter.setConcept(cocnept);
 		List<Entity> pros = new ArrayList<>();
 		
 		
