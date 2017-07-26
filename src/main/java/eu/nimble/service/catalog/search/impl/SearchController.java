@@ -33,6 +33,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPrope
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.MeaningResult;
+import eu.nimble.service.catalog.search.impl.dao.output.OutoutForGetSupportedLanguages;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
@@ -342,7 +343,9 @@ public class SearchController {
 
 			Gson output = new Gson();
 			String result = "";
-			result = output.toJson(languages);
+			OutoutForGetSupportedLanguages supportedLanguages = new OutoutForGetSupportedLanguages();
+			supportedLanguages.getLanguages().addAll(languages);
+			result = output.toJson(supportedLanguages);
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 		} catch (Exception e) {
