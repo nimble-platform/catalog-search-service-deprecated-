@@ -547,4 +547,14 @@ public class MediatorSPARQLDerivation {
 		}
 	}
 
+	public List<String> getSupportedLanguages(){
+		List<Language> languages = reader.getNativeSupportedLangauges();
+		List<String> result = new ArrayList<String>();
+		for (Language l : languages){
+			String label = Language.toOntologyPostfix(l).substring(1);
+			result.add(label);
+		}
+		return result;
+	}
+	
 }

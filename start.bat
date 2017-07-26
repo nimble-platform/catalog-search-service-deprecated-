@@ -1,1 +1,1 @@
-mvnDebug spring-boot:run -Dnimble.shared.property.ontologyfile=C:/ontology/FurnitureOntology-v1.5-biba_edited.owl
+mvnDebug spring-boot:run -Dnimble.shared.property.ontologyfile=C:/ontology/FurnitureOntology-v1.5-biba_editedV2.owl

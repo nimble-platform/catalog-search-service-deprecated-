@@ -51,7 +51,7 @@ public class SearchController {
 
 	@Value("${nimble.shared.property.marmottauri:null}")
 	private String marmottaUri;
-	
+
 	@Value("${nimble.shared.property.languagelabel:http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation}")
 	private String languageLabel;
 
@@ -122,14 +122,13 @@ public class SearchController {
 				}
 				index++;
 				String concept2 = concept.substring(index);
-				
+
 				Entity entity = new Entity();
 				entity.setLanguage(Language.UNKNOWN);
 				entity.setUrl(concept);
 				entity.setTranslatedURL(concept2);
 				data.add(entity);
-				
-				
+
 			}
 
 			Gson gson = new Gson();
@@ -142,21 +141,23 @@ public class SearchController {
 		}
 
 	}
-	
+
 	@CrossOrigin
 	@RequestMapping(value = "/detectMeaningLanguageSpecific", method = RequestMethod.GET)
 	HttpEntity<Object> detectMeaningLanguageSpecific(@RequestParam("inputAsJson") String inputAsJson) {
 		try {
-			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: detectMeaningLanguageSpecific: " + inputAsJson );
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: detectMeaningLanguageSpecific: " + inputAsJson);
 			Gson gson = new Gson();
-			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson.fromJson(inputAsJson,
-					InputParameterdetectMeaningLanguageSpecific.class);
-			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific.getKeyword(), inputParameterdetectMeaningLanguageSpecific.getLanguage());
+			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
+					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
+			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
+					inputParameterdetectMeaningLanguageSpecific.getKeyword(),
+					inputParameterdetectMeaningLanguageSpecific.getLanguage());
 			MeaningResult meaningResult = new MeaningResult();
 
 			meaningResult.setConceptOverview(concepts);
 			meaningResult.setSearchTyp("ExplorativeSearch");
-			
+
 			Gson output = new Gson();
 			String result = "";
 			result = output.toJson(meaningResult);
@@ -166,11 +167,12 @@ public class SearchController {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-	
-}
+	}
+
 	/**
-	 * Returns from a given concept (must be the unique url) the data properties and obejctproperties and
-	 * to each objecproperty a concept in the case the step range is greater 1
+	 * Returns from a given concept (must be the unique url) the data properties
+	 * and obejctproperties and to each objecproperty a concept in the case the
+	 * step range is greater 1
 	 * 
 	 * @param concept
 	 * @param step
@@ -182,17 +184,18 @@ public class SearchController {
 	@RequestMapping(value = "/getLogicalView", method = RequestMethod.GET)
 	HttpEntity<Object> getLogicalView(@RequestParam("inputAsJson") String inputAsJson) {
 		try {
-			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getLogicalView: " + inputAsJson );
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getLogicalView: " + inputAsJson);
 			Gson gson = new Gson();
 			InputParamterForGetLogicalView paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParamterForGetLogicalView.class);
 			LocalOntologyView ontologyView = new LocalOntologyView();
-			
+
 			Entity concept = new Entity();
 			concept.setUrl(paramterForGetLogicalView.getConcept());
-			String label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(), paramterForGetLogicalView.getLanguageAsLanguage(), languageLabel).getTranslation();
+			String label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(),
+					paramterForGetLogicalView.getLanguageAsLanguage(), languageLabel).getTranslation();
 			concept.setTranslatedURL(label);
-			
+
 			ontologyView.setConcept(concept);
 			List<LocalOntologyView> allAdressedConcepts = new ArrayList<LocalOntologyView>();
 			List<LocalOntologyView> allAdressedConceptsHelper = new ArrayList<LocalOntologyView>();
@@ -203,7 +206,8 @@ public class SearchController {
 			for (int i = 0; i < paramterForGetLogicalView.getStepRange(); i++) {
 
 				for (LocalOntologyView concept2 : allAdressedConcepts) {
-					LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(), concept2, Language.fromString(paramterForGetLogicalView.getLanguage()));
+					LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(),
+							concept2, Language.fromString(paramterForGetLogicalView.getLanguage()));
 					if (i == 0) {
 						referenceLocalViewRoot = view;
 
@@ -245,7 +249,7 @@ public class SearchController {
 	@RequestMapping(value = "/getPropertyValuesDiscretised", method = RequestMethod.GET)
 	HttpEntity<Object> getPropertyValuesDiscretised(@RequestParam("inputAsJson") String inputAsJson) {
 		try {
-			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getPropertyValuesDiscretised: " + inputAsJson );
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getPropertyValuesDiscretised: " + inputAsJson);
 			Gson gson = new Gson();
 			InputParameterForgetPropertyValuesDiscretised paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParameterForgetPropertyValuesDiscretised.class);
@@ -274,7 +278,7 @@ public class SearchController {
 	@CrossOrigin
 	@RequestMapping(value = "/executeSPARQLSelect", method = RequestMethod.GET)
 	HttpEntity<Object> executeSPARQLSelect(@RequestParam("inputAsJson") String inputAsJson) {
-		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLSelect: " + inputAsJson );
+		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLSelect: " + inputAsJson);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		try {
 			Gson gson = new Gson();
@@ -306,48 +310,44 @@ public class SearchController {
 	@CrossOrigin
 	@RequestMapping(value = "/executeSPARQLOptionalSelect", method = RequestMethod.GET)
 	HttpEntity<Object> executeSPARQLWithOptionalSelect(@RequestParam("inputAsJson") String inputAsJson) {
-		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLWithOptionalSelect: " + inputAsJson );
+		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLWithOptionalSelect: " + inputAsJson);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
-		if (inputAsJson == null){
+		if (inputAsJson == null) {
 			String example = "inputAsJson: {\"uuid\":\"http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural\"}";
 			return new ResponseEntity<Object>(example, HttpStatus.INTERNAL_SERVER_ERROR);
+		} else {
+			try {
+				Gson gson = new Gson();
+				InputParamaterForExecuteOptionalSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
+						InputParamaterForExecuteOptionalSelect.class);
+
+				outputForExecuteSelect = sparqlDerivation
+						.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+
+				String result = "";
+				result = gson.toJson(outputForExecuteSelect);
+
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+			} catch (Exception e) {
+				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		}
-		else{
+	}
+
+	@CrossOrigin
+	@RequestMapping(value = "/getSupportedLanguages", method = RequestMethod.GET)
+	public HttpEntity<Object> getSupportedLanguages() {
 		try {
-			Gson gson = new Gson();
-			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
-					InputParamaterForExecuteOptionalSelect.class);
-			
+			List<String> languages = sparqlDerivation.getSupportedLanguages();
 
-			outputForExecuteSelect = sparqlDerivation.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-
+			Gson output = new Gson();
 			String result = "";
-			result = gson.toJson(outputForExecuteSelect);
+			result = output.toJson(languages);
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		}
 	}
 
-	private List<String> postprocessProperties(List<String> properies) {
-
-		List<String> result = new ArrayList<String>();
-		for (String str : properies) {
-
-			int index = -1;
-			if (index == -1) {
-				index = str.indexOf("#");
-			}
-			if (index == -1) {
-				index = str.lastIndexOf("/");
-			}
-			index++;
-			String concept2 = str.substring(index);
-			result.add(concept2);
-		}
-		// TODO Auto-generated method stub
-		return result;
-	}
 }
