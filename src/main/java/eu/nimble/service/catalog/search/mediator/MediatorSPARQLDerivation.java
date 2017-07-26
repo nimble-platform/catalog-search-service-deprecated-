@@ -67,15 +67,15 @@ public class MediatorSPARQLDerivation {
 		// This is necessary to get the uuid for each instance
 		inputParamaterForExecuteSelect.getParameters().add(0, "instance");
 		String[] params = new String[inputParamaterForExecuteSelect.getParameters().size()];
-
 		inputParamaterForExecuteSelect.getParameters().toArray(params);
-		
-		for (int i =0; i < params.length; i++){
-			if (params[i].contains("#")){
-				params[i] = params[i].substring(params[i].indexOf("#")+1);
+		reduceEachParamToItsName(params);
+
+		for (int i = 0; i < params.length; i++) {
+			if (params[i].contains("#")) {
+				params[i] = params[i].substring(params[i].indexOf("#") + 1);
 			}
 		}
-		
+
 		List<String[]> resultList = reader.createResultListArray(ouObject, params);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
@@ -103,17 +103,33 @@ public class MediatorSPARQLDerivation {
 		return outputForExecuteSelect;
 	}
 
+	public void reduceEachParamToItsName(String[] params) {
+		for (int i =0; i < params.length; i++){
+			String param = params[i];
+			param = extractNameOfURL(param);
+			params[i] = param;
+		}
+	}
+
 	public void createLanguageSpecificHeader(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
 			OutputForExecuteSelect outputForExecuteSelect) {
-		for (String prop: inputParamaterForExecuteSelect.getParameters()){
-			if (!prop.contains("#")){
+		for (String prop : inputParamaterForExecuteSelect.getParameters()) {
+			if (!prop.contains("#")) {
 				prop = getURIOfProperty(prop);
 			}
-			
+			if (inputParamaterForExecuteSelect.getLanguage()!= null){
 			String label = translateConcept(prop, inputParamaterForExecuteSelect.getLanguage(), this.languagelabel).getTranslation();
 			outputForExecuteSelect.getColumns().add(label);
+			}
+			else{
+				Logger.getAnonymousLogger().log(Level.WARNING, "No language set for input: " + inputParamaterForExecuteSelect);
+				String label = extractNameOfURL(prop);
+				outputForExecuteSelect.getColumns().add(label);
+			}
+			
+				
 		}
-		//outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
+		// outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
 	}
 
 	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
@@ -167,6 +183,16 @@ public class MediatorSPARQLDerivation {
 		}
 	}
 
+	/**
+	 * The query creates a sparql select for the given concept and properties.
+	 * The method should work in two cases, if the name of the property or the
+	 * overall url is given.
+	 * 
+	 * @param inputParamaterForExecuteSelect
+	 *            includes the URL of cocnept and set of properties (name from
+	 *            the url or url)
+	 * @return working sparql query
+	 */
 	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 		// TODO Auto-generated method stub
 		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
@@ -174,15 +200,16 @@ public class MediatorSPARQLDerivation {
 		Map<String, String> resolvedProperties = new HashMap<String, String>();
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
 			String parameter = getURIOfProperty(param);
+
+			param = extractNameOfURL(param);
+
 			resolvedProperties.put(param, parameter);
 		}
 
 		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
-			
-			if (param.contains("#")){
-				param = param.substring(param.indexOf("#")+1);
-			}
+
+			param = extractNameOfURL(param);
 			sparql += " ?" + param;
 		}
 
@@ -197,12 +224,34 @@ public class MediatorSPARQLDerivation {
 		return sparql;
 	}
 
+	public String extractNameOfURL(String param) {
+		if (param.contains("#")) {
+			param = param.substring(param.indexOf("#") + 1);
+		}
+		return param;
+	}
+
+	/**
+	 * Generate a filter which is useable for decimal values
+	 * @param inputParamaterForExecuteSelect
+	 * @param resolvedProperties
+	 * @param sparql
+	 * @return
+	 */
 	private String addFilters(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
 			Map<String, String> resolvedProperties, String sparql) {
 		String filter = "";
 		for (Filter fil : inputParamaterForExecuteSelect.getFilters()) {
 			String filterText = "";
 			String shortName = fil.getProperty();
+			if (shortName == null) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Filter cannot be applied without property name: " + fil);
+				continue;
+			}
+
+			shortName = extractNameOfURL(shortName);
+
 			filterText += "FILTER ( xsd:decimal(?" + shortName + ") <  xsd:decimal(" + fil.getMax() + ")).";
 			filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + fil.getMin() + ")).";
 			filter += filterText;
@@ -214,9 +263,12 @@ public class MediatorSPARQLDerivation {
 	public String addProperties(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
 			Map<String, String> resolvedProperties, String sparql) {
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+			
+			param = extractNameOfURL(param);
+			
 			String property = resolvedProperties.get(param);
 
-			sparql += "?instance" + "<" + property + "> " + "?" + param + ".";
+			sparql += "?instance " + "<" + property + "> " + "?" + param + ".";
 		}
 		return sparql;
 	}
@@ -279,7 +331,7 @@ public class MediatorSPARQLDerivation {
 		TranslationResult translationResult = new TranslationResult();
 		translationResult.setSuccess(false);
 		translationResult.setOriginal(uri);
-		//String namespace = uri.substring(0, uri.indexOf("#"));
+		// String namespace = uri.substring(0, uri.indexOf("#"));
 		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>SELECT   ?subject ?object WHERE { <"
 				+ uri + "> <" + languageLabel + "> ?object.}";
 		Object result = reader.query(query);
@@ -310,7 +362,7 @@ public class MediatorSPARQLDerivation {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		Logger.getAnonymousLogger().log(Level.INFO, "Language specific serach for:  " + language.toString());
 		List<de.biba.triple.store.access.enums.Language> langaues = reader.getNativeSupportedLangauges();
-		
+
 		List<Entity> concepts = null;
 		if (langaues.contains(language)) {
 			Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
@@ -344,11 +396,11 @@ public class MediatorSPARQLDerivation {
 		for (String proeprty : properties) {
 			PropertyType pType = reader.getPropertyType(proeprty);
 			if (pType == PropertyType.DATATYPEPROPERTY) {
-				String translatedName = reduceURIJustToName(proeprty,language);
+				String translatedName = reduceURIJustToName(proeprty, language);
 				Entity entity = new Entity();
 				entity.setUrl(proeprty);
 				entity.setTranslatedURL(translatedName);
-				
+
 				localOntologyView.addDataproperties(entity);
 			} else {
 				// It is a object property which means I must return the name of
@@ -358,14 +410,12 @@ public class MediatorSPARQLDerivation {
 					String range = ranges.get(i);
 					String rangeReduced = reduceURIJustToName(range, language);
 					LocalOntologyView localOntologyView2 = new LocalOntologyView();
-					
-					
+
 					Entity conceptRange = new Entity();
 					conceptRange.setUrl(range);
 					String label = translateConcept(range, language, this.languagelabel).getTranslation();
 					conceptRange.setTranslatedURL(rangeReduced);
-					
-					
+
 					localOntologyView2.setConcept(conceptRange);
 					localOntologyView.getObjectproperties().put(range, localOntologyView2);
 				}
@@ -378,16 +428,16 @@ public class MediatorSPARQLDerivation {
 
 	private String reduceURIJustToName(String uri, Language language) {
 		TranslationResult range = translateConcept(uri, language, languagelabel);
-		//range = range.substring(range.indexOf("#") + 1);
+		// range = range.substring(range.indexOf("#") + 1);
 		return range.getTranslation();
 	}
 
 	protected String getURIOfConcept(String concept) {
-		
-		if (concept.contains("#")){
+
+		if (concept.contains("#")) {
 			return concept;
 		}
-		
+
 		List<String> allPossibleConcepts = reader.getAllConcepts(concept);
 		for (String conceptURI : allPossibleConcepts) {
 			String conceptURIShortened = conceptURI.substring(conceptURI.indexOf("#") + 1);

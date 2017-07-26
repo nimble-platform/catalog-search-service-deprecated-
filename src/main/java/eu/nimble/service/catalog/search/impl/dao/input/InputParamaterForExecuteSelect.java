@@ -12,31 +12,41 @@ public class InputParamaterForExecuteSelect {
 	String language;
 	List<String> parameters = new ArrayList<String>();
 	List<Filter> filters = new ArrayList<Filter>();
+
 	public String getConcept() {
 		return concept;
 	}
+
 	public void setConcept(String concept) {
 		this.concept = concept;
 	}
+
 	public List<String> getParameters() {
 		return parameters;
 	}
+
 	public void setParameters(List<String> parameters) {
 		this.parameters = parameters;
 	}
+
 	public List<Filter> getFilters() {
 		return filters;
 	}
+
 	public void setFilters(List<Filter> filters) {
 		this.filters = filters;
 	}
+
 	public Language getLanguage() {
-		return Language.fromString(language);
+		if (language != null) {
+			return Language.fromString(language);
+		} else {
+			return null;
+		}
 	}
+
 	public void setLanguage(String language) {
 		this.language = language;
 	}
-	
-	
-	
+
 }

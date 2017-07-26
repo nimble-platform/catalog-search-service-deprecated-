@@ -99,12 +99,13 @@ public class TestInputParamters {
 	@Test
 	public void doJson_InputParamaterForExecuteSelect(){
 		InputParamaterForExecuteSelect test = new InputParamaterForExecuteSelect();
-		test.setConcept("AirBed");
-		test.getParameters().add("hieght");
-		test.getParameters().add("size");
+		test.setConcept("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#AirBed");
+		test.getParameters().add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hieght");
+		test.getParameters().add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#size");
+		test.setLanguage("es");
 		
 		Filter f1 = new Filter();
-		f1.setProperty("hasHeight");
+		f1.setProperty("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasHeight");
 		f1.setMax(5.2f);
 		f1.setMin(3.0f);
 		
