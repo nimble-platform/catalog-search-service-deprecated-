@@ -95,7 +95,7 @@ public class SearchController {
 	}
 
 	@CrossOrigin
-	@RequestMapping(value = "/test", method = RequestMethod.GET)
+	@RequestMapping(value = "/test", method = RequestMethod.POST)
 	HttpEntity<Object> query() {
 		{
 			return new ResponseEntity<Object>("hallo, Back and Front", HttpStatus.OK);
@@ -180,7 +180,7 @@ public class SearchController {
 	 *            range
 	 * @param
 	 * @return
-	 */
+	 *
 	@CrossOrigin
 	@RequestMapping(value = "/getLogicalView", method = RequestMethod.GET)
 	HttpEntity<Object> getLogicalView(@RequestParam("inputAsJson") String inputAsJson) {
@@ -235,6 +235,114 @@ public class SearchController {
 		}
 
 	}
+	*/
+
+	@CrossOrigin
+	@RequestMapping(value = "/getLogicalView", method = RequestMethod.POST)
+	HttpEntity<Object> getLogicalView(@RequestParam("inputAsJson") String inputAsJson) {
+		try {
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getLogicalView: " + inputAsJson);
+			LocalOntologyView referenceLocalViewRoot = null;
+
+			Gson gson = new Gson();
+			InputParamterForGetLogicalView paramterForGetLogicalView = gson.fromJson(inputAsJson,
+					InputParamterForGetLogicalView.class);
+			LocalOntologyView ontologyView = new LocalOntologyView();
+
+			Entity concept = new Entity();
+			concept.setUrl(paramterForGetLogicalView.getConcept());
+			String label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(),
+					paramterForGetLogicalView.getLanguageAsLanguage(), languageLabel).getTranslation();
+			concept.setTranslatedURL(label);
+			concept.setLanguage(paramterForGetLogicalView.getLanguageAsLanguage());
+			
+			String forzenConcept = paramterForGetLogicalView.getFrozenConcept();
+			String oldJsonLogicalView = paramterForGetLogicalView.getOldJsonLogicalView();
+			if(oldJsonLogicalView != null && !oldJsonLogicalView.isEmpty())
+			{
+				referenceLocalViewRoot = gson.fromJson(oldJsonLogicalView, LocalOntologyView.class);
+			}
+			List<String> conceptURIPath = paramterForGetLogicalView.getConceptURIPath();
+
+			ontologyView.setConcept(concept);
+			// Key is a local ontology view, value is the parent ontology view of the local ontology view.
+			HashMap<LocalOntologyView, LocalOntologyView> allAdressedConcepts = new HashMap<LocalOntologyView, LocalOntologyView>();
+			HashMap<LocalOntologyView, LocalOntologyView> allAdressedConceptsHelper = new HashMap<LocalOntologyView, LocalOntologyView>();
+
+			
+			LocalOntologyView helper = null;
+			LocalOntologyView parentOfHelper = null;
+			// If the given old logical view json is not null, then the new search concept must be in the old logical view.
+			// Because, the search concept is from the old logical view, and search is only for extension of old logical view.
+			if(referenceLocalViewRoot != null)
+			{
+				if(!referenceLocalViewRoot.getConcept().getUrl().equals(conceptURIPath.get(0)))
+				{
+					throw new IllegalArgumentException( "The old logical view should start with "
+							+ "the same root as in the parent concept URI path!!" );
+				}
+				
+				helper = referenceLocalViewRoot.findLocalOntologyViewForConceptFromRoot(concept.getUrl(), conceptURIPath, referenceLocalViewRoot);
+				
+				if(helper == null)
+				{
+					throw new IllegalArgumentException( "The to be searched concept is not in the old logical view!!" );
+				}
+				
+				if(helper.hasParentConcept())
+				{
+					List<String> parentConeptURIPath = conceptURIPath.subList(0, conceptURIPath.size()-1);
+					String parentConceptURI = parentConeptURIPath.get(parentConeptURIPath.size()-1);
+					parentOfHelper = referenceLocalViewRoot.findLocalOntologyViewForConceptFromRoot(parentConceptURI, parentConeptURIPath, referenceLocalViewRoot);
+				}
+			}
+			else
+			{
+				helper = new LocalOntologyView();
+				helper.setConcept(concept);
+				helper.setFrozenConcept(forzenConcept);
+				helper.setDistanceToFrozenConcept(0);
+				
+				List<String> uriPath = new ArrayList<String>();
+				uriPath.add(concept.getUrl());
+				helper.setConceptURIPath(uriPath);
+			}
+			
+			allAdressedConcepts.put(helper, parentOfHelper);
+			for (int i = 0; i < paramterForGetLogicalView.getStepRange(); i++) {
+				for (LocalOntologyView concept2 : allAdressedConcepts.keySet()) {
+					LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(),
+							concept2, allAdressedConcepts.get(concept2), Language.fromString(paramterForGetLogicalView.getLanguage()));
+					if (i == 0) {
+						if(referenceLocalViewRoot == null)
+						{
+							referenceLocalViewRoot = view;
+						}
+
+					} else {
+
+					}
+
+					for (String key : view.getObjectproperties().keySet()) {
+						allAdressedConceptsHelper.put(view.getObjectproperties().get(key), view);
+					}
+
+				}
+				allAdressedConcepts.clear();
+				allAdressedConcepts.putAll(allAdressedConceptsHelper);
+				allAdressedConceptsHelper.clear();
+			}
+
+			String result = "";
+			result = gson.toJson(referenceLocalViewRoot);
+
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
+	
 
 	/**
 	 * Returns from a given concept the data properties and obejctproperties and

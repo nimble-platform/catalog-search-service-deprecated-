@@ -84,6 +84,19 @@ public class TestInputParamters {
 		System.out.println(gson.toJson(InputParamterForGetLogicalView));
 	}
 	
+	@Test
+	public void doJson_InputParamterForGetLogicalView2(){
+		InputParamterForGetLogicalView InputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		InputParamterForGetLogicalView.setConcept(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair"));
+		InputParamterForGetLogicalView.setFrozenConcept("HighChair");
+		InputParamterForGetLogicalView.setStepRange(1);
+		InputParamterForGetLogicalView.setLanguage("es");
+		InputParamterForGetLogicalView.setDistanceToFrozenConcept(0);
+		List<String> conceptPath = new ArrayList<String>();
+		conceptPath.add(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair"));
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(InputParamterForGetLogicalView));
+	}	
 	
 	//InputParameterForgetPropertyValuesDiscretised
 	@Test

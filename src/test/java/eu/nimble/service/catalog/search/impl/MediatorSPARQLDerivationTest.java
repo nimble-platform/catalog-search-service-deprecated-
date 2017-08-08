@@ -21,7 +21,7 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 
 public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 
-	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/ontology/FurnitureOntology-v1.5-biba_edited.owl";
+	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/development/nimble/catalog-search-service/FurnitureOntology-v1.5-biba_editedV2.owl";
 
 	@Test
 	@Ignore
@@ -51,7 +51,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		concept.setTranslatedURL(label);
 		
 		helper.setConcept(concept);
-		LocalOntologyView result = mediatorSPARQLDerivation.getViewForOneStepRange(helper.getConcept().getUrl(), helper, Language.SPANISH);
+		LocalOntologyView result = mediatorSPARQLDerivation.getViewForOneStepRange(helper.getConcept().getUrl(), helper, null, Language.SPANISH);
 		assertTrue(result.getDataproperties().size() > 0);
 		System.out.println(result.getDataproperties());
 		System.out.println(result.getObjectproperties());

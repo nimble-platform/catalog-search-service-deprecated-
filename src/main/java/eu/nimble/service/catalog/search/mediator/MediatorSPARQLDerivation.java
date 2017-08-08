@@ -381,6 +381,7 @@ public class MediatorSPARQLDerivation {
 		// return reader.getAllProperties(regex);
 	}
 
+	/*
 	public LocalOntologyView getViewForOneStepRange(String concept, LocalOntologyView instance, Language language) {
 		LocalOntologyView localOntologyView = null;
 
@@ -424,7 +425,64 @@ public class MediatorSPARQLDerivation {
 
 		return localOntologyView;
 
-	}
+	}*/
+	
+	public LocalOntologyView getViewForOneStepRange(String concept, LocalOntologyView instance, LocalOntologyView parentInstance, Language language) {
+		LocalOntologyView localOntologyView = null;
+
+		if (instance == null) {
+			localOntologyView = new LocalOntologyView();
+		} else {
+			localOntologyView = instance;
+		}
+
+		String conceptAsUri = getURIOfConcept(concept);
+		Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " + conceptAsUri);
+		List<String> properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
+		for (String proeprty : properties) {
+			PropertyType pType = reader.getPropertyType(proeprty);
+			if (pType == PropertyType.DATATYPEPROPERTY) {
+				String translatedName = reduceURIJustToName(proeprty, language);
+				Entity entity = new Entity();
+				entity.setUrl(proeprty);
+				entity.setTranslatedURL(translatedName);
+
+				localOntologyView.addDataproperties(entity);
+			} else {
+				// It is a object property which means I must return the name of
+				// the concept
+				List<String> ranges = reader.getRangeOfProperty(proeprty);
+				for (int i = 0; i < ranges.size(); i++) {
+					String range = ranges.get(i);
+					String rangeReduced = reduceURIJustToName(range, language);
+					LocalOntologyView localOntologyView2 = new LocalOntologyView();
+
+					Entity conceptRange = new Entity();
+					conceptRange.setUrl(range);
+					String label = translateConcept(range, language, this.languagelabel).getTranslation();
+					conceptRange.setTranslatedURL(rangeReduced);
+					//conceptRan
+			
+					localOntologyView2.setConcept(conceptRange);
+					localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
+					localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept()+1);
+					List<String> newPaht = new ArrayList<String>(localOntologyView.getParentConceptURIPath());
+					newPaht.add(range);
+					localOntologyView2.setConceptURIPath(newPaht);
+					localOntologyView.getObjectproperties().put(range, localOntologyView2);
+				}
+			}
+		}
+		
+		// Hidden the parent concepts as well as the other elements of the parent concepts when the distance to frozen concept is larger than 1
+		if(!properties.isEmpty() && localOntologyView.getDistanceToFrozenConcept() > 1 && parentInstance != null)
+		{
+			localOntologyView.hiddenElementsOfParentView(parentInstance);
+		}
+
+		return localOntologyView;
+
+	}	
 
 	private String reduceURIJustToName(String uri, Language language) {
 		TranslationResult range = translateConcept(uri, language, languagelabel);

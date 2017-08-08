@@ -1,0 +1,1 @@
+mvn spring-boot:run -Dnimble.shared.property.ontologyfile=C:/development/nimble/catalog-search-service/FurnitureOntology-v1.5-biba_editedV2.owl
