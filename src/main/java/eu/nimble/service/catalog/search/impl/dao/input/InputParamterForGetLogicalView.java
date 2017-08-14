@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.biba.triple.store.access.enums.Language;
+import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 
 public class InputParamterForGetLogicalView {
 
@@ -13,7 +14,7 @@ public class InputParamterForGetLogicalView {
 	
 	private String frozenConcept ="";
 	private int distanceToFrozenConcept = 0;
-	private String oldJsonLogicalView = "";
+	private LocalOntologyView oldJsonLogicalView = null;
 	
 	// Path to the current concept from the frozen concept
 	private List<String> conceptURIPath = new ArrayList<String>();
@@ -21,7 +22,7 @@ public class InputParamterForGetLogicalView {
 	@Override
 	public String toString() {
 		return "InputParamterForGetLogicalView [concept=" + concept + ", stepRange=" + stepRange + ", language=" + language + ", frozenConcept="
-				+ frozenConcept +  ", distanceToFrozenConcept=" + distanceToFrozenConcept + ", oldJsonLogicalView=" + oldJsonLogicalView + "]";
+				+ frozenConcept +  ", distanceToFrozenConcept=" + distanceToFrozenConcept + "]";
 	}
 	
 	public String getLanguage() {
@@ -58,10 +59,10 @@ public class InputParamterForGetLogicalView {
 	public void setDistanceToFrozenConcept(int distanceToFrozenConcept) {
 		this.distanceToFrozenConcept = distanceToFrozenConcept;
 	}
-	public String getOldJsonLogicalView() {
+	public LocalOntologyView getOldJsonLogicalView() {
 		return oldJsonLogicalView;
 	}
-	public void setOldJsonLogicalView(String oldJsonLogicalView) {
+	public void setOldJsonLogicalView(LocalOntologyView oldJsonLogicalView) {
 		this.oldJsonLogicalView = oldJsonLogicalView;
 	}
 

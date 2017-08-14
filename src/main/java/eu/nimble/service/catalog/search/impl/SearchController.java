@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -239,14 +240,13 @@ public class SearchController {
 
 	@CrossOrigin
 	@RequestMapping(value = "/getLogicalView", method = RequestMethod.POST)
-	HttpEntity<Object> getLogicalView(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> getLogicalView(@RequestBody InputParamterForGetLogicalView paramterForGetLogicalView) {
 		try {
-			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getLogicalView: " + inputAsJson);
+			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getLogicalView:.");
 			LocalOntologyView referenceLocalViewRoot = null;
 
 			Gson gson = new Gson();
-			InputParamterForGetLogicalView paramterForGetLogicalView = gson.fromJson(inputAsJson,
-					InputParamterForGetLogicalView.class);
+
 			LocalOntologyView ontologyView = new LocalOntologyView();
 
 			Entity concept = new Entity();
@@ -257,11 +257,8 @@ public class SearchController {
 			concept.setLanguage(paramterForGetLogicalView.getLanguageAsLanguage());
 			
 			String forzenConcept = paramterForGetLogicalView.getFrozenConcept();
-			String oldJsonLogicalView = paramterForGetLogicalView.getOldJsonLogicalView();
-			if(oldJsonLogicalView != null && !oldJsonLogicalView.isEmpty())
-			{
-				referenceLocalViewRoot = gson.fromJson(oldJsonLogicalView, LocalOntologyView.class);
-			}
+	
+			referenceLocalViewRoot = paramterForGetLogicalView.getOldJsonLogicalView();
 			List<String> conceptURIPath = paramterForGetLogicalView.getConceptURIPath();
 
 			ontologyView.setConcept(concept);
