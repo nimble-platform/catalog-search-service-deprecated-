@@ -2,8 +2,12 @@ package eu.nimble.service.catalog.search.impl.dao;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.google.gson.Gson;
 
 import de.biba.triple.store.access.dmo.Entity;
 
@@ -11,6 +15,7 @@ public class LocalOntologyView {
 
 	Entity concept;
 	List<Entity> dataproperties = new ArrayList<Entity>();
+	// key is URI of the object property, value is LocalOntologyView
 	Map<String, LocalOntologyView> objectproperties = new HashMap<String, LocalOntologyView>();
 	
 	private String frozenConcept ="";
@@ -18,6 +23,9 @@ public class LocalOntologyView {
 	
 	// Path to the current concept from the frozen concept
 	private List<String> conceptURIPath = new ArrayList<String>();
+	
+	// Flag to indict whether its diret parent is hidden
+	private boolean hasHiddenDirectParent = false;
 	
 	public Entity getConcept() {
 		return concept;
@@ -112,6 +120,93 @@ public class LocalOntologyView {
 	}
 	
 	/**
+	 * Delete all child invisible local ontology views from the the current local ontology view.
+	 * When there is visible local ontology view within invisible local ontology view, only the visible ontology view will be kept.
+	 * 
+	 * e.g. Given Ontology View "HighChair(not hidden)-->Manufacture (hidden) --> Legislation (not hidden)
+	 *      Return: "HighChair(not hidden) --> Legislation (not hidden)
+	 *      
+	 * @return local ontology view for the displaying of the circle structure in the explorative search
+	 */
+	public LocalOntologyView getVisibleLocalOntologyViewStructure()
+	{
+		Gson gson = new Gson();
+		String jsonStr = gson.toJson(this);
+		LocalOntologyView deepcopy = gson.fromJson(jsonStr, LocalOntologyView.class);
+		
+		return deepcopy.convertToVisibleLocalOntologyViewStructure();
+	}
+
+	
+	/**
+	 * Delete all child invisible local ontology views from the the current local ontology view.
+	 * When there is visible local ontology view within invisible local ontology view, only the visible ontology view will be kept.
+	 * 
+	 * e.g. Given Ontology View "HighChair(not hidden)-->Manufacture (hidden) --> Legislation (not hidden)
+	 *      Return: "HighChair(not hidden) --> Legislation (not hidden)
+	 *      
+	 * WARNING：   This method will make update on the current LocalOntologyView. 
+	 * If the update is not expected, please make a deep copy of the current LocalOntologyView, and then use the deep copy to call the method.
+	 *      
+	 * @return local ontology view for the displaying of the circle structure in the explorative search
+	 */
+	private LocalOntologyView convertToVisibleLocalOntologyViewStructure()
+	{
+		LocalOntologyView viewStructcture = null;
+		
+		if(this.concept.isHidden())
+		{
+			viewStructcture = this.findVisibleChildLocalOntologyView();
+		}
+		else
+		{
+			viewStructcture = this;
+			Set<String> oldObjProps = new HashSet<String>();
+			oldObjProps.addAll(this.getObjectproperties().keySet());
+			for(String objProp : oldObjProps)
+			{
+				LocalOntologyView temp = this.getObjectproperties().get(objProp);
+				LocalOntologyView tempVisible = temp.convertToVisibleLocalOntologyViewStructure();
+				
+				viewStructcture.getObjectproperties().remove(objProp);
+				if(tempVisible!= null)
+				{
+					viewStructcture.getObjectproperties().put(tempVisible.getConcept().getUrl(), tempVisible);
+				}
+			}
+		}
+		
+		return viewStructcture;
+	}
+	
+	/**
+	 * Find the single visible child local ontology view from the current hidden local ontology view.
+	 * At the moment, under a invisible local ontology view e.g. Manufactuer, only one child local ontology view is visible e.g. Legislation.
+	 * 
+	 * @return visible child local ontology view 
+	 */
+	public LocalOntologyView findVisibleChildLocalOntologyView()
+	{
+		if (!this.concept.isHidden())
+		{
+			return this;
+		}
+		else
+		{
+			for(LocalOntologyView localView : this.getObjectproperties().values())
+			{
+				LocalOntologyView temp = localView.findVisibleChildLocalOntologyView();
+				if(temp != null)
+				{
+					return temp;
+				}
+			}	
+		}
+			 	
+		return null;
+	}
+	
+	/**
 	 * Hidden all elements of parent ontology view except the current concept.
 	 * @param parentLocalView
 	 */
@@ -130,6 +225,7 @@ public class LocalOntologyView {
 		}
 		
 		this.concept.setHidden(false);
+		this.setHasHiddenDirectParent(true);
 	}
 	
 	/**
@@ -166,7 +262,7 @@ public class LocalOntologyView {
 	 * @param conceptURI
 	 * @return URI of the parent concept; empty string, when it is not found.
 	 */
-	public String getConceptURI(String conceptURI)
+	public String getParentConceptURI(String conceptURI)
 	{	
 		int pos = this.conceptURIPath.indexOf(conceptURI);
 		
@@ -201,6 +297,12 @@ public class LocalOntologyView {
 	public String toString() {
 		return "LocalOntologyView [concept=" + concept + ", dataproperties=" + dataproperties + ", objectproperties="
 				+ objectproperties + ", frozenConcept="	+ frozenConcept +  ", distanceToFrozenConcept=" + distanceToFrozenConcept +  "]";
+	}
+	public boolean isHasHiddenDirectParent() {
+		return hasHiddenDirectParent;
+	}
+	public void setHasHiddenDirectParent(boolean hasHiddenDirectParent) {
+		this.hasHiddenDirectParent = hasHiddenDirectParent;
 	}
 
 

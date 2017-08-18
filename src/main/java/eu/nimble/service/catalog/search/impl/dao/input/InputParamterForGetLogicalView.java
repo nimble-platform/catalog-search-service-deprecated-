@@ -19,6 +19,9 @@ public class InputParamterForGetLogicalView {
 	// Path to the current concept from the frozen concept
 	private List<String> conceptURIPath = new ArrayList<String>();
 	
+	// List of paths to the selected properties
+	private List<ArrayList<String>> currentSelections = new ArrayList<ArrayList<String>>();
+
 	@Override
 	public String toString() {
 		return "InputParamterForGetLogicalView [concept=" + concept + ", stepRange=" + stepRange + ", language=" + language + ", frozenConcept="
@@ -64,6 +67,13 @@ public class InputParamterForGetLogicalView {
 	}
 	public void setOldJsonLogicalView(LocalOntologyView oldJsonLogicalView) {
 		this.oldJsonLogicalView = oldJsonLogicalView;
+	}
+	
+	public List<ArrayList<String>> getCurrentSelections() {
+		return currentSelections;
+	}
+	public void setCurrentSelections(List<ArrayList<String>> currentSelections) {
+		this.currentSelections = currentSelections;
 	}
 
 	

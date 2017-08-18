@@ -36,6 +36,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogica
 import eu.nimble.service.catalog.search.impl.dao.output.MeaningResult;
 import eu.nimble.service.catalog.search.impl.dao.output.OutoutForGetSupportedLanguages;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
@@ -330,15 +331,22 @@ public class SearchController {
 				allAdressedConceptsHelper.clear();
 			}
 
-			String result = "";
-			result = gson.toJson(referenceLocalViewRoot);
-
+			// Building output json
+			OutputForGetLogicalView outputStructure = new OutputForGetLogicalView();
+			outputStructure.setCompleteStructure(referenceLocalViewRoot);
+			LocalOntologyView structureForView = referenceLocalViewRoot.getVisibleLocalOntologyViewStructure();
+			outputStructure.setViewStructure(structureForView);
+			outputStructure.setCurrentSelections(paramterForGetLogicalView.getCurrentSelections());
+			
+			String result = gson.toJson(outputStructure);
+			
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}
+	
 	
 
 	/**
