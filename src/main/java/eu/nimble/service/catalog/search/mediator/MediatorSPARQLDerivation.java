@@ -466,7 +466,7 @@ public class MediatorSPARQLDerivation {
 					localOntologyView2.setConcept(conceptRange);
 					localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
 					localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept()+1);
-					List<String> newPaht = new ArrayList<String>(localOntologyView.getParentConceptURIPath());
+					List<String> newPaht = new ArrayList<String>(localOntologyView.getConceptURIPath());
 					newPaht.add(range);
 					localOntologyView2.setConceptURIPath(newPaht);
 					localOntologyView.getObjectproperties().put(range, localOntologyView2);

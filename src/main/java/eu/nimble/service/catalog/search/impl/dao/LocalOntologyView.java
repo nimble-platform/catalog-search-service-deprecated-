@@ -142,8 +142,30 @@ public class LocalOntologyView {
 	 * Delete all child invisible local ontology views from the the current local ontology view.
 	 * When there is visible local ontology view within invisible local ontology view, only the visible ontology view will be kept.
 	 * 
-	 * e.g. Given Ontology View "HighChair(not hidden)-->Manufacture (hidden) --> Legislation (not hidden)
-	 *      Return: "HighChair(not hidden) --> Legislation (not hidden)
+	 * Avoid duplicate names that uers cannot distinct between them:   
+	 * 
+	 * Example 0. Given Ontology View "HighChair(not hidden) --> Legislation (not hidden)
+	 *            Return: "HighChair(not hidden) --> Legislation (not hidden)
+	 * 
+	 * Example 1. Given Ontology View "HighChair(not hidden)-->Manufacture (hidden) --> Legislation (not hidden)
+	 *            Return: "HighChair(not hidden) --> Manufacture/Legislation (not hidden)
+	 *            Rather than Return: "HighChair(not hidden) --> Legislation (not hidden)
+	 *            Because otherwise the user cannot know where the Legislations come from in the example 2.
+	 *            
+	 * Example 2. Given Ontology View "HighChair(not hidden)-->Manufacture (hidden) --> Legislation (not hidden)"
+	 *                                "HighChair(not hidden)-->Material (hidden) --> Legislation (not hidden)"
+	 *      Return: "HighChair(not hidden) --> Manufacture/Legislation (not hidden)   
+	 *     		    "HighChair(not hidden) --> Material/Legislation (not hidden)   
+	 *      Rather than:  
+	 *       		"HighChair(not hidden) --> Legislation (not hidden)   
+	 *     		    "HighChair(not hidden) --> Material/Legislation (not hidden)      
+	 *        
+	 * Example 3. Given Ontology View "HighChair(not hidden) --> Legislation (not hidden)"
+	 * 							"HighChair(not hidden)-->Manufacture (hidden) --> Legislation (not hidden)"
+	 *                          "HighChair(not hidden)-->Material (hidden) --> Legislation (not hidden)"
+	 *      Return: "HighChair(not hidden) --> Legislation (not hidden)   
+	 *      		"HighChair(not hidden) --> Manufacture/Legislation (not hidden)   
+	 *     		    "HighChair(not hidden) --> Material/Legislation (not hidden)   
 	 *      
 	 * WARNING：   This method will make update on the current LocalOntologyView. 
 	 * If the update is not expected, please make a deep copy of the current LocalOntologyView, and then use the deep copy to call the method.
@@ -171,12 +193,61 @@ public class LocalOntologyView {
 				viewStructcture.getObjectproperties().remove(objProp);
 				if(tempVisible!= null)
 				{
-					viewStructcture.getObjectproperties().put(tempVisible.getConcept().getUrl(), tempVisible);
+					String visibleObjPropName = tempVisible.getConcept().getUrl();
+					
+					if(visibleObjPropName.equals(objProp))
+					{
+						viewStructcture.getObjectproperties().put(tempVisible.getConcept().getUrl(), tempVisible);
+					}
+					else
+					{
+						// Get new name for the visible LocalOntologyView with some path information for the purpose of distinction
+						String newVisibleObjPropName = getConceptNameWithPath(tempVisible);
+						viewStructcture.getObjectproperties().put(newVisibleObjPropName, tempVisible);
+					}	
 				}
 			}
 		}
 		
 		return viewStructcture;
+	}
+	
+	/**
+	 * It is only used by the method "convertToVisibleLocalOntologyViewStructure", 
+	 * to get the name for visible LocalOntologyView that has some invisible parent node
+	 * 
+	 * e.g. In case of "HighChair(not hidden)-->Material (hidden) --> Legislation (not hidden)"
+	 *   The return name for "Legislation" is "Material/Legislation". 
+	 *   The name include name of all parent nodes except the root node, because the root node shows always in the circle.
+	 * 
+	 * @param view visible LocalOntologyView
+	 * @return new name of the visible LocalOntologyView with some path information for the purpose of distinction
+	 */
+	private static String getConceptNameWithPath(LocalOntologyView view)
+	{
+		String name = "";
+		
+		List<String> pathWithoutRoot = new ArrayList<String>();
+		
+		pathWithoutRoot.addAll(view.getConceptURIPath());
+		String rootElementURI = pathWithoutRoot.get(0);
+	
+		String namespace = rootElementURI.substring(0, rootElementURI.indexOf("#"));
+		// the first element is always the root, and is not necessary to be shown in the path
+		pathWithoutRoot.remove(0);
+		
+		for(String el:pathWithoutRoot)
+		{
+			name = name + el.substring(el.indexOf("#") + 1) + "/";
+		}
+		if(name.endsWith("/"))
+		{
+			name = name.substring(0, name.length() - 1);
+		}
+		
+		name = namespace + "#" + name;
+		
+		return name;
 	}
 	
 	/**
@@ -225,6 +296,8 @@ public class LocalOntologyView {
 		}
 		
 		this.concept.setHidden(false);
+		// todo....
+		this.concept.setTranslatedURL(parentLocalView.getConcept().getTranslatedURL()+ "/" +this.concept.getTranslatedURL());
 		this.setHasHiddenDirectParent(true);
 	}
 	
@@ -276,12 +349,12 @@ public class LocalOntologyView {
 		}
 	}
 
-	public List<String> getParentConceptURIPath() {
+	public List<String> getConceptURIPath() {
 		return conceptURIPath;
 	}
 
-	public void setConceptURIPath(List<String> parentConceptURIPath) {
-		this.conceptURIPath = parentConceptURIPath;
+	public void setConceptURIPath(List<String> conceptURIPath) {
+		this.conceptURIPath = conceptURIPath;
 	}
 	
 	/**
