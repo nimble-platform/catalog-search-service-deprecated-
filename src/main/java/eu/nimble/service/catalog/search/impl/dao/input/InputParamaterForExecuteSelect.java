@@ -11,6 +11,7 @@ public class InputParamaterForExecuteSelect {
 	String concept;
 	String language;
 	List<String> parameters = new ArrayList<String>();
+	List<Parameter> parametersIncludingPath = new ArrayList<Parameter>();
 	List<Filter> filters = new ArrayList<Filter>();
 
 	public String getConcept() {
@@ -47,6 +48,14 @@ public class InputParamaterForExecuteSelect {
 
 	public void setLanguage(String language) {
 		this.language = language;
+	}
+
+	public List<Parameter> getParametersIncludingPath() {
+		return parametersIncludingPath;
+	}
+
+	public void setParametersIncludingPath(List<Parameter> parametersIncludingPath) {
+		this.parametersIncludingPath = parametersIncludingPath;
 	}
 
 }
