@@ -73,6 +73,7 @@ public class SearchController {
 					Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
 					sparqlDerivation = new MediatorSPARQLDerivation(ontologyFile);
 				} else {
+					Logger.getAnonymousLogger().log(Level.WARNING, " CANNOT load defined ontology file: " + ontologyFile);
 					Logger.getAnonymousLogger().log(Level.INFO,
 							"Load STANDARD ontology file: " + MediatorSPARQLDerivation.FURNITURE2_OWL);
 					sparqlDerivation = new MediatorSPARQLDerivation();

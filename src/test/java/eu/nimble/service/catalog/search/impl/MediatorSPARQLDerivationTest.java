@@ -83,7 +83,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	}
 	
 	@Test
-	//@Ignore
+	@Ignore
 	public void testcreateSPARQLAndExecuteIT(){
 		initForSpecificOntology(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		String concept = "HighChair";
@@ -104,7 +104,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 
 	//http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural
 	@Test
-	//@Ignore
+	@Ignore
 	public void testcreateOptionalSPARQLAndExecuteIT(){
 		initForSpecificOntology(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		String indi = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural";

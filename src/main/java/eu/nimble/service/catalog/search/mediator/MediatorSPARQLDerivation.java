@@ -2,6 +2,7 @@ package eu.nimble.service.catalog.search.mediator;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +105,7 @@ public class MediatorSPARQLDerivation {
 	}
 
 	public void reduceEachParamToItsName(String[] params) {
-		for (int i =0; i < params.length; i++){
+		for (int i = 0; i < params.length; i++) {
 			String param = params[i];
 			param = extractNameOfURL(param);
 			params[i] = param;
@@ -117,17 +118,17 @@ public class MediatorSPARQLDerivation {
 			if (!prop.contains("#")) {
 				prop = getURIOfProperty(prop);
 			}
-			if (inputParamaterForExecuteSelect.getLanguage()!= null){
-			String label = translateConcept(prop, inputParamaterForExecuteSelect.getLanguage(), this.languagelabel).getTranslation();
-			outputForExecuteSelect.getColumns().add(label);
-			}
-			else{
-				Logger.getAnonymousLogger().log(Level.WARNING, "No language set for input: " + inputParamaterForExecuteSelect);
+			if (inputParamaterForExecuteSelect.getLanguage() != null) {
+				String label = translateConcept(prop, inputParamaterForExecuteSelect.getLanguage(), this.languagelabel)
+						.getTranslation();
+				outputForExecuteSelect.getColumns().add(label);
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"No language set for input: " + inputParamaterForExecuteSelect);
 				String label = extractNameOfURL(prop);
 				outputForExecuteSelect.getColumns().add(label);
 			}
-			
-				
+
 		}
 		// outputForExecuteSelect.getColumns().addAll(inputParamaterForExecuteSelect.getParameters());
 	}
@@ -233,6 +234,7 @@ public class MediatorSPARQLDerivation {
 
 	/**
 	 * Generate a filter which is useable for decimal values
+	 * 
 	 * @param inputParamaterForExecuteSelect
 	 * @param resolvedProperties
 	 * @param sparql
@@ -263,9 +265,9 @@ public class MediatorSPARQLDerivation {
 	public String addProperties(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
 			Map<String, String> resolvedProperties, String sparql) {
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
-			
+
 			param = extractNameOfURL(param);
-			
+
 			String property = resolvedProperties.get(param);
 
 			sparql += "?instance " + "<" + property + "> " + "?" + param + ".";
@@ -334,28 +336,38 @@ public class MediatorSPARQLDerivation {
 		// String namespace = uri.substring(0, uri.indexOf("#"));
 		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>SELECT   ?subject ?object WHERE { <"
 				+ uri + "> <" + languageLabel + "> ?object.}";
-		Object result = reader.query(query);
-		List<String> translations = reader.createResultList(result, "object");
-		if (translations.size() > 0) {
-			String postfix = Language.toOntologyPostfix(language);
-			if (postfix != null) {
-				for (String lang : translations) {
-					if (lang.contains(postfix)) {
+		if (reader == null) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
+		} else {
+			Object result = reader.query(query);
+			List<String> translations = reader.createResultList(result, "object");
+			if (translations.size() > 0) {
+				String postfix = Language.toOntologyPostfix(language);
+				if (postfix != null) {
+					for (String lang : translations) {
+						if (lang.contains(postfix)) {
 
-						translationResult.setTranslation(lang.substring(0, lang.indexOf(postfix)));
-						translationResult.setSuccess(true);
-						return translationResult;
+							translationResult.setTranslation(lang.substring(0, lang.indexOf(postfix)));
+							translationResult.setSuccess(true);
+							return translationResult;
+						}
 					}
 				}
 			}
+			translationResult.setTranslation(uri.substring(uri.indexOf("#") + 1));
 		}
-		translationResult.setTranslation(uri.substring(uri.indexOf("#") + 1));
 		return translationResult;
+
 	}
 
 	public List<String> detectPossibleConcepts(String regex) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
-		return reader.getAllConcepts(regex);
+		if (reader == null) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
+		} else {
+			return reader.getAllConcepts(regex);
+		}
+		return Collections.emptyList();
 	}
 
 	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language) {
@@ -363,16 +375,21 @@ public class MediatorSPARQLDerivation {
 		Logger.getAnonymousLogger().log(Level.INFO, "Language specific serach for:  " + language.toString());
 		List<de.biba.triple.store.access.enums.Language> langaues = reader.getNativeSupportedLangauges();
 
-		List<Entity> concepts = null;
-		if (langaues.contains(language)) {
-			Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
-			concepts = reader.getAllConceptsLanguageSpecific(regex, language);
+		if (reader == null) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
 		} else {
-			Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + Language.UNKNOWN);
-			concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
-		}
 
-		return concepts;
+			List<Entity> concepts = null;
+			if (langaues.contains(language)) {
+				Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
+				concepts = reader.getAllConceptsLanguageSpecific(regex, language);
+			} else {
+				Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + Language.UNKNOWN);
+				concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
+			}
+			return concepts;
+		}
+		return Collections.emptyList();
 	}
 
 	public List<String> detectPossibleProperties(String regex) {
@@ -382,7 +399,46 @@ public class MediatorSPARQLDerivation {
 	}
 
 	/*
-	public LocalOntologyView getViewForOneStepRange(String concept, LocalOntologyView instance, Language language) {
+	 * public LocalOntologyView getViewForOneStepRange(String concept,
+	 * LocalOntologyView instance, Language language) { LocalOntologyView
+	 * localOntologyView = null;
+	 * 
+	 * if (instance == null) { localOntologyView = new LocalOntologyView(); }
+	 * else { localOntologyView = instance; }
+	 * 
+	 * String conceptAsUri = getURIOfConcept(concept);
+	 * Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " +
+	 * conceptAsUri); List<String> properties =
+	 * reader.getAllPropertiesIncludingEverything(conceptAsUri); for (String
+	 * proeprty : properties) { PropertyType pType =
+	 * reader.getPropertyType(proeprty); if (pType ==
+	 * PropertyType.DATATYPEPROPERTY) { String translatedName =
+	 * reduceURIJustToName(proeprty, language); Entity entity = new Entity();
+	 * entity.setUrl(proeprty); entity.setTranslatedURL(translatedName);
+	 * 
+	 * localOntologyView.addDataproperties(entity); } else { // It is a object
+	 * property which means I must return the name of // the concept
+	 * List<String> ranges = reader.getRangeOfProperty(proeprty); for (int i =
+	 * 0; i < ranges.size(); i++) { String range = ranges.get(i); String
+	 * rangeReduced = reduceURIJustToName(range, language); LocalOntologyView
+	 * localOntologyView2 = new LocalOntologyView();
+	 * 
+	 * Entity conceptRange = new Entity(); conceptRange.setUrl(range); String
+	 * label = translateConcept(range, language,
+	 * this.languagelabel).getTranslation();
+	 * conceptRange.setTranslatedURL(rangeReduced);
+	 * 
+	 * localOntologyView2.setConcept(conceptRange);
+	 * localOntologyView.getObjectproperties().put(range, localOntologyView2); }
+	 * } }
+	 * 
+	 * return localOntologyView;
+	 * 
+	 * }
+	 */
+
+	public LocalOntologyView getViewForOneStepRange(String concept, LocalOntologyView instance,
+			LocalOntologyView parentInstance, Language language) {
 		LocalOntologyView localOntologyView = null;
 
 		if (instance == null) {
@@ -391,98 +447,60 @@ public class MediatorSPARQLDerivation {
 			localOntologyView = instance;
 		}
 
-		String conceptAsUri = getURIOfConcept(concept);
-		Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " + conceptAsUri);
-		List<String> properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
-		for (String proeprty : properties) {
-			PropertyType pType = reader.getPropertyType(proeprty);
-			if (pType == PropertyType.DATATYPEPROPERTY) {
-				String translatedName = reduceURIJustToName(proeprty, language);
-				Entity entity = new Entity();
-				entity.setUrl(proeprty);
-				entity.setTranslatedURL(translatedName);
-
-				localOntologyView.addDataproperties(entity);
-			} else {
-				// It is a object property which means I must return the name of
-				// the concept
-				List<String> ranges = reader.getRangeOfProperty(proeprty);
-				for (int i = 0; i < ranges.size(); i++) {
-					String range = ranges.get(i);
-					String rangeReduced = reduceURIJustToName(range, language);
-					LocalOntologyView localOntologyView2 = new LocalOntologyView();
-
-					Entity conceptRange = new Entity();
-					conceptRange.setUrl(range);
-					String label = translateConcept(range, language, this.languagelabel).getTranslation();
-					conceptRange.setTranslatedURL(rangeReduced);
-
-					localOntologyView2.setConcept(conceptRange);
-					localOntologyView.getObjectproperties().put(range, localOntologyView2);
-				}
-			}
-		}
-
-		return localOntologyView;
-
-	}*/
-	
-	public LocalOntologyView getViewForOneStepRange(String concept, LocalOntologyView instance, LocalOntologyView parentInstance, Language language) {
-		LocalOntologyView localOntologyView = null;
-
-		if (instance == null) {
-			localOntologyView = new LocalOntologyView();
+		if (reader == null) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
 		} else {
-			localOntologyView = instance;
-		}
 
-		String conceptAsUri = getURIOfConcept(concept);
-		Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " + conceptAsUri);
-		List<String> properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
-		for (String proeprty : properties) {
-			PropertyType pType = reader.getPropertyType(proeprty);
-			if (pType == PropertyType.DATATYPEPROPERTY) {
-				String translatedName = reduceURIJustToName(proeprty, language);
-				Entity entity = new Entity();
-				entity.setUrl(proeprty);
-				entity.setTranslatedURL(translatedName);
+			String conceptAsUri = getURIOfConcept(concept);
+			Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " + conceptAsUri);
+			List<String> properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
+			for (String proeprty : properties) {
+				PropertyType pType = reader.getPropertyType(proeprty);
+				if (pType == PropertyType.DATATYPEPROPERTY) {
+					String translatedName = reduceURIJustToName(proeprty, language);
+					Entity entity = new Entity();
+					entity.setUrl(proeprty);
+					entity.setTranslatedURL(translatedName);
 
-				localOntologyView.addDataproperties(entity);
-			} else {
-				// It is a object property which means I must return the name of
-				// the concept
-				List<String> ranges = reader.getRangeOfProperty(proeprty);
-				for (int i = 0; i < ranges.size(); i++) {
-					String range = ranges.get(i);
-					String rangeReduced = reduceURIJustToName(range, language);
-					LocalOntologyView localOntologyView2 = new LocalOntologyView();
+					localOntologyView.addDataproperties(entity);
+				} else {
+					// It is a object property which means I must return the
+					// name of
+					// the concept
+					List<String> ranges = reader.getRangeOfProperty(proeprty);
+					for (int i = 0; i < ranges.size(); i++) {
+						String range = ranges.get(i);
+						String rangeReduced = reduceURIJustToName(range, language);
+						LocalOntologyView localOntologyView2 = new LocalOntologyView();
 
-					Entity conceptRange = new Entity();
-					conceptRange.setUrl(range);
-					String label = translateConcept(range, language, this.languagelabel).getTranslation();
-					conceptRange.setTranslatedURL(rangeReduced);
-					//conceptRan
-			
-					localOntologyView2.setConcept(conceptRange);
-					localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
-					localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept()+1);
-					List<String> newPaht = new ArrayList<String>(localOntologyView.getConceptURIPath());
-					newPaht.add(range);
-					localOntologyView2.setConceptURIPath(newPaht);
-					localOntologyView.getObjectproperties().put(range, localOntologyView2);
+						Entity conceptRange = new Entity();
+						conceptRange.setUrl(range);
+						String label = translateConcept(range, language, this.languagelabel).getTranslation();
+						conceptRange.setTranslatedURL(rangeReduced);
+						// conceptRan
+
+						localOntologyView2.setConcept(conceptRange);
+						localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
+						localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept() + 1);
+						List<String> newPaht = new ArrayList<String>(localOntologyView.getConceptURIPath());
+						newPaht.add(range);
+						localOntologyView2.setConceptURIPath(newPaht);
+						localOntologyView.getObjectproperties().put(range, localOntologyView2);
+					}
 				}
 			}
-		}
-		
-		// Hidden the parent concepts as well as the other elements of the parent concepts when the distance to frozen concept is larger than 1
-		if(!properties.isEmpty() && localOntologyView.getDistanceToFrozenConcept() > 1 && parentInstance != null)
-		{
-			localOntologyView.hiddenElementsOfParentView(parentInstance);
-		}
 
+			// Hidden the parent concepts as well as the other elements of the
+			// parent concepts when the distance to frozen concept is larger
+			// than 1
+			if (!properties.isEmpty() && localOntologyView.getDistanceToFrozenConcept() > 1 && parentInstance != null) {
+				localOntologyView.hiddenElementsOfParentView(parentInstance);
+			}
+
+		}
 		return localOntologyView;
 
-	}	
+	}
 
 	private String reduceURIJustToName(String uri, Language language) {
 		TranslationResult range = translateConcept(uri, language, languagelabel);
@@ -496,6 +514,9 @@ public class MediatorSPARQLDerivation {
 			return concept;
 		}
 
+		if (reader == null) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
+		} else {
 		List<String> allPossibleConcepts = reader.getAllConcepts(concept);
 		for (String conceptURI : allPossibleConcepts) {
 			String conceptURIShortened = conceptURI.substring(conceptURI.indexOf("#") + 1);
@@ -505,9 +526,14 @@ public class MediatorSPARQLDerivation {
 		}
 		Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + concept);
 		return concept;
+		}
+		return null;
 	}
 
 	protected String getURIOfProperty(String property) {
+		if (reader == null) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
+		} else {
 		List<String> allPossibleProperties = reader.getAllProperties(property);
 		for (String propertyURI : allPossibleProperties) {
 			String propertyURIShortened = propertyURI.substring(propertyURI.indexOf("#") + 1);
@@ -517,6 +543,8 @@ public class MediatorSPARQLDerivation {
 		}
 		Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + property);
 		return property;
+		}
+		return null;
 	}
 
 	/**
@@ -605,14 +633,19 @@ public class MediatorSPARQLDerivation {
 		}
 	}
 
-	public List<String> getSupportedLanguages(){
+	public List<String> getSupportedLanguages() {
+		if (reader == null) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
+		} else {
 		List<Language> languages = reader.getNativeSupportedLangauges();
 		List<String> result = new ArrayList<String>();
-		for (Language l : languages){
+		for (Language l : languages) {
 			String label = Language.toOntologyPostfix(l).substring(1);
 			result.add(label);
 		}
 		return result;
+		}
+		return Collections.emptyList();
 	}
-	
+
 }
