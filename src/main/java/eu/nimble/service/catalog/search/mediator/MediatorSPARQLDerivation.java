@@ -25,6 +25,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteO
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
+import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
@@ -64,7 +65,9 @@ public class MediatorSPARQLDerivation {
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 
 		String sparql = createSparql(inputParamaterForExecuteSelect);
-
+		Logger.getAnonymousLogger().log(Level.INFO, sparql);
+		
+		
 		Object ouObject = reader.query(sparql);
 		// This is necessary to get the uuid for each instance
 		inputParamaterForExecuteSelect.getParameters().add(0, "instance");
@@ -195,36 +198,44 @@ public class MediatorSPARQLDerivation {
 	 *            the url or url)
 	 * @return working sparql query
 	 */
-//	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
-//		// TODO Auto-generated method stub
-//		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
-//
-//		Map<String, String> resolvedProperties = new HashMap<String, String>();
-//		for (String param : inputParamaterForExecuteSelect.getParameters()) {
-//			String parameter = getURIOfProperty(param);
-//
-//			param = extractNameOfURL(param);
-//
-//			resolvedProperties.put(param, parameter);
-//		}
-//
-//		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
-//		for (String param : inputParamaterForExecuteSelect.getParameters()) {
-//
-//			param = extractNameOfURL(param);
-//			sparql += " ?" + param;
-//		}
-//
-//		sparql += " where{";
-//
-//		// add cocnept mapping:
-//		sparql += "?x rdfs:subClassOf*  <" + concept + ">. ";
-//		sparql += "?instance a ?x.";
-//		sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
-//		sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
-//		sparql += "}";
-//		return sparql;
-//	}
+	// protected String createSparql(InputParamaterForExecuteSelect
+	// inputParamaterForExecuteSelect) {
+	// // TODO Auto-generated method stub
+	// String concept =
+	// getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
+	//
+	// Map<String, String> resolvedProperties = new HashMap<String, String>();
+	// for (String param : inputParamaterForExecuteSelect.getParameters()) {
+	// String parameter = getURIOfProperty(param);
+	//
+	// param = extractNameOfURL(param);
+	//
+	// resolvedProperties.put(param, parameter);
+	// }
+	//
+	// String sparql = "PREFIX rdf:
+	// <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl:
+	// <http://www.w3.org/2002/07/owl#> PREFIX rdfs:
+	// <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd:
+	// <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+	// for (String param : inputParamaterForExecuteSelect.getParameters()) {
+	//
+	// param = extractNameOfURL(param);
+	// sparql += " ?" + param;
+	// }
+	//
+	// sparql += " where{";
+	//
+	// // add cocnept mapping:
+	// sparql += "?x rdfs:subClassOf* <" + concept + ">. ";
+	// sparql += "?instance a ?x.";
+	// sparql = addProperties(inputParamaterForExecuteSelect,
+	// resolvedProperties, sparql);
+	// sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties,
+	// sparql);
+	// sparql += "}";
+	// return sparql;
+	// }
 	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 		// TODO Auto-generated method stub
 		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
@@ -239,9 +250,9 @@ public class MediatorSPARQLDerivation {
 		}
 
 		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
-		for (Parameter param : inputParamaterForExecuteSelect.getParametersIncludingPath()) {
+		for (String param : inputParamaterForExecuteSelect.getParameters()) {
 
-			//param = extractNameOfURL(param);
+			param = extractNameOfURL(param);
 			sparql += " ?" + param;
 		}
 
@@ -295,17 +306,44 @@ public class MediatorSPARQLDerivation {
 
 	public String addProperties(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
 			Map<String, String> resolvedProperties, String sparql) {
-		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+		for (int i = 0; i < inputParamaterForExecuteSelect.getParameters().size(); i++) {
+
+			String param = inputParamaterForExecuteSelect.getParameters().get(i);
 
 			param = extractNameOfURL(param);
 
 			String property = resolvedProperties.get(param);
 
-			sparql += "?instance " + "<" + property + "> " + "?" + param + ".";
+			if (isJustADirectDatatypePropertyOfRoot(inputParamaterForExecuteSelect.getParametersIncludingPath().get(i))) {
+
+				sparql += "?instance " + "<" + property + "> " + "?" + param + ".";
+			} else {
+				String lastVariable = null;
+				for ( Tuple tuple: inputParamaterForExecuteSelect.getParametersIncludingPath().get(i).getPath()){
+					
+					if (tuple.getUrlOfProperty() != null){
+						String prop = tuple.getUrlOfProperty();
+						String shortProp = prop.substring(prop.lastIndexOf("#")+1);
+						shortProp = "?" + shortProp;
+						String toBeUsed = "?instance";
+						if (lastVariable != null){
+							toBeUsed = lastVariable;
+						}
+						sparql += toBeUsed + "<" + tuple.getUrlOfProperty() + "> " +  shortProp + ".";
+						lastVariable = shortProp; 
+					}
+				}
+				//Have to add it for the dataproperty
+				sparql += lastVariable + "<" + property + "> " + "?" + param + ".";
+			}
 		}
 		return sparql;
 	}
 
+	public boolean isJustADirectDatatypePropertyOfRoot(Parameter parameter) {
+		return (parameter.getPath().size() == 1) ? true:false;
+
+	}
 	public MediatorSPARQLDerivation(String uri, boolean remote) {
 		if (!remote) {
 			initForSpecificOntology(uri);
@@ -549,15 +587,15 @@ public class MediatorSPARQLDerivation {
 		if (reader == null) {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
 		} else {
-		List<String> allPossibleConcepts = reader.getAllConcepts(concept);
-		for (String conceptURI : allPossibleConcepts) {
-			String conceptURIShortened = conceptURI.substring(conceptURI.indexOf("#") + 1);
-			if (conceptURIShortened.equals(concept)) {
-				return conceptURI;
+			List<String> allPossibleConcepts = reader.getAllConcepts(concept);
+			for (String conceptURI : allPossibleConcepts) {
+				String conceptURIShortened = conceptURI.substring(conceptURI.indexOf("#") + 1);
+				if (conceptURIShortened.equals(concept)) {
+					return conceptURI;
+				}
 			}
-		}
-		Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + concept);
-		return concept;
+			Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + concept);
+			return concept;
 		}
 		return null;
 	}
@@ -566,15 +604,15 @@ public class MediatorSPARQLDerivation {
 		if (reader == null) {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
 		} else {
-		List<String> allPossibleProperties = reader.getAllProperties(property);
-		for (String propertyURI : allPossibleProperties) {
-			String propertyURIShortened = propertyURI.substring(propertyURI.indexOf("#") + 1);
-			if (propertyURIShortened.equals(property)) {
-				return propertyURI;
+			List<String> allPossibleProperties = reader.getAllProperties(property);
+			for (String propertyURI : allPossibleProperties) {
+				String propertyURIShortened = propertyURI.substring(propertyURI.indexOf("#") + 1);
+				if (propertyURIShortened.equals(property)) {
+					return propertyURI;
+				}
 			}
-		}
-		Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + property);
-		return property;
+			Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't find right concept in ontology: " + property);
+			return property;
 		}
 		return null;
 	}
@@ -669,13 +707,13 @@ public class MediatorSPARQLDerivation {
 		if (reader == null) {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
 		} else {
-		List<Language> languages = reader.getNativeSupportedLangauges();
-		List<String> result = new ArrayList<String>();
-		for (Language l : languages) {
-			String label = Language.toOntologyPostfix(l).substring(1);
-			result.add(label);
-		}
-		return result;
+			List<Language> languages = reader.getNativeSupportedLangauges();
+			List<String> result = new ArrayList<String>();
+			for (Language l : languages) {
+				String label = Language.toOntologyPostfix(l).substring(1);
+				result.add(label);
+			}
+			return result;
 		}
 		return Collections.emptyList();
 	}
