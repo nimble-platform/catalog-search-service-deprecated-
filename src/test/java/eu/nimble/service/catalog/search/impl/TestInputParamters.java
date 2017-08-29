@@ -22,6 +22,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
+import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.MeaningResult;
 
 public class TestInputParamters {
@@ -125,15 +126,23 @@ public class TestInputParamters {
 		
 		test.getFilters().add(f1);
 		
-		Parameter parameter = new Parameter();
-		parameter.getPath().add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair");
-		parameter.setUrlOfProperty("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasHeight");
-		
-		test.getParametersIncludingPath().add(parameter);
+//		Parameter parameter = new Parameter();
+//		parameter.getPath().add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair");
+//		parameter.setUrlOfProperty("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasHeight");
+//		
+//		test.getParametersIncludingPath().add(parameter);
 		
 		Parameter parameter2 = new Parameter();
-		parameter2.getPath().add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair");
-		parameter2.getPath().add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#objectProperty1");
+		Tuple t1 = new Tuple();
+		t1.setConcept("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair");
+		t1.setUrlOfProperty(null);
+		
+		Tuple t2 = new Tuple();
+		t2.setConcept("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighManufacturer");
+		t2.setUrlOfProperty("has..");
+		
+		parameter2.getPath().add(t1);
+		parameter2.getPath().add(t2);
 		parameter2.setUrlOfProperty("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasLegName");
 		
 		test.getParametersIncludingPath().add(parameter2);

@@ -7,17 +7,17 @@ import java.util.List;
 public class Parameter {
 
 	private String urlOfProperty;
-	private List<String> path = new ArrayList<String>();
+	private List<Tuple> path = new ArrayList<Tuple>();
 	public String getUrlOfProperty() {
 		return urlOfProperty;
 	}
 	public void setUrlOfProperty(String urlOfProperty) {
 		this.urlOfProperty = urlOfProperty;
 	}
-	public List<String> getPath() {
+	public List<Tuple> getPath() {
 		return path;
 	}
-	public void setPath(List<String> path) {
+	public void setPath(List<Tuple> path) {
 		this.path = path;
 	}
 	@Override
