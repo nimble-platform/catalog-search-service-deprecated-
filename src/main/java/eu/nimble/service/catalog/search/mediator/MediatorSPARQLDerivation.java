@@ -24,6 +24,7 @@ import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
+import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
@@ -194,6 +195,36 @@ public class MediatorSPARQLDerivation {
 	 *            the url or url)
 	 * @return working sparql query
 	 */
+//	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+//		// TODO Auto-generated method stub
+//		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
+//
+//		Map<String, String> resolvedProperties = new HashMap<String, String>();
+//		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+//			String parameter = getURIOfProperty(param);
+//
+//			param = extractNameOfURL(param);
+//
+//			resolvedProperties.put(param, parameter);
+//		}
+//
+//		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+//		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+//
+//			param = extractNameOfURL(param);
+//			sparql += " ?" + param;
+//		}
+//
+//		sparql += " where{";
+//
+//		// add cocnept mapping:
+//		sparql += "?x rdfs:subClassOf*  <" + concept + ">. ";
+//		sparql += "?instance a ?x.";
+//		sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+//		sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+//		sparql += "}";
+//		return sparql;
+//	}
 	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 		// TODO Auto-generated method stub
 		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
@@ -208,9 +239,9 @@ public class MediatorSPARQLDerivation {
 		}
 
 		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
-		for (String param : inputParamaterForExecuteSelect.getParameters()) {
+		for (Parameter param : inputParamaterForExecuteSelect.getParametersIncludingPath()) {
 
-			param = extractNameOfURL(param);
+			//param = extractNameOfURL(param);
 			sparql += " ?" + param;
 		}
 
@@ -480,6 +511,7 @@ public class MediatorSPARQLDerivation {
 						// conceptRan
 
 						localOntologyView2.setConcept(conceptRange);
+						localOntologyView2.setObjectPropertySource(proeprty);
 						localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
 						localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept() + 1);
 						List<String> newPaht = new ArrayList<String>(localOntologyView.getConceptURIPath());

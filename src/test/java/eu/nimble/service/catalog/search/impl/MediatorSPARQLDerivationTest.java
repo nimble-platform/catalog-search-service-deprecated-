@@ -56,6 +56,28 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		System.out.println(result.getDataproperties());
 		System.out.println(result.getObjectproperties());
 	}
+	
+	@Test
+	@Ignore
+	public void testgetViewForHighChair() {
+		
+		MediatorSPARQLDerivation mediatorSPARQLDerivation = new MediatorSPARQLDerivation(
+				C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
+		LocalOntologyView helper = new LocalOntologyView();
+		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
+		this.setLanguagelabel(translationLabel);
+		
+		Entity concept = new Entity();
+		concept.setUrl(getURIOfConcept("HighChair"));
+		String label = translateConcept(concept.getUrl(), Language.ENGLISH, this.getLanguagelabel()).getTranslation();
+		concept.setTranslatedURL(label);
+		
+		helper.setConcept(concept);
+		LocalOntologyView result = mediatorSPARQLDerivation.getViewForOneStepRange(helper.getConcept().getUrl(), helper, null, Language.SPANISH);
+		assertTrue(result.getDataproperties().size() > 0);
+		System.out.println(result.getDataproperties());
+		System.out.println(result.getObjectproperties());
+	}
 
 	@Test
 	@Ignore
