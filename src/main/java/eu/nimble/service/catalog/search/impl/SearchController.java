@@ -55,7 +55,7 @@ public class SearchController {
 	@Value("${nimble.shared.property.marmottauri:null}")
 	private String marmottaUri;
 
-	@Value("${nimble.shared.property.languagelabel:http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation}")
+	@Value("${nimble.shared.property.languagelabel:http://www.aidimme.es/FurnitureSectorOntology.owl#translation}")
 	private String languageLabel;
 
 	private MediatorSPARQLDerivation sparqlDerivation = null;
