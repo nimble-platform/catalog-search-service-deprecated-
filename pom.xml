@@ -278,8 +278,8 @@
 								</resource>
 								<resource>
 									<targetPath>/</targetPath>
-									<directory>${project.build.directory}lib/</directory>
-									<include>${project.build.finalName}.jar</include>
+									<directory>${project.basedir}/libRepo/</directory>
+									<include>**.jar</include>
 								</resource>
 								<resource>
 									<targetPath>/</targetPath>

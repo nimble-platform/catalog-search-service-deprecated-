@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: nimble-platform
+    name: catalog-search-service
+  name: catalog-search-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nimble-platform
+      name: catalog-search-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      labels:
+        app: nimble-platform
+        name: catalog-search-service
+    spec:
+      containers:
+      - image: nimbleplatform/catalog-search-service
+        imagePullPolicy: Always
+        name: catalog-search-service
+        ports:
+        - containerPort: 9096
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: kubernetes
+          - name: DISCOVERY_ENABLED
+            value: "false"
+
+---
+
+kind: Service
+metadata:
+  name: catalog-search-service
+  labels:
+    app: nimble-platform
+    name: catalog-search-service
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9096
+      targetPort: 9096
+  selector:
+    app: nimble-platform
+    name: catalog-search-service
