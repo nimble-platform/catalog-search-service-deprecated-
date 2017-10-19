@@ -1,0 +1,1 @@
+mvnDebug spring-boot:run -Dnimble.shared.property.marmottauri=http://134.168.33.237:8080/marmotta

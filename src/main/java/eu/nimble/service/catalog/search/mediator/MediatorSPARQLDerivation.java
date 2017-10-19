@@ -258,12 +258,23 @@ public class MediatorSPARQLDerivation {
 
 		sparql += " where{";
 
+		if (!(reader instanceof MarmottaReader)){
 		// add cocnept mapping:
 		sparql += "?x rdfs:subClassOf*  <" + concept + ">. ";
 		sparql += "?instance a ?x.";
 		sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
 		sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
 		sparql += "}";
+		}
+		
+		if (reader instanceof MarmottaReader){
+			//sparql += "?instance (rdf:type | rdfs:subClassOf*/rdfs:subClassOf )" + "<" + concept + ">.";
+			sparql += "?instance a" + "<" + concept + ">.";
+			sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+			sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+			sparql += "}";
+		}
+		
 		return sparql;
 	}
 
