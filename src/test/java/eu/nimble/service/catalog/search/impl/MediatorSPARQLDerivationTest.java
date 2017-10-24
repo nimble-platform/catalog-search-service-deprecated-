@@ -2,14 +2,19 @@ package eu.nimble.service.catalog.search.impl;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mock;
+
+import static org.mockito.Mockito.*;
 
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
+import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
@@ -23,6 +28,9 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 
 public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 
+	 @Mock
+	    MarmottaReader readerMock;
+	
 	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/ontology/FurnitureOntology-v1.5-biba_editedV2.owl";
 
 	@Test
@@ -81,6 +89,51 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		System.out.println(result.getObjectproperties());
 	}
 
+	
+	@Test
+	@Ignore
+	public void testCreateSPARQLMockedMarmotta() {
+		
+		final List<String> cocnepts = new ArrayList<String>();
+		readerMock = mock(MarmottaReader.class);
+		cocnepts.add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair");
+		cocnepts.add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair2");
+		when(readerMock.getAllTransitiveSubConcepts(anyString())).thenReturn(cocnepts);
+		when(readerMock.getAllConcepts(anyString())).thenReturn(cocnepts);
+		//List<String> allPossibleProperties = reader.getAllProperties(property);
+		List<String> properties1 = new ArrayList<String>();
+		properties1.add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasHeight");
+		when(readerMock.getAllProperties("hasHeight")).thenReturn(properties1);
+		
+		List<String> properties2 = new ArrayList<String>();
+		properties2.add("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasWidth");
+		when(readerMock.getAllProperties("hasWidth")).thenReturn(properties2);
+		
+		String concept = "HighChair";
+		String prop1 = "hasHeight";
+		String prop2 = "hasWidth";
+		
+		Filter f1 = new Filter();
+		f1.setProperty("hasHeight");
+		f1.setMax(5.2f);
+		f1.setMin(3.0f);
+		
+		
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.getFilters().add(f1);
+		inputParamaterForExecuteSelect.setConcept(concept);
+		inputParamaterForExecuteSelect.getParameters().add(prop1);
+		inputParamaterForExecuteSelect.getParameters().add(prop2);
+		Parameter parameter1 = new Parameter();
+		parameter1.getPath().add(new Tuple());
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
+		String sparql = createSparql(inputParamaterForExecuteSelect, readerMock);
+		assertTrue(sparql.length() > 10);
+		System.out.println(sparql);
+		
+	}
+	
 	@Test
 	@Ignore
 	public void testCreateSPARQL() {
@@ -100,7 +153,12 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		inputParamaterForExecuteSelect.setConcept(concept);
 		inputParamaterForExecuteSelect.getParameters().add(prop1);
 		inputParamaterForExecuteSelect.getParameters().add(prop2);
+		Parameter parameter1 = new Parameter();
+		parameter1.getPath().add(new Tuple());
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
 		String sparql = createSparql(inputParamaterForExecuteSelect);
+		
 		assertTrue(sparql.length() > 10);
 		System.out.println(sparql);
 		

@@ -50,6 +50,13 @@ public class MediatorSPARQLDerivation {
 
 	}
 
+	public void initForMarmotta(String url) {
+		reader = new MarmottaReader(url);
+		reader.setModeToRemote();
+		reader.setLanguageLabel(languagelabel);
+
+	}
+	
 	public void initForSpecificOntology(String pntologyFile) {
 		reader = new Reader();
 		reader.setModeToLocal();
@@ -236,6 +243,16 @@ public class MediatorSPARQLDerivation {
 	// sparql += "}";
 	// return sparql;
 	// }
+
+	/**
+	 * just for test purpose
+	 * 
+	 */
+	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect, Reader reader) {
+		this.reader = reader;
+		return createSparql(inputParamaterForExecuteSelect);
+	}
+	
 	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 		// TODO Auto-generated method stub
 		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
@@ -269,7 +286,20 @@ public class MediatorSPARQLDerivation {
 		
 		if (reader instanceof MarmottaReader){
 			//sparql += "?instance (rdf:type | rdfs:subClassOf*/rdfs:subClassOf )" + "<" + concept + ">.";
-			sparql += "?instance a" + "<" + concept + ">.";
+			//sparql += "?instance a" + "<" + concept + ">.";
+			
+			List<String>  allRelfexivAndSubClasses = reader.getAllTransitiveSubConcepts(concept);
+			if (!allRelfexivAndSubClasses.contains(concept)){
+				allRelfexivAndSubClasses.add(concept);
+			}
+			//apply the query provided by Ditmar
+			String preQuiery = " VALUES ?classes {";
+			String classes = "";
+			for (String myClass : allRelfexivAndSubClasses){
+				classes  += "<" + myClass + "> ";
+			}
+			sparql += preQuiery + classes + "}";
+			
 			sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
 			sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
 			sparql += "}";
