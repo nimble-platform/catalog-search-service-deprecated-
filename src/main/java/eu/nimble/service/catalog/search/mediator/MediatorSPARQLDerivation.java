@@ -27,6 +27,8 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeani
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 public class MediatorSPARQLDerivation {
@@ -56,7 +58,7 @@ public class MediatorSPARQLDerivation {
 		reader.setLanguageLabel(languagelabel);
 
 	}
-	
+
 	public void initForSpecificOntology(String pntologyFile) {
 		reader = new Reader();
 		reader.setModeToLocal();
@@ -73,8 +75,7 @@ public class MediatorSPARQLDerivation {
 
 		String sparql = createSparql(inputParamaterForExecuteSelect);
 		Logger.getAnonymousLogger().log(Level.INFO, sparql);
-		
-		
+
 		Object ouObject = reader.query(sparql);
 		// This is necessary to get the uuid for each instance
 		inputParamaterForExecuteSelect.getParameters().add(0, "instance");
@@ -252,7 +253,7 @@ public class MediatorSPARQLDerivation {
 		this.reader = reader;
 		return createSparql(inputParamaterForExecuteSelect);
 	}
-	
+
 	protected String createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 		// TODO Auto-generated method stub
 		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
@@ -275,36 +276,37 @@ public class MediatorSPARQLDerivation {
 
 		sparql += " where{";
 
-		if (!(reader instanceof MarmottaReader)){
-		// add cocnept mapping:
-		sparql += "?x rdfs:subClassOf*  <" + concept + ">. ";
-		sparql += "?instance a ?x.";
-		sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
-		sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
-		sparql += "}";
-		}
-		
-		if (reader instanceof MarmottaReader){
-			//sparql += "?instance (rdf:type | rdfs:subClassOf*/rdfs:subClassOf )" + "<" + concept + ">.";
-			//sparql += "?instance a" + "<" + concept + ">.";
-			
-			List<String>  allRelfexivAndSubClasses = reader.getAllTransitiveSubConcepts(concept);
-			if (!allRelfexivAndSubClasses.contains(concept)){
-				allRelfexivAndSubClasses.add(concept);
-			}
-			//apply the query provided by Ditmar
-			String preQuiery = " VALUES ?classes {";
-			String classes = "";
-			for (String myClass : allRelfexivAndSubClasses){
-				classes  += "<" + myClass + "> ";
-			}
-			sparql += preQuiery + classes + "}";
-			
+		if (!(reader instanceof MarmottaReader)) {
+			// add cocnept mapping:
+			sparql += "?x rdfs:subClassOf*  <" + concept + ">. ";
+			sparql += "?instance a ?x.";
 			sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
 			sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
 			sparql += "}";
 		}
-		
+
+		if (reader instanceof MarmottaReader) {
+			// sparql += "?instance (rdf:type | rdfs:subClassOf*/rdfs:subClassOf
+			// )" + "<" + concept + ">.";
+			// sparql += "?instance a" + "<" + concept + ">.";
+
+			List<String> allRelfexivAndSubClasses = reader.getAllTransitiveSubConcepts(concept);
+			if (!allRelfexivAndSubClasses.contains(concept)) {
+				allRelfexivAndSubClasses.add(concept);
+			}
+			// apply the query provided by Ditmar
+			String preQuiery = " VALUES ?classes {";
+			String classes = "";
+			for (String myClass : allRelfexivAndSubClasses) {
+				classes += "<" + myClass + "> ";
+			}
+			sparql += preQuiery + classes + "}";
+
+			sparql = addProperties(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+			sparql = addFilters(inputParamaterForExecuteSelect, resolvedProperties, sparql);
+			sparql += "}";
+		}
+
 		return sparql;
 	}
 
@@ -355,26 +357,27 @@ public class MediatorSPARQLDerivation {
 
 			String property = resolvedProperties.get(param);
 
-			if (isJustADirectDatatypePropertyOfRoot(inputParamaterForExecuteSelect.getParametersIncludingPath().get(i))) {
+			if (isJustADirectDatatypePropertyOfRoot(
+					inputParamaterForExecuteSelect.getParametersIncludingPath().get(i))) {
 
 				sparql += "?instance " + "<" + property + "> " + "?" + param + ".";
 			} else {
 				String lastVariable = null;
-				for ( Tuple tuple: inputParamaterForExecuteSelect.getParametersIncludingPath().get(i).getPath()){
-					
-					if (tuple.getUrlOfProperty() != null){
+				for (Tuple tuple : inputParamaterForExecuteSelect.getParametersIncludingPath().get(i).getPath()) {
+
+					if (tuple.getUrlOfProperty() != null) {
 						String prop = tuple.getUrlOfProperty();
-						String shortProp = prop.substring(prop.lastIndexOf("#")+1);
+						String shortProp = prop.substring(prop.lastIndexOf("#") + 1);
 						shortProp = "?" + shortProp;
 						String toBeUsed = "?instance";
-						if (lastVariable != null){
+						if (lastVariable != null) {
 							toBeUsed = lastVariable;
 						}
-						sparql += toBeUsed + "<" + tuple.getUrlOfProperty() + "> " +  shortProp + ".";
-						lastVariable = shortProp; 
+						sparql += toBeUsed + "<" + tuple.getUrlOfProperty() + "> " + shortProp + ".";
+						lastVariable = shortProp;
 					}
 				}
-				//Have to add it for the dataproperty
+				// Have to add it for the dataproperty
 				sparql += lastVariable + "<" + property + "> " + "?" + param + ".";
 			}
 		}
@@ -382,9 +385,10 @@ public class MediatorSPARQLDerivation {
 	}
 
 	public boolean isJustADirectDatatypePropertyOfRoot(Parameter parameter) {
-		return (parameter.getPath().size() == 1) ? true:false;
+		return (parameter.getPath().size() == 1) ? true : false;
 
 	}
+
 	public MediatorSPARQLDerivation(String uri, boolean remote) {
 		if (!remote) {
 			initForSpecificOntology(uri);
@@ -759,4 +763,39 @@ public class MediatorSPARQLDerivation {
 		return Collections.emptyList();
 	}
 
+	/**
+	 * This method shall derive all parent classes for a concept.- That means
+	 * that a highchair would be also a product a furniture etc.
+	 * 
+	 * @param concept
+	 * @return a list of parent concepts
+	 */
+	public List<String> getAllDerivedConcepts(String concept) {
+
+		List<String> result = new ArrayList<String>();
+		result.add(concept);
+
+		return result;
+	}
+
+	public OutputForPropertiesFromConcept getAllTransitiveProperties(String concept){
+		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
+		concept = getURIOfConcept(concept);
+		List<String> properties = reader.getAllPropertiesIncludingEverything(concept);
+		for (String urlOfProperty : properties){
+			PropertyType propertyType = reader.getPropertyType(urlOfProperty);
+			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
+			outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+			if (propertyType == PropertyType.DATATYPEPROPERTY){
+				outputForPropertyFromConcept.setDatatypeProperty(true);
+				outputForPropertyFromConcept.setObjectProperty(false);
+			}
+			else{
+				outputForPropertyFromConcept.setDatatypeProperty(true);
+				outputForPropertyFromConcept.setObjectProperty(false);
+			}
+			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
+		}
+		return result;
+	}
 }

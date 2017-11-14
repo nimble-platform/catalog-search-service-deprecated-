@@ -79,7 +79,7 @@ public class TestInputParamters {
 	@Test
 	public void doJson_InputParamterForGetLogicalView(){
 		InputParamterForGetLogicalView InputParamterForGetLogicalView = new InputParamterForGetLogicalView();
-		InputParamterForGetLogicalView.setConcept(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#ContactPerson"));
+		InputParamterForGetLogicalView.setConcept(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair"));
 		InputParamterForGetLogicalView.setFrozenConcept("ddd");
 		InputParamterForGetLogicalView.setStepRange(2);
 		Gson gson = new Gson();
