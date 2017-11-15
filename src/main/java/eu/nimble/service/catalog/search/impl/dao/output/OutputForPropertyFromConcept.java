@@ -5,6 +5,16 @@ public class OutputForPropertyFromConcept {
 	private String propertyURL;
 	private boolean datatypeProperty;
 	private boolean objectProperty;
+	private String translatedProperty;
+	
+	
+	
+	public String getTranslatedProperty() {
+		return translatedProperty;
+	}
+	public void setTranslatedProperty(String translatedProperty) {
+		this.translatedProperty = translatedProperty;
+	}
 	public String getPropertyURL() {
 		return propertyURL;
 	}

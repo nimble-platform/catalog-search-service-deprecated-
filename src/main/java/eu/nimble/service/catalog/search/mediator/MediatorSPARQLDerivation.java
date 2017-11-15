@@ -623,7 +623,7 @@ public class MediatorSPARQLDerivation {
 		return range.getTranslation();
 	}
 
-	protected String getURIOfConcept(String concept) {
+	public String getURIOfConcept(String concept) {
 
 		if (concept.contains("#")) {
 			return concept;

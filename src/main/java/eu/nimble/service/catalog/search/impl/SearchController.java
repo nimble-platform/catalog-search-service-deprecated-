@@ -38,8 +38,10 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutoutForGetSupportedLan
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForSQPFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
+import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 import eu.nimble.service.catalog.search.mediator.SQPDerivationService;
@@ -418,17 +420,20 @@ public class SearchController {
 					InputParamterForGetLogicalView.class);
 
 			String concept = inputParamterForGetLogicalView.getConcept();
-			OutputForPropertiesFromConcept propertiesFromConcept =  sparqlDerivation.getAllTransitiveProperties(concept);
-			
+			OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation.getAllTransitiveProperties(concept);
+			for (OutputForPropertyFromConcept prop : propertiesFromConcept.getOutputForPropertiesFromConcept()) {
+				concept = sparqlDerivation.getURIOfConcept(concept);
+				TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
+						propertiesFromConcept.getLanguage(), concept);
+				prop.setTranslatedProperty(name.getTranslation());
+			}
 			String result = "";
 			result = gson.toJson(propertiesFromConcept);
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		
 
 	}
 
