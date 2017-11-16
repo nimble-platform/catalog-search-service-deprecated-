@@ -30,6 +30,7 @@ import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
@@ -39,6 +40,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForSQPFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
@@ -438,18 +440,37 @@ public class SearchController {
 	}
 
 	/**
-	 * Returns thevalues for a given properties with respec t to the given
-	 * cocnept
+	 * Returns the values for a given properties with respect t to the given
+	 * concept
 	 * 
 	 * @param inputAsJson
-	 *            The URL of the chosen concept
+	 *            The URL of the chosen concept and the URL of the chosen property
 	 * @return JSON including for each property the url and the type (datatype
 	 *         or object)
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/getPropertyValuesFromGreenGroup", method = RequestMethod.GET)
 	HttpEntity<Object> getPropertyValuesFromGreenGroup(@RequestParam("inputAsJson") String inputAsJson) {
-		return null;
+		try {
+			Gson gson = new Gson();
+			InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup =gson.fromJson(inputAsJson,
+					 InputParameterForPropertyValuesFromGreenGroup.class);
+			String concept = sparqlDerivation.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
+			String property = sparqlDerivation.getURIOfProperty(inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
+			List<String> allValues = sparqlDerivation.getAllValuesForAGivenProperty(concept, property);
+			
+			OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new  OutputForPropertyValuesFromGreenGroup();
+			outputForPropertyValuesFromGreenGroup.getAllValues().addAll(allValues);
+			
+			String result = "";
+			result = gson.toJson(outputForPropertyValuesFromGreenGroup);
+			
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+			
+		}
+			catch (Exception e) {
+				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 
 	}
 
@@ -464,7 +485,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/getPropertyValuesFromOrangeGroup", method = RequestMethod.GET)
-	HttpEntity<Object> getgetPropertyValuesFromOrangeGroup(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> getPropertyValuesFromOrangeGroup(@RequestParam("inputAsJson") String inputAsJson) {
 		return null;
 
 	}

@@ -645,7 +645,7 @@ public class MediatorSPARQLDerivation {
 		return null;
 	}
 
-	protected String getURIOfProperty(String property) {
+	public String getURIOfProperty(String property) {
 		if (reader == null) {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
 		} else {
@@ -674,7 +674,7 @@ public class MediatorSPARQLDerivation {
 		concept = getURIOfConcept(concept);
 		String shortPropertyName = property;
 		property = getURIOfProperty(property);
-		List<String> values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
+		List<String> values = getAllValuesForAGivenProperty(concept, property);
 		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
 			int index = str.lastIndexOf("^");
@@ -711,6 +711,11 @@ public class MediatorSPARQLDerivation {
 			return new HashMap<String, List<Group>>();
 		}
 		return new HashMap<String, List<Group>>();
+	}
+
+	public List<String> getAllValuesForAGivenProperty(String concept, String property) {
+		List<String> values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
+		return values;
 	}
 
 	private float getMinOfData(List<String> values) {

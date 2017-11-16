@@ -19,6 +19,7 @@ import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
@@ -84,6 +85,16 @@ public class TestInputParamters {
 		InputParamterForGetLogicalView.setStepRange(2);
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(InputParamterForGetLogicalView));
+	}
+	
+	@Test
+	public void do_Json_InputParameterForPropertyValuesFromGreenGroup(){
+		InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = new InputParameterForPropertyValuesFromGreenGroup();
+		inputParameterForPropertyValuesFromGreenGroup.setConceptURL(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair"));
+		inputParameterForPropertyValuesFromGreenGroup.setPropertyURL(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasWidth"));
+		
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(inputParameterForPropertyValuesFromGreenGroup));
 	}
 	
 	@Test
