@@ -7,14 +7,14 @@ public class Reference {
 
 	private String objectPropertyURL;
 	private String translatedProperty;
-	private List<String> range = new ArrayList<String>();
+	private List<TranslationResult> range = new ArrayList<TranslationResult>();
 	public String getObjectPropertyURL() {
 		return objectPropertyURL;
 	}
 	public void setObjectPropertyURL(String objectPropertyURL) {
 		this.objectPropertyURL = objectPropertyURL;
 	}
-	public List<String> getRange() {
+	public List<TranslationResult> getRange() {
 		return range;
 	}
 	

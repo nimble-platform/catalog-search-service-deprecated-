@@ -505,15 +505,18 @@ public class SearchController {
 						String propertyURL = row[0];
 						String value = row[1];
 						int index = outputForGetReferencesFromAConcept.isReferenceAlreadyIncluded(propertyURL);
+						Language language = Language.fromString(inputParameterForGetReferencesFromAConcept.getLanguage());
+						TranslationResult result = sparqlDerivation.translateProperty(value, language, languageLabel);
+						
 						if (index == -1) {
 								Reference reference = new Reference();
-								reference.setTranslatedProperty(sparqlDerivation.translateProperty(propertyURL, inputParameterForGetReferencesFromAConcept.getLanguage(), languageLabel).getTranslation());
+								reference.setTranslatedProperty(sparqlDerivation.translateProperty(propertyURL, language, languageLabel).getTranslation());
 								reference.setObjectPropertyURL(propertyURL);
-								reference.getRange().add(value);
+								reference.getRange().add(result);
 								outputForGetReferencesFromAConcept.getAllAvailableReferences().add(reference);
 						}
 						else{
-							outputForGetReferencesFromAConcept.getAllAvailableReferences().get(index).getRange().add(value);
+							outputForGetReferencesFromAConcept.getAllAvailableReferences().get(index).getRange().add(result);
 						}
 
 					} else {

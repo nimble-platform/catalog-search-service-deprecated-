@@ -5,7 +5,7 @@ import de.biba.triple.store.access.enums.Language;
 public class InputParameterForGetReferencesFromAConcept {
 
 	private String conceptURL;
-	private Language language;
+	private String language ="";
 
 	public String getConceptURL() {
 		return conceptURL;
@@ -17,11 +17,11 @@ public class InputParameterForGetReferencesFromAConcept {
 
 	
 	
-	public Language getLanguage() {
+	public String getLanguage() {
 		return language;
 	}
 
-	public void setLanguage(Language language) {
+	public void setLanguage(String language) {
 		this.language = language;
 	}
 

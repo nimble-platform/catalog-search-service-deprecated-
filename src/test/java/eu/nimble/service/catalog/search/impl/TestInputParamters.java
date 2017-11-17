@@ -105,7 +105,7 @@ public class TestInputParamters {
 	public void do_Json_InputParameterForGetReferencesFromAConcept(){
 		InputParameterForGetReferencesFromAConcept InputParameterForGetReferencesFromAConcept = new InputParameterForGetReferencesFromAConcept();
 		InputParameterForGetReferencesFromAConcept.setConceptURL(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair"));
-		InputParameterForGetReferencesFromAConcept.setLanguage(Language.SPANISH);
+		InputParameterForGetReferencesFromAConcept.setLanguage("es");
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(InputParameterForGetReferencesFromAConcept));
 	}
@@ -114,7 +114,7 @@ public class TestInputParamters {
 	public void do_Json_InputParameterForGetReferencesFromAConceptRemote(){
 		InputParameterForGetReferencesFromAConcept InputParameterForGetReferencesFromAConcept = new InputParameterForGetReferencesFromAConcept();
 		InputParameterForGetReferencesFromAConcept.setConceptURL(URLEncoder.encode("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair"));
-		InputParameterForGetReferencesFromAConcept.setLanguage(Language.SPANISH);
+		InputParameterForGetReferencesFromAConcept.setLanguage("es");
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(InputParameterForGetReferencesFromAConcept));
 	}
