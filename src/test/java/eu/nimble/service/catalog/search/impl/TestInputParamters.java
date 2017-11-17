@@ -14,11 +14,13 @@ import org.junit.Test;
 import com.google.gson.Gson;
 
 import de.biba.triple.store.access.dmo.Entity;
+import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
@@ -87,11 +89,32 @@ public class TestInputParamters {
 		System.out.println(gson.toJson(InputParamterForGetLogicalView));
 	}
 	
+	//http://www.aidimme.es/FurnitureSectorOntology.owl
+	
 	@Test
 	public void do_Json_InputParameterForPropertyValuesFromGreenGroup(){
 		InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = new InputParameterForPropertyValuesFromGreenGroup();
 		inputParameterForPropertyValuesFromGreenGroup.setConceptURL(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair"));
 		inputParameterForPropertyValuesFromGreenGroup.setPropertyURL(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#hasWidth"));
+		
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(inputParameterForPropertyValuesFromGreenGroup));
+	}
+	
+	@Test
+	public void do_Json_InputParameterForGetReferencesFromAConcept(){
+		InputParameterForGetReferencesFromAConcept InputParameterForGetReferencesFromAConcept = new InputParameterForGetReferencesFromAConcept();
+		InputParameterForGetReferencesFromAConcept.setConceptURL(URLEncoder.encode("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#HighChair"));
+		InputParameterForGetReferencesFromAConcept.setLanguage(Language.SPANISH);
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(InputParameterForGetReferencesFromAConcept));
+	}
+	
+	@Test
+	public void do_Json_InputParameterForPropertyValuesFromGreenGroupForHydra(){
+		InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = new InputParameterForPropertyValuesFromGreenGroup();
+		inputParameterForPropertyValuesFromGreenGroup.setConceptURL(URLEncoder.encode("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair"));
+		inputParameterForPropertyValuesFromGreenGroup.setPropertyURL(URLEncoder.encode("http://www.aidimme.es/FurnitureSectorOntology.owl#hasWidth"));
 		
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(inputParameterForPropertyValuesFromGreenGroup));

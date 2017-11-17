@@ -30,6 +30,7 @@ import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
@@ -38,15 +39,18 @@ import eu.nimble.service.catalog.search.impl.dao.output.MeaningResult;
 import eu.nimble.service.catalog.search.impl.dao.output.OutoutForGetSupportedLanguages;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForSQPFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConcepts;
+import eu.nimble.service.catalog.search.impl.dao.output.Reference;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 import eu.nimble.service.catalog.search.mediator.SQPDerivationService;
+import springfox.documentation.service.AllowableRangeValues;
 
 @Controller
 public class SearchController {
@@ -444,7 +448,8 @@ public class SearchController {
 	 * concept
 	 * 
 	 * @param inputAsJson
-	 *            The URL of the chosen concept and the URL of the chosen property
+	 *            The URL of the chosen concept and the URL of the chosen
+	 *            property
 	 * @return JSON including for each property the url and the type (datatype
 	 *         or object)
 	 */
@@ -453,24 +458,78 @@ public class SearchController {
 	HttpEntity<Object> getPropertyValuesFromGreenGroup(@RequestParam("inputAsJson") String inputAsJson) {
 		try {
 			Gson gson = new Gson();
-			InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup =gson.fromJson(inputAsJson,
-					 InputParameterForPropertyValuesFromGreenGroup.class);
-			String concept = sparqlDerivation.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
-			String property = sparqlDerivation.getURIOfProperty(inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
+			InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = gson
+					.fromJson(inputAsJson, InputParameterForPropertyValuesFromGreenGroup.class);
+			String concept = sparqlDerivation
+					.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
+			String property = sparqlDerivation
+					.getURIOfProperty(inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
 			List<String> allValues = sparqlDerivation.getAllValuesForAGivenProperty(concept, property);
-			
-			OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new  OutputForPropertyValuesFromGreenGroup();
+
+			OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new OutputForPropertyValuesFromGreenGroup();
 			outputForPropertyValuesFromGreenGroup.getAllValues().addAll(allValues);
-			
+
 			String result = "";
 			result = gson.toJson(outputForPropertyValuesFromGreenGroup);
-			
+
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
-			
+
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-			catch (Exception e) {
-				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+
+	}
+
+	/**
+	 * This methods determines to a given concept all objectproperties and
+	 * related domains
+	 * 
+	 * @param inputAsJson
+	 * @return
+	 */
+	@CrossOrigin
+	@RequestMapping(value = "/getReferencesFromAConcept", method = RequestMethod.GET)
+	HttpEntity<Object> getReferencesFromAConcept(@RequestParam("inputAsJson") String inputAsJson) {
+		try {
+			Gson gson = new Gson();
+			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept = gson
+					.fromJson(inputAsJson, InputParameterForGetReferencesFromAConcept.class);
+
+			List<String[]> allReferences = sparqlDerivation.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+					inputParameterForGetReferencesFromAConcept);
+
+			OutputForGetReferencesFromAConcept outputForGetReferencesFromAConcept = new OutputForGetReferencesFromAConcept();
+			if (allReferences != null && (allReferences.size() > 0)) {
+				for (String[] row : allReferences) {
+					if (row.length == 2) {
+						String propertyURL = row[0];
+						String value = row[1];
+						int index = outputForGetReferencesFromAConcept.isReferenceAlreadyIncluded(propertyURL);
+						if (index == -1) {
+								Reference reference = new Reference();
+								reference.setTranslatedProperty(sparqlDerivation.translateProperty(propertyURL, inputParameterForGetReferencesFromAConcept.getLanguage(), languageLabel).getTranslation());
+								reference.setObjectPropertyURL(propertyURL);
+								reference.getRange().add(value);
+								outputForGetReferencesFromAConcept.getAllAvailableReferences().add(reference);
+						}
+						else{
+							outputForGetReferencesFromAConcept.getAllAvailableReferences().get(index).getRange().add(value);
+						}
+
+					} else {
+						Logger.getAnonymousLogger().log(Level.WARNING, "Invalid data: " + row);
+					}
+				}
 			}
+
+			String result = "";
+			result = gson.toJson(outputForGetReferencesFromAConcept);
+
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
 	}
 

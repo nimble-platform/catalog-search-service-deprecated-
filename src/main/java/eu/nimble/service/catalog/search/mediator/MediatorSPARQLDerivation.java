@@ -23,6 +23,7 @@ import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
@@ -783,6 +784,10 @@ public class MediatorSPARQLDerivation {
 		return result;
 	}
 
+	public  List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(InputParameterForGetReferencesFromAConcept input){
+		return reader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(input.getConceptURL());
+	}
+	
 	public OutputForPropertiesFromConcept getAllTransitiveProperties(String concept){
 		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
 		concept = getURIOfConcept(concept);
