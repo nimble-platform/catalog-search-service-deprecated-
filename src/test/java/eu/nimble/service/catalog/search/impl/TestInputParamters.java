@@ -111,6 +111,15 @@ public class TestInputParamters {
 	}
 	
 	@Test
+	public void do_Json_InputParameterForGetReferencesFromAConceptRemote(){
+		InputParameterForGetReferencesFromAConcept InputParameterForGetReferencesFromAConcept = new InputParameterForGetReferencesFromAConcept();
+		InputParameterForGetReferencesFromAConcept.setConceptURL(URLEncoder.encode("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair"));
+		InputParameterForGetReferencesFromAConcept.setLanguage(Language.SPANISH);
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(InputParameterForGetReferencesFromAConcept));
+	}
+	
+	@Test
 	public void do_Json_InputParameterForPropertyValuesFromGreenGroupForHydra(){
 		InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = new InputParameterForPropertyValuesFromGreenGroup();
 		inputParameterForPropertyValuesFromGreenGroup.setConceptURL(URLEncoder.encode("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair"));
