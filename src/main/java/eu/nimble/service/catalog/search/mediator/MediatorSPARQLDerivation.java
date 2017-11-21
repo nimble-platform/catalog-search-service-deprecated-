@@ -340,7 +340,7 @@ public class MediatorSPARQLDerivation {
 
 			shortName = extractNameOfURL(shortName);
 
-			filterText += "FILTER ( xsd:decimal(?" + shortName + ") <  xsd:decimal(" + fil.getMax() + ")).";
+			filterText += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + fil.getMax() + ")).";
 			filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + fil.getMin() + ")).";
 			filter += filterText;
 		}
