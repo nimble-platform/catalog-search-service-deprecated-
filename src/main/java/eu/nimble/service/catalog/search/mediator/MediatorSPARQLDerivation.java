@@ -696,6 +696,10 @@ public class MediatorSPARQLDerivation {
 					Group group = new Group();
 					float newMin = min + (stepRate * i);
 					float newMax = min + (stepRate * (i + 1));
+					if (newMin > 2){
+						newMin = round(newMin);
+						newMax = round(newMax);
+					}
 					group.setDescription("From: " + newMin + " to " + newMax);
 					group.setMin(newMin);
 					group.setMax(newMax);
@@ -712,6 +716,11 @@ public class MediatorSPARQLDerivation {
 			return new HashMap<String, List<Group>>();
 		}
 		return new HashMap<String, List<Group>>();
+	}
+
+	private float round(float value) {
+		int n = (int) value * 100;
+		 return n/100f;
 	}
 
 	public List<String> getAllValuesForAGivenProperty(String concept, String property) {
