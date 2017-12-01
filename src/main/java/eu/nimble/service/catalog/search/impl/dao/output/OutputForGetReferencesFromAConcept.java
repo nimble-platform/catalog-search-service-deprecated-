@@ -29,7 +29,7 @@ public class OutputForGetReferencesFromAConcept {
 			}
 				index++;
 		}
-		return index -1;
+		return  -1;
 	}
 
 }

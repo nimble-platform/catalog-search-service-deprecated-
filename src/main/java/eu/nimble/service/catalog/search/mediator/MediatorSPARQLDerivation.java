@@ -810,8 +810,8 @@ public class MediatorSPARQLDerivation {
 				outputForPropertyFromConcept.setObjectProperty(false);
 			}
 			else{
-				outputForPropertyFromConcept.setDatatypeProperty(true);
-				outputForPropertyFromConcept.setObjectProperty(false);
+				outputForPropertyFromConcept.setDatatypeProperty(false);
+				outputForPropertyFromConcept.setObjectProperty(true);
 			}
 			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
 		}
