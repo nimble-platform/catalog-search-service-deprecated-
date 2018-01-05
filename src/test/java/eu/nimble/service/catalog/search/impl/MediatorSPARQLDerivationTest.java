@@ -2,6 +2,7 @@ package eu.nimble.service.catalog.search.impl;
 
 import static org.junit.Assert.assertTrue;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,8 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import com.google.gson.Gson;
 
 import static org.mockito.Mockito.*;
 
@@ -25,6 +28,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
+import eu.nimble.service.catalog.search.mediator.SPARQLFactory;
 
 public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 
@@ -264,6 +268,36 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		
 		TranslationResult result = translateConcept("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#ContactPerson", Language.SPANISH,translationLabel );
 		System.out.println("Result: " + result);
+		
+	}
+	
+	@Test
+	
+	public void testSPARQLFactory(){
+		InputParamaterForExecuteSelect  paramaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		paramaterForExecuteSelect.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		List<String> parameters = new ArrayList<String>();
+		parameters.add("name");
+		parameters.add("description");
+		parameters.add("vanish");
+		
+		List<String> parameterURLS = new ArrayList<String>();
+		parameterURLS.add("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name");
+		parameterURLS.add("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Description");
+		parameterURLS.add("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		paramaterForExecuteSelect.setParameters(parameters);
+		paramaterForExecuteSelect.setParametersURL(parameterURLS);
+		
+		Gson gson = new Gson();
+		System.out.println(URLEncoder.encode(gson.toJson(paramaterForExecuteSelect)));
+		
+		MarmottaReader marmottaReader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
+		
+		SPARQLFactory factory = new SPARQLFactory(null);
+		List<String>  sparqls = factory.createSparql(paramaterForExecuteSelect, marmottaReader);
+		for (String str: sparqls){
+			System.out.println(str);
+		}
 		
 	}
 }

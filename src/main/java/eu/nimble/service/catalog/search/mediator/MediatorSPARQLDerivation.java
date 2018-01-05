@@ -18,6 +18,7 @@ import de.biba.triple.store.access.jena.PropertyValuesCrawler;
 import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaPropertyValuesCrawler;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.impl.dao.DataPoint;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
@@ -38,6 +39,7 @@ public class MediatorSPARQLDerivation {
 	private IReader reader = null;
 	private IPropertyValuesCrawler propertyValuesCrawler = null;
 	private String languagelabel = null;
+	private NimbleSpecificSPARQLDeriviation nimbleSpecificSPARQLDeriviation = null;
 
 	public MediatorSPARQLDerivation() {
 		File f = new File(FURNITURE2_OWL);
@@ -57,6 +59,7 @@ public class MediatorSPARQLDerivation {
 		reader = new MarmottaReader(url);
 		reader.setModeToRemote();
 		reader.setLanguageLabel(languagelabel);
+		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader);
 
 	}
 
@@ -74,47 +77,108 @@ public class MediatorSPARQLDerivation {
 	public OutputForExecuteSelect createSPARQLAndExecuteIT(
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 
-		String sparql = createSparql(inputParamaterForExecuteSelect);
-		Logger.getAnonymousLogger().log(Level.INFO, sparql);
+		if (!(reader instanceof MarmottaReader)) {
 
-		Object ouObject = reader.query(sparql);
-		// This is necessary to get the uuid for each instance
-		inputParamaterForExecuteSelect.getParameters().add(0, "instance");
-		String[] params = new String[inputParamaterForExecuteSelect.getParameters().size()];
-		inputParamaterForExecuteSelect.getParameters().toArray(params);
-		reduceEachParamToItsName(params);
+			String sparql = createSparql(inputParamaterForExecuteSelect);
+			Logger.getAnonymousLogger().log(Level.INFO, sparql);
 
-		for (int i = 0; i < params.length; i++) {
-			if (params[i].contains("#")) {
-				params[i] = params[i].substring(params[i].indexOf("#") + 1);
+			Object ouObject = reader.query(sparql);
+			// This is necessary to get the uuid for each instance
+			inputParamaterForExecuteSelect.getParameters().add(0, "instance");
+			String[] params = new String[inputParamaterForExecuteSelect.getParameters().size()];
+			inputParamaterForExecuteSelect.getParameters().toArray(params);
+			reduceEachParamToItsName(params);
+
+			for (int i = 0; i < params.length; i++) {
+				if (params[i].contains("#")) {
+					params[i] = params[i].substring(params[i].indexOf("#") + 1);
+				}
 			}
+
+			List<String[]> resultList = reader.createResultListArray(ouObject, params);
+			OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+			outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
+
+			inputParamaterForExecuteSelect.getParameters().remove(0); // Must be
+																		// removed
+																		// the
+																		// uuid
+																		// is
+																		// not
+																		// part
+																		// of
+																		// the
+																		// result
+			createLanguageSpecificHeader(inputParamaterForExecuteSelect, outputForExecuteSelect);
+
+			// add uuid to result data structures
+			for (String[] row : resultList) {
+				outputForExecuteSelect.getUuids().add(row[0]);
+			}
+
+			addRowsToOutputForExecuteSelect(resultList, outputForExecuteSelect, 1); // NO
+																					// uuid
+																					// should
+																					// be
+																					// inserted
+
+			return outputForExecuteSelect;
+		} else {
+			if (reader instanceof MarmottaReader) {
+				SPARQLFactory sparqlFactory = new SPARQLFactory(this);
+				List<String> queries = sparqlFactory.createSparql(inputParamaterForExecuteSelect, reader);
+				Map<String, List<DataPoint>> intermediateResult = new HashMap<String, List<DataPoint>>();
+				String[] params = new String[] { "instance", "property", "hasValue" };
+				List<String> columns = new ArrayList<String>();
+
+				for (String sparql : queries) {
+					Object ouObject = reader.query(sparql);
+					List<String[]> resultList = reader.createResultListArray(ouObject, params);
+					for (String[] instance : resultList) {
+						String uuid = instance[0];
+						String property = instance[1];
+						if (!columns.contains(property)) {
+							columns.add(property);
+						}
+						String value = instance[2];
+						DataPoint dataPoint = new DataPoint();
+						dataPoint.setPropertyURL(property);
+						dataPoint.setValue(value);
+						if (intermediateResult.containsKey(uuid)) {
+							intermediateResult.get(uuid).add(dataPoint);
+						} else {
+							List<DataPoint> datapoints = new ArrayList<DataPoint>();
+							datapoints.add(dataPoint);
+							intermediateResult.put(uuid, datapoints);
+						}
+
+					}
+
+				}
+				OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+				outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
+				for (int i = 0; i < columns.size(); i++) {
+					String c = columns.get(i);
+					c = c.substring(c.indexOf("#") + 1);
+					columns.set(i, c);
+				}
+				outputForExecuteSelect.setColumns(columns);
+				for (String key : intermediateResult.keySet()) {
+					outputForExecuteSelect.getUuids().add(key);
+					List<DataPoint> dataPoints = intermediateResult.get(key);
+					ArrayList<String> data = new ArrayList<String>();
+					for (DataPoint dataPoint : dataPoints) {
+						String value = dataPoint.getValue();
+						value = value.substring(value.lastIndexOf("^") + 1);
+						data.add(value);
+					}
+					outputForExecuteSelect.getRows().add(data);
+				}
+				
+				return outputForExecuteSelect;
+			}
+			return new OutputForExecuteSelect();
 		}
-
-		List<String[]> resultList = reader.createResultListArray(ouObject, params);
-		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
-		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
-
-		inputParamaterForExecuteSelect.getParameters().remove(0); // Must be
-																	// removed
-																	// the uuid
-																	// is not
-																	// part of
-																	// the
-																	// result
-		createLanguageSpecificHeader(inputParamaterForExecuteSelect, outputForExecuteSelect);
-
-		// add uuid to result data structures
-		for (String[] row : resultList) {
-			outputForExecuteSelect.getUuids().add(row[0]);
-		}
-
-		addRowsToOutputForExecuteSelect(resultList, outputForExecuteSelect, 1); // NO
-																				// uuid
-																				// should
-																				// be
-																				// inserted
-
-		return outputForExecuteSelect;
 	}
 
 	public void reduceEachParamToItsName(String[] params) {
@@ -696,7 +760,7 @@ public class MediatorSPARQLDerivation {
 					Group group = new Group();
 					float newMin = min + (stepRate * i);
 					float newMax = min + (stepRate * (i + 1));
-					if (newMin > 2){
+					if (newMin > 2) {
 						newMin = round(newMin);
 						newMax = round(newMax);
 					}
@@ -720,7 +784,7 @@ public class MediatorSPARQLDerivation {
 
 	private float round(float value) {
 		int n = (int) value * 100;
-		 return n/100f;
+		return n / 100f;
 	}
 
 	public List<String> getAllValuesForAGivenProperty(String concept, String property) {
@@ -793,23 +857,23 @@ public class MediatorSPARQLDerivation {
 		return result;
 	}
 
-	public  List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(InputParameterForGetReferencesFromAConcept input){
+	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+			InputParameterForGetReferencesFromAConcept input) {
 		return reader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(input.getConceptURL());
 	}
-	
-	public OutputForPropertiesFromConcept getAllTransitiveProperties(String concept){
+
+	public OutputForPropertiesFromConcept getAllTransitiveProperties(String concept) {
 		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
 		concept = getURIOfConcept(concept);
 		List<String> properties = reader.getAllPropertiesIncludingEverything(concept);
-		for (String urlOfProperty : properties){
+		for (String urlOfProperty : properties) {
 			PropertyType propertyType = reader.getPropertyType(urlOfProperty);
 			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
 			outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
-			if (propertyType == PropertyType.DATATYPEPROPERTY){
+			if (propertyType == PropertyType.DATATYPEPROPERTY) {
 				outputForPropertyFromConcept.setDatatypeProperty(true);
 				outputForPropertyFromConcept.setObjectProperty(false);
-			}
-			else{
+			} else {
 				outputForPropertyFromConcept.setDatatypeProperty(false);
 				outputForPropertyFromConcept.setObjectProperty(true);
 			}

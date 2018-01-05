@@ -376,37 +376,37 @@ public class SearchController {
 		return result;
 	}
 
-	/**
-	 * Returns the orange amount of relations
-	 * 
-	 * @param inputAsJson
-	 *            The URL of the chosen concept the same as getLogicalView
-	 * @return JSON including both groups
-	 */
-	@CrossOrigin
-	@RequestMapping(value = "/getSQPFromOrangeGroup", method = RequestMethod.GET)
-	HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String inputAsJson) {
-		try {
-			Gson gson = new Gson();
-			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
-					InputParamterForGetLogicalView.class);
-
-			String concept = inputParamterForGetLogicalView.getConcept();
-			List<String> entries = sQPDerivationService.getListOfAvailableSQPs(concept);
-
-			OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new OutputForSQPFromOrangeGroup();
-			outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
-			String result = "";
-			result = gson.toJson(outputForSQPFromOrangeGroup);
-
-			return new ResponseEntity<Object>(result, HttpStatus.OK);
-		}
-
-		catch (Exception e) {
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
+//	/**
+//	 * Returns the orange amount of relations
+//	 * 
+//	 * @param inputAsJson
+//	 *            The URL of the chosen concept the same as getLogicalView
+//	 * @return JSON including both groups
+//	 */
+//	@CrossOrigin
+//	@RequestMapping(value = "/getSQPFromOrangeGroup", method = RequestMethod.GET)
+//	HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String inputAsJson) {
+//		try {
+//			Gson gson = new Gson();
+//			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
+//					InputParamterForGetLogicalView.class);
+//
+//			String concept = inputParamterForGetLogicalView.getConcept();
+//			List<String> entries = sQPDerivationService.getListOfAvailableSQPs(concept);
+//
+//			OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new OutputForSQPFromOrangeGroup();
+//			outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
+//			String result = "";
+//			result = gson.toJson(outputForSQPFromOrangeGroup);
+//
+//			return new ResponseEntity<Object>(result, HttpStatus.OK);
+//		}
+//
+//		catch (Exception e) {
+//			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//
+//	}
 
 	/**
 	 * Returns the properties of of a cocnept
@@ -618,6 +618,7 @@ public class SearchController {
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
 					InputParamaterForExecuteSelect.class);
 
+			
 			outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 
 			String result = "";

@@ -11,6 +11,7 @@ public class InputParamaterForExecuteSelect {
 	String concept;
 	String language;
 	List<String> parameters = new ArrayList<String>();
+	List<String> parametersURL = new ArrayList<String>();
 	List<Parameter> parametersIncludingPath = new ArrayList<Parameter>();
 	List<Filter> filters = new ArrayList<Filter>();
 
@@ -56,6 +57,14 @@ public class InputParamaterForExecuteSelect {
 
 	public void setParametersIncludingPath(List<Parameter> parametersIncludingPath) {
 		this.parametersIncludingPath = parametersIncludingPath;
+	}
+
+	public List<String> getParametersURL() {
+		return parametersURL;
+	}
+
+	public void setParametersURL(List<String> parametersURL) {
+		this.parametersURL = parametersURL;
 	}
 
 }

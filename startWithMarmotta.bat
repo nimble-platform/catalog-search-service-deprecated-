@@ -1,1 +1,1 @@
-mvnDebug spring-boot:run -Dnimble.shared.property.marmottauri=http://134.168.33.237:8080/marmotta
+mvnDebug spring-boot:run -Dnimble.shared.property.marmottauri=https://nimble-platform.salzburgresearch.at/marmotta
