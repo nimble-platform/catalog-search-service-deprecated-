@@ -7,6 +7,7 @@ import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
 
 public class SPARQLFactory {
 
@@ -128,7 +129,7 @@ public class SPARQLFactory {
 
 	private String extendForNameProperty() {
 		// TODO Auto-generated method stub
-		return "?instance" + "<urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name>  ?hasValue .";
+		return "?instance" + "<"+NimbleAdaptionServiceOfSearchResults.propertyURLForName+">  ?hasValue .";
 	}
 
 	private PropertySource detectPropertySource(String propertyURL) {

@@ -50,6 +50,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 import eu.nimble.service.catalog.search.mediator.SQPDerivationService;
+import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
 import springfox.documentation.service.AllowableRangeValues;
 
 @Controller
@@ -71,6 +72,7 @@ public class SearchController {
 
 	private MediatorSPARQLDerivation sparqlDerivation = null;
 	private SQPDerivationService sQPDerivationService = null;
+	private NimbleAdaptionServiceOfSearchResults nimbleAdaptionServiceOfSearchResults = null;
 
 	@PostConstruct
 	public void init() {
@@ -98,6 +100,8 @@ public class SearchController {
 		}
 		sparqlDerivation.setLanguagelabel(languageLabel);
 		sQPDerivationService = new SQPDerivationService(sparqlDerivation);
+		nimbleAdaptionServiceOfSearchResults = new NimbleAdaptionServiceOfSearchResults(sparqlDerivation,
+				languageLabel);
 	}
 
 	@RequestMapping(value = "/query", method = RequestMethod.GET)
@@ -116,7 +120,7 @@ public class SearchController {
 	@RequestMapping(value = "/test", method = RequestMethod.POST)
 	HttpEntity<Object> query() {
 		{
-			return new ResponseEntity<Object>("hallo, Back and Front", HttpStatus.OK);
+			return new ResponseEntity<Object>("hello, Back and Front", HttpStatus.OK);
 		}
 	}
 
@@ -372,41 +376,64 @@ public class SearchController {
 		outputStructure.setViewStructure(structureForView);
 		outputStructure.setCurrentSelections(paramterForGetLogicalView.getCurrentSelections());
 
+		// Try to extend the properties to Nimble specific ones
+		if (needANimbleSpecificAdapation()) {
+
+			List<Entity> additionalEntitiesViewStrucutre = nimbleAdaptionServiceOfSearchResults
+					.getAdditionalPropertiesForAConcept(outputStructure.getViewStructure().getDataproperties());
+			for (Entity entity : additionalEntitiesViewStrucutre) {
+				outputStructure.getViewStructure().getDataproperties().add(entity);
+			}
+
+			List<Entity> additionalEntitiesViewCompleteStructure = nimbleAdaptionServiceOfSearchResults
+					.getAdditionalPropertiesForAConcept(outputStructure.getCompleteStructure().getDataproperties());
+			for (Entity entity : additionalEntitiesViewCompleteStructure) {
+				outputStructure.getCompleteStructure().getDataproperties().add(entity);
+			}
+
+		}
+
 		String result = gson.toJson(outputStructure);
 		return result;
 	}
 
-//	/**
-//	 * Returns the orange amount of relations
-//	 * 
-//	 * @param inputAsJson
-//	 *            The URL of the chosen concept the same as getLogicalView
-//	 * @return JSON including both groups
-//	 */
-//	@CrossOrigin
-//	@RequestMapping(value = "/getSQPFromOrangeGroup", method = RequestMethod.GET)
-//	HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String inputAsJson) {
-//		try {
-//			Gson gson = new Gson();
-//			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
-//					InputParamterForGetLogicalView.class);
-//
-//			String concept = inputParamterForGetLogicalView.getConcept();
-//			List<String> entries = sQPDerivationService.getListOfAvailableSQPs(concept);
-//
-//			OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new OutputForSQPFromOrangeGroup();
-//			outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
-//			String result = "";
-//			result = gson.toJson(outputForSQPFromOrangeGroup);
-//
-//			return new ResponseEntity<Object>(result, HttpStatus.OK);
-//		}
-//
-//		catch (Exception e) {
-//			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//		}
-//
-//	}
+	// /**
+	// * Returns the orange amount of relations
+	// *
+	// * @param inputAsJson
+	// * The URL of the chosen concept the same as getLogicalView
+	// * @return JSON including both groups
+	// */
+	// @CrossOrigin
+	// @RequestMapping(value = "/getSQPFromOrangeGroup", method =
+	// RequestMethod.GET)
+	// HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String
+	// inputAsJson) {
+	// try {
+	// Gson gson = new Gson();
+	// InputParamterForGetLogicalView inputParamterForGetLogicalView =
+	// gson.fromJson(inputAsJson,
+	// InputParamterForGetLogicalView.class);
+	//
+	// String concept = inputParamterForGetLogicalView.getConcept();
+	// List<String> entries =
+	// sQPDerivationService.getListOfAvailableSQPs(concept);
+	//
+	// OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new
+	// OutputForSQPFromOrangeGroup();
+	// outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
+	// String result = "";
+	// result = gson.toJson(outputForSQPFromOrangeGroup);
+	//
+	// return new ResponseEntity<Object>(result, HttpStatus.OK);
+	// }
+	//
+	// catch (Exception e) {
+	// return new ResponseEntity<Object>(e.getMessage(),
+	// HttpStatus.INTERNAL_SERVER_ERROR);
+	// }
+	//
+	// }
 
 	/**
 	 * Returns the properties of of a cocnept
@@ -505,18 +532,20 @@ public class SearchController {
 						String propertyURL = row[0];
 						String value = row[1];
 						int index = outputForGetReferencesFromAConcept.isReferenceAlreadyIncluded(propertyURL);
-						Language language = Language.fromString(inputParameterForGetReferencesFromAConcept.getLanguage());
+						Language language = Language
+								.fromString(inputParameterForGetReferencesFromAConcept.getLanguage());
 						TranslationResult result = sparqlDerivation.translateProperty(value, language, languageLabel);
-						
+
 						if (index == -1) {
-								Reference reference = new Reference();
-								reference.setTranslatedProperty(sparqlDerivation.translateProperty(propertyURL, language, languageLabel).getTranslation());
-								reference.setObjectPropertyURL(propertyURL);
-								reference.getRange().add(result);
-								outputForGetReferencesFromAConcept.getAllAvailableReferences().add(reference);
-						}
-						else{
-							outputForGetReferencesFromAConcept.getAllAvailableReferences().get(index).getRange().add(result);
+							Reference reference = new Reference();
+							reference.setTranslatedProperty(sparqlDerivation
+									.translateProperty(propertyURL, language, languageLabel).getTranslation());
+							reference.setObjectPropertyURL(propertyURL);
+							reference.getRange().add(result);
+							outputForGetReferencesFromAConcept.getAllAvailableReferences().add(reference);
+						} else {
+							outputForGetReferencesFromAConcept.getAllAvailableReferences().get(index).getRange()
+									.add(result);
 						}
 
 					} else {
@@ -618,7 +647,6 @@ public class SearchController {
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
 					InputParamaterForExecuteSelect.class);
 
-			
 			outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 
 			String result = "";
@@ -684,6 +712,16 @@ public class SearchController {
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	/**
+	 * The NIMBLE platform uses a specific ontology which requires manual
+	 * inclusion or exclusion of properties and other stuff
+	 * 
+	 * @return true if Marmotta is set as main data source of the search
+	 */
+	public boolean needANimbleSpecificAdapation() {
+		return (marmottaUri != null && marmottaUri.contains("htgtp")) ? true : false;
 	}
 
 }
