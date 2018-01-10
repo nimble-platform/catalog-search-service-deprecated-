@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="https://www.w3schools.com" xmlns="https://www.w3schools.com">
+
+	<xs:element name="SQPConfigurations">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="SQPConfiguration" type="SQPConfiguration"
+					maxOccurs="unbounded"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="SQPConfiguration">
+		<xs:sequence>
+			<xs:element name="SQPName" type="xs:string"></xs:element>
+			<xs:element name="UserContext" type="UserContext"
+				minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="SQPMapping" type="SQPMapping"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:complexType name="UserContext">
+		<xs:sequence>
+			<xs:element name="BusinessProzessStep" type="xs:string"
+				minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="Source">
+		<xs:sequence>
+			<xs:element name="SourceConcept" type="xs:string" />
+			<xs:element name="ContextPathFromSource" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="Target">
+		<xs:sequence>
+			<xs:element name="ContextPathFromSource" type="xs:string" />
+			<xs:element name="TargetProperty" type="xs:string" />
+			<xs:element name="TargetPathFromSource" type="xs:string" />
+			<xs:element name="DirectionSourceOriented" type="xs:boolean" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="SQPMapping">
+		<xs:sequence>
+			<xs:element name="Source" type="Source" />
+			<xs:element name="Target" type="Target" />
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>

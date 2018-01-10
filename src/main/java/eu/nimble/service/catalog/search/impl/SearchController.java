@@ -49,8 +49,8 @@ import eu.nimble.service.catalog.search.impl.dao.output.Reference;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
 import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
-import eu.nimble.service.catalog.search.mediator.SQPDerivationService;
 import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
+import eu.nimble.service.catalog.search.services.SQPDerivationService;
 import springfox.documentation.service.AllowableRangeValues;
 
 @Controller
@@ -59,7 +59,7 @@ public class SearchController {
 	private static final String NULL_ASSIGNED_VALUE = "null";
 
 	@Value("${nimble.shared.property.config.d:C:/Resources/NIMBLE/config.xml}")
-	private String configPath;
+	private String generalConfigurationPath;
 
 	@Value("${nimble.shared.property.ontologyfile:null}")
 	private String ontologyFile;
@@ -69,6 +69,9 @@ public class SearchController {
 
 	@Value("${nimble.shared.property.languagelabel:http://www.aidimme.es/FurnitureSectorOntology.owl#translation}")
 	private String languageLabel;
+	
+	@Value("${nimble.shared.property.catalogue.search.configuration:C:/Resources/NIMBLE/sqp.xml}")
+	private String sqpConfigurationPath;
 
 	private MediatorSPARQLDerivation sparqlDerivation = null;
 	private SQPDerivationService sQPDerivationService = null;
@@ -99,7 +102,7 @@ public class SearchController {
 			}
 		}
 		sparqlDerivation.setLanguagelabel(languageLabel);
-		sQPDerivationService = new SQPDerivationService(sparqlDerivation);
+		sQPDerivationService = new SQPDerivationService(sparqlDerivation, sqpConfigurationPath);
 		nimbleAdaptionServiceOfSearchResults = new NimbleAdaptionServiceOfSearchResults(sparqlDerivation,
 				languageLabel);
 	}
@@ -109,7 +112,7 @@ public class SearchController {
 		{
 			Gson gson = new Gson();
 			InputParameter parameter = gson.fromJson(query, InputParameter.class);
-			MediatorEntryPoint service = new MediatorEntryPoint(configPath, parameter);
+			MediatorEntryPoint service = new MediatorEntryPoint(generalConfigurationPath, parameter);
 			eu.nimble.service.catalog.search.mediator.datatypes.MediatorResult result = service.query();
 
 			return new ResponseEntity<Object>(result.toOutput(parameter.getTypeOfOutput()), HttpStatus.OK);
@@ -397,43 +400,37 @@ public class SearchController {
 		return result;
 	}
 
-	// /**
-	// * Returns the orange amount of relations
-	// *
-	// * @param inputAsJson
-	// * The URL of the chosen concept the same as getLogicalView
-	// * @return JSON including both groups
-	// */
-	// @CrossOrigin
-	// @RequestMapping(value = "/getSQPFromOrangeGroup", method =
-	// RequestMethod.GET)
-	// HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String
-	// inputAsJson) {
-	// try {
-	// Gson gson = new Gson();
-	// InputParamterForGetLogicalView inputParamterForGetLogicalView =
-	// gson.fromJson(inputAsJson,
-	// InputParamterForGetLogicalView.class);
-	//
-	// String concept = inputParamterForGetLogicalView.getConcept();
-	// List<String> entries =
-	// sQPDerivationService.getListOfAvailableSQPs(concept);
-	//
-	// OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new
-	// OutputForSQPFromOrangeGroup();
-	// outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
-	// String result = "";
-	// result = gson.toJson(outputForSQPFromOrangeGroup);
-	//
-	// return new ResponseEntity<Object>(result, HttpStatus.OK);
-	// }
-	//
-	// catch (Exception e) {
-	// return new ResponseEntity<Object>(e.getMessage(),
-	// HttpStatus.INTERNAL_SERVER_ERROR);
-	// }
-	//
-	// }
+	/**
+	 * Returns the orange amount of relations
+	 *
+	 * @param inputAsJson
+	 *            The URL of the chosen concept the same as getLogicalView
+	 * @return JSON including both groups
+	 */
+	@CrossOrigin
+	@RequestMapping(value = "/getSQPFromOrangeGroup", method = RequestMethod.GET)
+	HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String inputAsJson) {
+		try {
+			Gson gson = new Gson();
+			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
+					InputParamterForGetLogicalView.class);
+
+			String concept = inputParamterForGetLogicalView.getConcept();
+			List<String> entries = sQPDerivationService.getListOfAvailableSQPs(concept);
+
+			OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new OutputForSQPFromOrangeGroup();
+			outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
+			String result = "";
+			result = gson.toJson(outputForSQPFromOrangeGroup);
+
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+		}
+
+		catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
 
 	/**
 	 * Returns the properties of of a cocnept
