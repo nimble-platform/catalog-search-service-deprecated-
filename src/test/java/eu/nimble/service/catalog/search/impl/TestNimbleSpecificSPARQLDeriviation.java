@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.biba.triple.store.access.jena.Reader;
@@ -14,6 +15,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 
 	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/ontology/FurnitureSectorTaxonomy-v1.8_BIBA.owl";
 
+	@Ignore
 	@Test
 	public void testcreateSPARQLForAllDomainSpecificProperties() {
 		NimbleSpecificSPARQLDeriviation deriviation = new NimbleSpecificSPARQLDeriviation(null, null);
@@ -22,6 +24,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 
 	}
 
+	@Ignore
 	@Test
 	public void testgetPropertyValuesForOrangeGroup(){
 		File file = new File("./src/main/resources/sqpConfiguration.xml");

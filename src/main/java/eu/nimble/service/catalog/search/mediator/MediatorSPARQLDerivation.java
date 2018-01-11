@@ -97,7 +97,7 @@ public class MediatorSPARQLDerivation {
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
 		
-		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader, sqpDerivationService);
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation( reader, sqpDerivationService);
 	}
 
 	public OutputForExecuteSelect createSPARQLAndExecuteIT(
