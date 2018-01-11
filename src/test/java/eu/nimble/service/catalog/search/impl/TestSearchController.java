@@ -26,10 +26,19 @@ public class TestSearchController {
 	    }
 	@Ignore 
 	@Test
-	public void getPropertyValuesFromOrangeGroup(){
+	public void testgetPropertyValuesFromOrangeGroup(){
 		String inputAsJson = "{\"conceptURL\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair\",\"orangeCommand\":\"companyName\"}";
 		
 		HttpEntity<Object>  result = serachController.getPropertyValuesFromOrangeGroup(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+	}
+	
+	@Ignore
+	@Test
+	public void testgetSQP(){
+		String inputAsJson = "{\"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair\",\"stepRange\":1,\"language\":\"en\",\"frozenConcept\":\"HighChair\",\"distanceToFrozenConcept\":0,\"conceptURIPath\":[],\"currenSelections\":[]}";
+		HttpEntity<Object>  result = serachController.getSQP(inputAsJson);
 		String r = result.getBody().toString();
 		System.out.println(r);
 	}

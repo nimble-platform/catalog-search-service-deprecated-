@@ -70,8 +70,6 @@ public class SQPDerivationService {
 		List<String> result = new ArrayList<String>();
 		List<String> allDerivedConcepts = sparqlDerivation.getAllDerivedConcepts(concept);
 		for (String dependantConcept : allDerivedConcepts) {
-			int index = dependantConcept.indexOf("#") + 1;
-			dependantConcept = dependantConcept.substring(index);
 			if (availableSQPs.containsKey(dependantConcept)) {
 				for (SQPConfiguration sqpConfiguration : availableSQPs.get(concept)) {
 					result.add(sqpConfiguration.getSQPName());
