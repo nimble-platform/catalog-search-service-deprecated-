@@ -62,9 +62,15 @@ public class MediatorSPARQLDerivation {
 	}
 
 	
+	public void updatesqpDerivationService(SQPDerivationService sqpDerivationService ){
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation( reader, sqpDerivationService);
+		this.sqpDerivationService = sqpDerivationService;
+	}
+	
 	public MediatorSPARQLDerivation(String uri, boolean remote, SQPDerivationService sqpDerivationService) {
 		if (!remote) {
 			initForSpecificOntology(uri);
+			updatesqpDerivationService(sqpDerivationService);
 
 		} else {
 			reader = new MarmottaReader(uri);
@@ -98,6 +104,7 @@ public class MediatorSPARQLDerivation {
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
 		
 		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation( reader, sqpDerivationService);
+		this.sqpDerivationService = sqpDerivationService;
 	}
 
 	public OutputForExecuteSelect createSPARQLAndExecuteIT(

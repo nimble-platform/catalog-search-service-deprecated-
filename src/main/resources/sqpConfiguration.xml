@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p:SQPConfigurations xmlns:p="https://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.w3schools.com sqpConfiguration.xsd ">
+  <SQPConfiguration>
+    <SQPName>companyName</SQPName>
+    <UserContext/>
+    <SQPMapping>
+      <Source>
+        <SourceConcept>http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair</SourceConcept>
+        <ContextPathFromSource>ContextPathFromSource</ContextPathFromSource>
+      </Source>
+      <Target>
+        <TargetProperty>http://www.aidimme.es/FurnitureSectorOntology.owl#hasCompanyName</TargetProperty>
+        <TargetPathFromSource>http://www.aidimme.es/FurnitureSectorOntology.owl#isManufacturedBy</TargetPathFromSource>
+        <DirectionSourceOriented>true</DirectionSourceOriented>
+      </Target>
+    </SQPMapping>
+  </SQPConfiguration>
+  
+   <SQPConfiguration>
+    <SQPName>fromCatalogue</SQPName>
+    <UserContext/>
+    <SQPMapping>
+      <Source>
+        <SourceConcept>http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair</SourceConcept>
+        <ContextPathFromSource>ContextPathFromSource</ContextPathFromSource>
+      </Source>
+      <Target>
+        <TargetProperty>http://www.aidimme.es/FurnitureSectorOntology.owl#hasCatalogueName</TargetProperty>
+        <TargetPathFromSource>http://www.aidimme.es/FurnitureSectorOntology.owl#isManufacturedBy;http://www.aidimme.es/FurnitureSectorOntology.owl#hasCatalogue</TargetPathFromSource>
+        <DirectionSourceOriented>true</DirectionSourceOriented>
+      </Target>
+    </SQPMapping>
+  </SQPConfiguration>
+  
+</p:SQPConfigurations>

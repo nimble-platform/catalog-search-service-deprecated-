@@ -22,13 +22,15 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteS
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.MeaningResult;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 
-public class TestInputParamters {
+public class TestInputParamtersAndOutputParameterForUI {
 
 	@Test
 	public void doJson() {
@@ -286,6 +288,33 @@ public class TestInputParamters {
 
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(parameter));
+	}
+	
+	@Test
+	public void doJson_InputParameterForPropertyValuesFromOrangeGroup()
+	{
+		InputParameterForPropertyValuesFromOrangeGroup forPropertyValuesFromOrangeGroup = new InputParameterForPropertyValuesFromOrangeGroup();
+		String command = "companyName";
+		String concept = "http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair";
+		forPropertyValuesFromOrangeGroup.setConceptURL(concept);
+		forPropertyValuesFromOrangeGroup.setOrangeCommand(command);
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(forPropertyValuesFromOrangeGroup));
+	}
+	
+	@Test
+	public void doJson_OutputForPropertyValuesFromOrangeGroup()
+	{
+		OutputForPropertyValuesFromOrangeGroup forPropertyValuesFromOrangeGroup = new OutputForPropertyValuesFromOrangeGroup();
+		String command = "companyName";
+		String concept = "http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair";
+		forPropertyValuesFromOrangeGroup.getAllValues().add("Http://indiToConcept");
+		forPropertyValuesFromOrangeGroup.setBelongsToTheFollowingConcept("http://goiodConcept");
+		forPropertyValuesFromOrangeGroup.setItAConcept(true);
+		forPropertyValuesFromOrangeGroup.setITASimpleValue(false);
+		
+		Gson gson = new Gson();
+		System.out.println(gson.toJson(forPropertyValuesFromOrangeGroup));
 	}
 	
 	@Test

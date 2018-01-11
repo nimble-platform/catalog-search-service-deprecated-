@@ -71,7 +71,7 @@ public class SearchController {
 	@Value("${nimble.shared.property.languagelabel:http://www.aidimme.es/FurnitureSectorOntology.owl#translation}")
 	private String languageLabel;
 	
-	@Value("${nimble.shared.property.catalogue.search.configuration:C:/Resources/NIMBLE/sqp.xml}")
+	@Value("${nimble.shared.property.catalogue.search.configuration:./src/main/resources/sqpConfiguration.xml}")
 	private String sqpConfigurationPath;
 
 	private MediatorSPARQLDerivation sparqlDerivation = null;
@@ -104,8 +104,25 @@ public class SearchController {
 		}
 		sparqlDerivation.setLanguagelabel(languageLabel);
 		sQPDerivationService = new SQPDerivationService(sparqlDerivation, sqpConfigurationPath);
+		sparqlDerivation.updatesqpDerivationService(sQPDerivationService);
 		nimbleAdaptionServiceOfSearchResults = new NimbleAdaptionServiceOfSearchResults(sparqlDerivation,
 				languageLabel);
+	}
+
+	public String getSqpConfigurationPath() {
+		return sqpConfigurationPath;
+	}
+
+	public void setSqpConfigurationPath(String sqpConfigurationPath) {
+		this.sqpConfigurationPath = sqpConfigurationPath;
+	}
+
+	public String getOntologyFile() {
+		return ontologyFile;
+	}
+
+	public void setOntologyFile(String ontologyFile) {
+		this.ontologyFile = ontologyFile;
 	}
 
 	@RequestMapping(value = "/query", method = RequestMethod.GET)
