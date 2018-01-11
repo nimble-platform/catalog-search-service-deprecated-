@@ -38,7 +38,6 @@
 
 	<xs:complexType name="Target">
 		<xs:sequence>
-			<xs:element name="ContextPathFromSource" type="xs:string" />
 			<xs:element name="TargetProperty" type="xs:string" />
 			<xs:element name="TargetPathFromSource" type="xs:string" />
 			<xs:element name="DirectionSourceOriented" type="xs:boolean" />

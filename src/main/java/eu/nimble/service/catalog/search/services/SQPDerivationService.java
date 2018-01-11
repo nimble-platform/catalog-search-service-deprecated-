@@ -76,10 +76,23 @@ public class SQPDerivationService {
 				for (SQPConfiguration sqpConfiguration : availableSQPs.get(concept)) {
 					result.add(sqpConfiguration.getSQPName());
 				}
-				
+
 			}
 		}
 		return result;
 	}
 
+	public SQPConfiguration getSQPConfiguration(String concept, String orangeCommand) {
+		if (availableSQPs.containsKey(concept)) {
+			for (SQPConfiguration sqpConfiguration : availableSQPs.get(concept)) {
+
+				if (sqpConfiguration.getSQPName().equals(orangeCommand)) {
+					return sqpConfiguration;
+				}
+
+			}
+
+		}
+		return null;
+	}
 }

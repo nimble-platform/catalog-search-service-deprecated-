@@ -293,7 +293,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		
 		MarmottaReader marmottaReader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
 		
-		SPARQLFactory factory = new SPARQLFactory(null);
+		SPARQLFactory factory = new SPARQLFactory(null,null);
 		List<String>  sparqls = factory.createSparql(paramaterForExecuteSelect, marmottaReader);
 		for (String str: sparqls){
 			System.out.println(str);

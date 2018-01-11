@@ -32,6 +32,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteS
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
@@ -98,7 +99,7 @@ public class SearchController {
 					sparqlDerivation = new MediatorSPARQLDerivation();
 				}
 			} else {
-				sparqlDerivation = new MediatorSPARQLDerivation(marmottaUri, true);
+				sparqlDerivation = new MediatorSPARQLDerivation(marmottaUri, true,sQPDerivationService);
 			}
 		}
 		sparqlDerivation.setLanguagelabel(languageLabel);
@@ -574,7 +575,17 @@ public class SearchController {
 	@CrossOrigin
 	@RequestMapping(value = "/getPropertyValuesFromOrangeGroup", method = RequestMethod.GET)
 	HttpEntity<Object> getPropertyValuesFromOrangeGroup(@RequestParam("inputAsJson") String inputAsJson) {
-		return null;
+		
+		try {
+			Gson gson = new Gson();
+			InputParameterForPropertyValuesFromOrangeGroup inputParameterForPropertyValuesFromOrangeGroup = gson.fromJson(inputAsJson, InputParameterForPropertyValuesFromOrangeGroup.class);
+			String result = "";
+			result = gson.toJson(sparqlDerivation.getPropertyValuesFromOrangeGroup(inputParameterForPropertyValuesFromOrangeGroup));
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+			
+		}catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
 	}
 

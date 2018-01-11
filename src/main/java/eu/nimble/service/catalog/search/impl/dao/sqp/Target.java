@@ -2,7 +2,7 @@
 // Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
 // Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.01.10 um 03:35:01 PM CET 
+// Generiert: 2018.01.11 um 01:06:26 PM CET 
 //
 
 
@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="ContextPathFromSource" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="TargetProperty" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="TargetPathFromSource" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="DirectionSourceOriented" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
@@ -38,45 +37,18 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Target", propOrder = {
-    "contextPathFromSource",
     "targetProperty",
     "targetPathFromSource",
     "directionSourceOriented"
 })
 public class Target {
 
-    @XmlElement(name = "ContextPathFromSource", required = true)
-    protected String contextPathFromSource;
     @XmlElement(name = "TargetProperty", required = true)
     protected String targetProperty;
     @XmlElement(name = "TargetPathFromSource", required = true)
     protected String targetPathFromSource;
     @XmlElement(name = "DirectionSourceOriented")
     protected boolean directionSourceOriented;
-
-    /**
-     * Ruft den Wert der contextPathFromSource-Eigenschaft ab.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getContextPathFromSource() {
-        return contextPathFromSource;
-    }
-
-    /**
-     * Legt den Wert der contextPathFromSource-Eigenschaft fest.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setContextPathFromSource(String value) {
-        this.contextPathFromSource = value;
-    }
 
     /**
      * Ruft den Wert der targetProperty-Eigenschaft ab.

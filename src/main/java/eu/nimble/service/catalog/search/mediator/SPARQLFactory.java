@@ -8,16 +8,19 @@ import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
+import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class SPARQLFactory {
 
 	private MediatorSPARQLDerivation sparqlDerivation;
 	private NimbleSpecificSPARQLDeriviation nimbleSpecificSPARQLDeriviation;
 	private IReader reader;
+	private SQPDerivationService sqpDerivationService;
 
-	public SPARQLFactory(MediatorSPARQLDerivation sparqlDerivation) {
+	public SPARQLFactory(MediatorSPARQLDerivation sparqlDerivation, SQPDerivationService sqpDerivationService) {
 		super();
 		this.sparqlDerivation = sparqlDerivation;
+		this.sqpDerivationService = sqpDerivationService;
 
 	}
 
@@ -33,7 +36,7 @@ public class SPARQLFactory {
 
 	private List<String> createMarmottaSPARQLQuery(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 
-		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader);
+		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader,sqpDerivationService);
 
 		List<String> result = new ArrayList<String>();
 		int counter = 0;

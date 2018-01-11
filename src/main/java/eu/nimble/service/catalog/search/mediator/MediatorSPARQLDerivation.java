@@ -25,13 +25,16 @@ import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
+import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class MediatorSPARQLDerivation {
 
@@ -40,8 +43,11 @@ public class MediatorSPARQLDerivation {
 	private IPropertyValuesCrawler propertyValuesCrawler = null;
 	private String languagelabel = null;
 	private NimbleSpecificSPARQLDeriviation nimbleSpecificSPARQLDeriviation = null;
+	private SQPDerivationService sqpDerivationService = null;
 
-	public MediatorSPARQLDerivation() {
+	 
+
+	public MediatorSPARQLDerivation( ) {
 		File f = new File(FURNITURE2_OWL);
 		if (f.exists()) {
 			initForSpecificOntology(FURNITURE2_OWL);
@@ -55,15 +61,33 @@ public class MediatorSPARQLDerivation {
 
 	}
 
-	public void initForMarmotta(String url) {
+	
+	public MediatorSPARQLDerivation(String uri, boolean remote, SQPDerivationService sqpDerivationService) {
+		if (!remote) {
+			initForSpecificOntology(uri);
+
+		} else {
+			reader = new MarmottaReader(uri);
+			propertyValuesCrawler = new MarmottaPropertyValuesCrawler(uri);
+			reader.setLanguageLabel(languagelabel);
+			this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader, sqpDerivationService);
+			this.sqpDerivationService = sqpDerivationService;
+		}
+
+	}
+	
+	public void initForMarmotta(String url, SQPDerivationService sqpDerivationService) {
 		reader = new MarmottaReader(url);
 		reader.setModeToRemote();
 		reader.setLanguageLabel(languagelabel);
-		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader);
-
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader, sqpDerivationService);
+		this.sqpDerivationService = sqpDerivationService;
 	}
 
 	public void initForSpecificOntology(String pntologyFile) {
+		
+		
+		
 		reader = new Reader();
 		reader.setModeToLocal();
 		reader.loadOntologyModel(pntologyFile);
@@ -72,6 +96,8 @@ public class MediatorSPARQLDerivation {
 		propertyValuesCrawler = new PropertyValuesCrawler();
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
+		
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader, sqpDerivationService);
 	}
 
 	public OutputForExecuteSelect createSPARQLAndExecuteIT(
@@ -125,7 +151,7 @@ public class MediatorSPARQLDerivation {
 			return outputForExecuteSelect;
 		} else {
 			if (reader instanceof MarmottaReader) {
-				SPARQLFactory sparqlFactory = new SPARQLFactory(this);
+				SPARQLFactory sparqlFactory = new SPARQLFactory(this, sqpDerivationService);
 				List<String> queries = sparqlFactory.createSparql(inputParamaterForExecuteSelect, reader);
 				Map<String, List<DataPoint>> intermediateResult = new HashMap<String, List<DataPoint>>();
 				String[] params = new String[] { "instance", "property", "hasValue" };
@@ -454,18 +480,7 @@ public class MediatorSPARQLDerivation {
 
 	}
 
-	public MediatorSPARQLDerivation(String uri, boolean remote) {
-		if (!remote) {
-			initForSpecificOntology(uri);
-
-		} else {
-			reader = new MarmottaReader(uri);
-			propertyValuesCrawler = new MarmottaPropertyValuesCrawler(uri);
-			reader.setLanguageLabel(languagelabel);
-
-		}
-
-	}
+	
 
 	// InputParameterdetectMeaningLanguageSpecific
 	// inputParameterdetectMeaningLanguageSpecific
@@ -880,5 +895,11 @@ public class MediatorSPARQLDerivation {
 			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
 		}
 		return result;
+	}
+	
+	public OutputForPropertyValuesFromOrangeGroup getPropertyValuesFromOrangeGroup(InputParameterForPropertyValuesFromOrangeGroup valuesFromOrangeGroup){
+		String command = valuesFromOrangeGroup.getOrangeCommand();
+		String concept = valuesFromOrangeGroup.getConceptURL();
+		return nimbleSpecificSPARQLDeriviation.getPropertyValuesForOrangeGroup(command, concept);
 	}
 }
