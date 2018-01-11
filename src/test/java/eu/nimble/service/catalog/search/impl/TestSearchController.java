@@ -1,6 +1,7 @@
 package eu.nimble.service.catalog.search.impl;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ public class TestSearchController {
 	        
 
 	    }
+	@Ignore 
 	@Test
 	public void getPropertyValuesFromOrangeGroup(){
 		String inputAsJson = "{\"conceptURL\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair\",\"orangeCommand\":\"companyName\"}";
