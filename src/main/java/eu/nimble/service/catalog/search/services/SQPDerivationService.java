@@ -14,7 +14,7 @@ import javax.xml.bind.Unmarshaller;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPConfigurations;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPMapping;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
+import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
 
 /**
  * This service will be used to dtermine the sqps for a given concepts
@@ -25,14 +25,14 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
 public class SQPDerivationService {
 
 	private Map<String, List<SQPConfiguration>> availableSQPs = new HashMap<String, List<SQPConfiguration>>();
-	private MediatorSPARQLDerivation sparqlDerivation = null;
+	private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
 
 	/**
 	 * Must be extenbded for using a database for lookup
 	 * 
 	 * @param sqpConfigurationPath
 	 */
-	public SQPDerivationService(MediatorSPARQLDerivation sparqlDerivation, String sqpConfigurationPath) {
+	public SQPDerivationService(MediatorSPARQLDerivationAndExecution sparqlDerivation, String sqpConfigurationPath) {
 
 		this.sparqlDerivation = sparqlDerivation;
 		init(sqpConfigurationPath);

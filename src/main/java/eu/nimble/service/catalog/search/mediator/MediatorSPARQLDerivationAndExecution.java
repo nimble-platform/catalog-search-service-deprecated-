@@ -36,18 +36,16 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesF
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
-public class MediatorSPARQLDerivation {
+public class MediatorSPARQLDerivationAndExecution {
 
 	public static final String FURNITURE2_OWL = "furniture2.owl";
 	private IReader reader = null;
 	private IPropertyValuesCrawler propertyValuesCrawler = null;
 	private String languagelabel = null;
-	private NimbleSpecificSPARQLDeriviation nimbleSpecificSPARQLDeriviation = null;
+	private NimbleSpecificSPARQLDeriviationAndExecution nimbleSpecificSPARQLDeriviation = null;
 	private SQPDerivationService sqpDerivationService = null;
 
-	 
-
-	public MediatorSPARQLDerivation( ) {
+	public MediatorSPARQLDerivationAndExecution() {
 		File f = new File(FURNITURE2_OWL);
 		if (f.exists()) {
 			initForSpecificOntology(FURNITURE2_OWL);
@@ -56,18 +54,17 @@ public class MediatorSPARQLDerivation {
 		}
 	}
 
-	public MediatorSPARQLDerivation(String pntologyFile) {
+	public MediatorSPARQLDerivationAndExecution(String pntologyFile) {
 		initForSpecificOntology(pntologyFile);
 
 	}
 
-	
-	public void updatesqpDerivationService(SQPDerivationService sqpDerivationService ){
-		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation( reader, sqpDerivationService);
+	public void updatesqpDerivationService(SQPDerivationService sqpDerivationService) {
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader, sqpDerivationService,this);
 		this.sqpDerivationService = sqpDerivationService;
 	}
-	
-	public MediatorSPARQLDerivation(String uri, boolean remote, SQPDerivationService sqpDerivationService) {
+
+	public MediatorSPARQLDerivationAndExecution(String uri, boolean remote, SQPDerivationService sqpDerivationService) {
 		if (!remote) {
 			initForSpecificOntology(uri);
 			updatesqpDerivationService(sqpDerivationService);
@@ -76,24 +73,24 @@ public class MediatorSPARQLDerivation {
 			reader = new MarmottaReader(uri);
 			propertyValuesCrawler = new MarmottaPropertyValuesCrawler(uri);
 			reader.setLanguageLabel(languagelabel);
-			this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader, sqpDerivationService);
+			this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution((MarmottaReader) reader,
+					sqpDerivationService,this);
 			this.sqpDerivationService = sqpDerivationService;
 		}
 
 	}
-	
+
 	public void initForMarmotta(String url, SQPDerivationService sqpDerivationService) {
 		reader = new MarmottaReader(url);
 		reader.setModeToRemote();
 		reader.setLanguageLabel(languagelabel);
-		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader, sqpDerivationService);
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution((MarmottaReader) reader,
+				sqpDerivationService,this);
 		this.sqpDerivationService = sqpDerivationService;
 	}
 
 	public void initForSpecificOntology(String pntologyFile) {
-		
-		
-		
+
 		reader = new Reader();
 		reader.setModeToLocal();
 		reader.loadOntologyModel(pntologyFile);
@@ -102,8 +99,8 @@ public class MediatorSPARQLDerivation {
 		propertyValuesCrawler = new PropertyValuesCrawler();
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
-		
-		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation( reader, sqpDerivationService);
+
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader, sqpDerivationService,this);
 		this.sqpDerivationService = sqpDerivationService;
 	}
 
@@ -158,7 +155,7 @@ public class MediatorSPARQLDerivation {
 			return outputForExecuteSelect;
 		} else {
 			if (reader instanceof MarmottaReader) {
-				SPARQLFactory sparqlFactory = new SPARQLFactory(this, sqpDerivationService);
+				NimbleSpecificSPARQLFactory sparqlFactory = new NimbleSpecificSPARQLFactory(this, sqpDerivationService);
 				List<String> queries = sparqlFactory.createSparql(inputParamaterForExecuteSelect, reader);
 				Map<String, List<DataPoint>> intermediateResult = new HashMap<String, List<DataPoint>>();
 				String[] params = new String[] { "instance", "property", "hasValue" };
@@ -207,7 +204,7 @@ public class MediatorSPARQLDerivation {
 					}
 					outputForExecuteSelect.getRows().add(data);
 				}
-				
+
 				return outputForExecuteSelect;
 			}
 			return new OutputForExecuteSelect();
@@ -486,8 +483,6 @@ public class MediatorSPARQLDerivation {
 		return (parameter.getPath().size() == 1) ? true : false;
 
 	}
-
-	
 
 	// InputParameterdetectMeaningLanguageSpecific
 	// inputParameterdetectMeaningLanguageSpecific
@@ -810,8 +805,23 @@ public class MediatorSPARQLDerivation {
 	}
 
 	public List<String> getAllValuesForAGivenProperty(String concept, String property) {
-		List<String> values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
+		List<String> values = null;
+		if (!needANimbleSpecificAdapation()) {
+			values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
+		} else {
+			values = nimbleSpecificSPARQLDeriviation.getAllDifferentValuesForAProperty(concept, property);
+		}
 		return values;
+	}
+
+	/**
+	 * The NIMBLE platform uses a specific ontology which requires manual
+	 * inclusion or exclusion of properties and other stuff
+	 * 
+	 * @return true if Marmotta is set as main data source of the search
+	 */
+	public boolean needANimbleSpecificAdapation() {
+		return (reader instanceof MarmottaReader) ? true : false;
 	}
 
 	private float getMinOfData(List<String> values) {
@@ -903,8 +913,9 @@ public class MediatorSPARQLDerivation {
 		}
 		return result;
 	}
-	
-	public OutputForPropertyValuesFromOrangeGroup getPropertyValuesFromOrangeGroup(InputParameterForPropertyValuesFromOrangeGroup valuesFromOrangeGroup){
+
+	public OutputForPropertyValuesFromOrangeGroup getPropertyValuesFromOrangeGroup(
+			InputParameterForPropertyValuesFromOrangeGroup valuesFromOrangeGroup) {
 		String command = valuesFromOrangeGroup.getOrangeCommand();
 		String concept = valuesFromOrangeGroup.getConceptURL();
 		return nimbleSpecificSPARQLDeriviation.getPropertyValuesForOrangeGroup(command, concept);

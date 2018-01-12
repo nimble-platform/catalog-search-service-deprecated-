@@ -27,10 +27,10 @@ import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
-import eu.nimble.service.catalog.search.mediator.SPARQLFactory;
+import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
+import eu.nimble.service.catalog.search.mediator.NimbleSpecificSPARQLFactory;
 
-public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
+public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivationAndExecution {
 
 	 @Mock
 	    MarmottaReader readerMock;
@@ -40,7 +40,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	@Test
 	@Ignore
 	public void testGroupingOfPropertyValues() {
-		MediatorSPARQLDerivation mediatorSPARQLDerivation = new MediatorSPARQLDerivation();
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivation = new MediatorSPARQLDerivationAndExecution();
 
 		String concept = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#Bed";
 		String property = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#price";
@@ -53,7 +53,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	@Test
 	@Ignore
 	public void testgetViewForOneStepRange() {
-		MediatorSPARQLDerivation mediatorSPARQLDerivation = new MediatorSPARQLDerivation(
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivation = new MediatorSPARQLDerivationAndExecution(
 				C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		LocalOntologyView helper = new LocalOntologyView();
 		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
@@ -75,7 +75,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	@Ignore
 	public void testgetViewForHighChair() {
 		
-		MediatorSPARQLDerivation mediatorSPARQLDerivation = new MediatorSPARQLDerivation(
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivation = new MediatorSPARQLDerivationAndExecution(
 				C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		LocalOntologyView helper = new LocalOntologyView();
 		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
@@ -293,7 +293,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		
 		MarmottaReader marmottaReader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
 		
-		SPARQLFactory factory = new SPARQLFactory(null,null);
+		NimbleSpecificSPARQLFactory factory = new NimbleSpecificSPARQLFactory(null,null);
 		List<String>  sparqls = factory.createSparql(paramaterForExecuteSelect, marmottaReader);
 		for (String str: sparqls){
 			System.out.println(str);

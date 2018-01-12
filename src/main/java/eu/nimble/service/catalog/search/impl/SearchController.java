@@ -49,7 +49,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputdetectPossibleConc
 import eu.nimble.service.catalog.search.impl.dao.output.Reference;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
+import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
 import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
 import eu.nimble.service.catalog.search.services.SQPDerivationService;
 import springfox.documentation.service.AllowableRangeValues;
@@ -74,7 +74,7 @@ public class SearchController {
 	@Value("${nimble.shared.property.catalogue.search.configuration:./src/main/resources/sqpConfiguration.xml}")
 	private String sqpConfigurationPath;
 
-	private MediatorSPARQLDerivation sparqlDerivation = null;
+	private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
 	private SQPDerivationService sQPDerivationService = null;
 	private NimbleAdaptionServiceOfSearchResults nimbleAdaptionServiceOfSearchResults = null;
 
@@ -82,7 +82,7 @@ public class SearchController {
 	public void init() {
 
 		if (ontologyFile.equals(NULL_ASSIGNED_VALUE) && (marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
-			sparqlDerivation = new MediatorSPARQLDerivation();
+			sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
 		} else {
 
 			if (!ontologyFile.equals(NULL_ASSIGNED_VALUE)) {
@@ -90,16 +90,16 @@ public class SearchController {
 				File f = new File(ontologyFile);
 				if (f.exists()) {
 					Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
-					sparqlDerivation = new MediatorSPARQLDerivation(ontologyFile);
+					sparqlDerivation = new MediatorSPARQLDerivationAndExecution(ontologyFile);
 				} else {
 					Logger.getAnonymousLogger().log(Level.WARNING,
 							" CANNOT load defined ontology file: " + ontologyFile);
 					Logger.getAnonymousLogger().log(Level.INFO,
-							"Load STANDARD ontology file: " + MediatorSPARQLDerivation.FURNITURE2_OWL);
-					sparqlDerivation = new MediatorSPARQLDerivation();
+							"Load STANDARD ontology file: " + MediatorSPARQLDerivationAndExecution.FURNITURE2_OWL);
+					sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
 				}
 			} else {
-				sparqlDerivation = new MediatorSPARQLDerivation(marmottaUri, true,sQPDerivationService);
+				sparqlDerivation = new MediatorSPARQLDerivationAndExecution(marmottaUri, true,sQPDerivationService);
 			}
 		}
 		sparqlDerivation.setLanguagelabel(languageLabel);

@@ -6,7 +6,7 @@ import java.util.List;
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
+import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
 
 /**
  * This class enhance the results or the user defined input to the NIMBLE
@@ -17,11 +17,11 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
  */
 public class NimbleAdaptionServiceOfSearchResults {
 
-	private MediatorSPARQLDerivation sparqlDerivation;
+	private MediatorSPARQLDerivationAndExecution sparqlDerivation;
 	private String languageLabel;
 	public final static String propertyURLForName = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name";
 
-	public NimbleAdaptionServiceOfSearchResults(MediatorSPARQLDerivation sparqlDerivation, String languageLabel) {
+	public NimbleAdaptionServiceOfSearchResults(MediatorSPARQLDerivationAndExecution sparqlDerivation, String languageLabel) {
 		super();
 		this.sparqlDerivation = sparqlDerivation;
 		this.languageLabel = languageLabel;

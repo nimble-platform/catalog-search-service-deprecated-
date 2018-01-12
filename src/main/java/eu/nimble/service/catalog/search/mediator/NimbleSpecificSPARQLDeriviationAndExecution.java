@@ -1,5 +1,7 @@
 package eu.nimble.service.catalog.search.mediator;
 
+import java.security.cert.CollectionCertStoreParameters;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -8,21 +10,26 @@ import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.enums.PropertyType;
 import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPMapping;
 import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
-public class NimbleSpecificSPARQLDeriviation {
+public class NimbleSpecificSPARQLDeriviationAndExecution {
 
 	private IReader reader = null;
 	private SQPDerivationService sqpDerivationService = null;
+	private MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
 
-	public NimbleSpecificSPARQLDeriviation(IReader marmottaReader, SQPDerivationService sqpDerivationService) {
+	public NimbleSpecificSPARQLDeriviationAndExecution(IReader marmottaReader,
+			SQPDerivationService sqpDerivationService,
+			MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution) {
 		super();
 		this.reader = marmottaReader;
 		this.sqpDerivationService = sqpDerivationService;
+		this.mediatorSPARQLDerivationAndExecution = mediatorSPARQLDerivationAndExecution;
 	}
 
 	public boolean isItADomainSpecificPropertyWhichHasValues(String propertyURL) {
@@ -112,11 +119,11 @@ public class NimbleSpecificSPARQLDeriviation {
 	private String getTypeOfValue(List<String> values) {
 		if (values != null && values.size() > 0) {
 			String value = values.get(0);
-			if (!value.contains("<")){
+			if (!value.contains("<")) {
 				value = "<" + value + ">";
 			}
-			//A individual UUID cannot have a space inside
-			if (value.contains(" ")){
+			// A individual UUID cannot have a space inside
+			if (value.contains(" ")) {
 				return null;
 			}
 			String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>SELECT  ?subject ?predicate ?object WHERE { "
@@ -134,6 +141,26 @@ public class NimbleSpecificSPARQLDeriviation {
 			}
 		}
 		return null;
+	}
+
+	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL) {
+		NimbleSpecificSPARQLFactory factory = new NimbleSpecificSPARQLFactory(mediatorSPARQLDerivationAndExecution,
+				sqpDerivationService);
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept(concept);
+		String property = propertyURL.substring(propertyURL.indexOf("#") + 1);
+		inputParamaterForExecuteSelect.getParameters().add(property);
+		inputParamaterForExecuteSelect.getParametersURL().add(propertyURL);
+		List<String> sparqls = factory.createSparql(inputParamaterForExecuteSelect, reader);
+		if (sparqls != null && sparqls.size() > 0) {
+			String sparql = sparqls.get(0);
+			Object result = reader.query(sparql);
+			List<String> values = reader.createResultList(result, "hasValue");
+			return values;
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't create sparql queries for: " + concept + " & "+ propertyURL);
+		}
+		return Collections.EMPTY_LIST;
 	}
 
 }

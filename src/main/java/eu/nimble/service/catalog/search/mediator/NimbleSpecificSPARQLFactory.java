@@ -10,14 +10,14 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteS
 import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
 import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
-public class SPARQLFactory {
+public class NimbleSpecificSPARQLFactory {
 
-	private MediatorSPARQLDerivation sparqlDerivation;
-	private NimbleSpecificSPARQLDeriviation nimbleSpecificSPARQLDeriviation;
+	private MediatorSPARQLDerivationAndExecution sparqlDerivation;
+	private NimbleSpecificSPARQLDeriviationAndExecution nimbleSpecificSPARQLDeriviation;
 	private IReader reader;
 	private SQPDerivationService sqpDerivationService;
 
-	public SPARQLFactory(MediatorSPARQLDerivation sparqlDerivation, SQPDerivationService sqpDerivationService) {
+	public NimbleSpecificSPARQLFactory(MediatorSPARQLDerivationAndExecution sparqlDerivation, SQPDerivationService sqpDerivationService) {
 		super();
 		this.sparqlDerivation = sparqlDerivation;
 		this.sqpDerivationService = sqpDerivationService;
@@ -36,7 +36,7 @@ public class SPARQLFactory {
 
 	private List<String> createMarmottaSPARQLQuery(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
 
-		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviation((MarmottaReader) reader,sqpDerivationService);
+		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution((MarmottaReader) reader,sqpDerivationService,sparqlDerivation);
 
 		List<String> result = new ArrayList<String>();
 		int counter = 0;

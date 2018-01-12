@@ -1,5 +1,7 @@
 package eu.nimble.service.catalog.search.impl;
 
+import java.net.URLEncoder;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,20 +26,22 @@ public class TestSearchController {
 	        
 
 	    }
-	@Ignore 
+	//@Ignore 
 	@Test
 	public void testgetPropertyValuesFromOrangeGroup(){
 		String inputAsJson = "{\"conceptURL\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair\",\"orangeCommand\":\"companyName\"}";
-		
+		System.out.println(URLEncoder.encode(inputAsJson));
 		HttpEntity<Object>  result = serachController.getPropertyValuesFromOrangeGroup(inputAsJson);
 		String r = result.getBody().toString();
 		System.out.println(r);
 	}
 	
-	@Ignore
+	//@Ignore
 	@Test
 	public void testgetSQP(){
 		String inputAsJson = "{\"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair\",\"stepRange\":1,\"language\":\"en\",\"frozenConcept\":\"HighChair\",\"distanceToFrozenConcept\":0,\"conceptURIPath\":[],\"currenSelections\":[]}";
+		System.out.println(URLEncoder.encode(inputAsJson));
+		
 		HttpEntity<Object>  result = serachController.getSQP(inputAsJson);
 		String r = result.getBody().toString();
 		System.out.println(r);
