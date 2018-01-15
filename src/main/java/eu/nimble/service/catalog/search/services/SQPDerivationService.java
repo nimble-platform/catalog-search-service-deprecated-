@@ -107,6 +107,8 @@ public class SQPDerivationService {
 		return null;
 	}
 	
-	
+	public String[] splitTargetConfiguration(SQPConfiguration sqpConfiguration){
+		return  sqpConfiguration.getSQPMapping().getTarget().getTargetPathFromSource().split(";");
+	}
 	
 }

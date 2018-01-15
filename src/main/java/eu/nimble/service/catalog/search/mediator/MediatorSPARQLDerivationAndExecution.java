@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.jena.sparql.function.library.uuid;
+
 import de.biba.triple.store.access.IPropertyValuesCrawler;
 import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.dmo.Entity;
@@ -240,8 +242,7 @@ public class MediatorSPARQLDerivationAndExecution {
 					tuple.setUrlOfProperty(token);
 				}
 
-			}
-			else{
+			} else {
 				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot find orange command: " + parameter);
 			}
 			index++;
@@ -269,8 +270,7 @@ public class MediatorSPARQLDerivationAndExecution {
 					parameter2.getPath().add(tuple);
 					tuple.setUrlOfProperty(token);
 				}
-			}
-			else{
+			} else {
 				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot find orange command: " + name);
 			}
 		}
@@ -334,6 +334,42 @@ public class MediatorSPARQLDerivationAndExecution {
 
 		}
 
+		// Have to extend the result with the orange stuff
+		if (inputParamaterForExecuteOptionalSelect.getOrangeCommandSelected().getNames().size() > 0) {
+			String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ";
+			String[] columns = new String[inputParamaterForExecuteOptionalSelect.getOrangeCommandSelected().getNames()
+					.size()];
+			int index = 0;
+			for (String name : inputParamaterForExecuteOptionalSelect.getOrangeCommandSelected().getNames()) {
+				sparql += " ?" + name + " ";
+				columns[index] = name;
+				outputForExecuteSelect.getColumns().add(name);
+				index++;
+			}
+			sparql += " where {";
+			for (String name : inputParamaterForExecuteOptionalSelect.getOrangeCommandSelected().getNames()) {
+				String lastSubject = "<" + inputParamaterForExecuteOptionalSelect.getUuid() + ">";
+
+				SQPConfiguration configuration = sqpDerivationService.getSpecificSQPConfiguration(name);
+				String[] tokens = sqpDerivationService.splitTargetConfiguration(configuration);
+				for (String token : tokens) {
+					String shortToken = token.substring(token.indexOf("#") + 1);
+					sparql += lastSubject + "<" + token + "> ?" + shortToken + " .";
+					lastSubject = "?" + shortToken;
+				}
+				sparql += lastSubject + "<" + configuration.getSQPMapping().getTarget().getTargetProperty() + ">" + "?"
+						+ name + ".";
+			}
+			sparql += "}";
+			Object resultSet = reader.query(sparql);
+			List<String[]> data = reader.createResultListArray(resultSet, columns);
+			if (data != null && data.size() > 0) {
+				String[] firstrow = data.get(0);
+				for (String str : firstrow) {
+					row.add(str);
+				}
+			}
+		}
 		outputForExecuteSelect.getRows().add(row);
 		return outputForExecuteSelect;
 	}

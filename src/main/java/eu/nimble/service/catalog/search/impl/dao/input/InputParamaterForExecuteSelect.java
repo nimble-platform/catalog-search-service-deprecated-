@@ -74,6 +74,7 @@ public class InputParamaterForExecuteSelect {
 		return parametersURL;
 	}
 
+	
 	public void setParametersURL(List<String> parametersURL) {
 		this.parametersURL = parametersURL;
 	}
