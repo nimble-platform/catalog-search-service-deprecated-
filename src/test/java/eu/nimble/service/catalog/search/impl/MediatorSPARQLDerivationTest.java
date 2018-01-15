@@ -240,6 +240,10 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivationAndExe
 		
 	}
 	
+	
+	
+	
+	
 	//http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural
 	@Test
 	@Ignore

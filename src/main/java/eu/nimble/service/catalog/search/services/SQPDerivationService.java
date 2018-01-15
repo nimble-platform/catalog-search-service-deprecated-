@@ -24,7 +24,8 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExec
  */
 public class SQPDerivationService {
 
-	private Map<String, List<SQPConfiguration>> availableSQPs = new HashMap<String, List<SQPConfiguration>>();
+	private Map<String, List<SQPConfiguration>> availableSQPsUsingConceptsAsKey = new HashMap<String, List<SQPConfiguration>>();
+	private Map<String, SQPConfiguration> availableSQPsUsingNameAsKey = new HashMap<String, SQPConfiguration>();
 	private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
 
 	/**
@@ -38,6 +39,14 @@ public class SQPDerivationService {
 		init(sqpConfigurationPath);
 	}
 
+	public SQPConfiguration getSpecificSQPConfiguration(String command) {
+		return availableSQPsUsingNameAsKey.get(command);
+	}
+
+	public boolean isITSAQPCommand(String command) {
+		return availableSQPsUsingNameAsKey.containsKey(command) ? true : false;
+	}
+
 	public void init(String sqpConfigurationPath) {
 		File file = new File(sqpConfigurationPath);
 		try {
@@ -47,12 +56,16 @@ public class SQPDerivationService {
 			SQPConfigurations configurations = (SQPConfigurations) jaxbUnmarshaller.unmarshal(file);
 			for (SQPConfiguration sqpConfiguration : configurations.getSQPConfiguration()) {
 				String conceptURL = sqpConfiguration.getSQPMapping().getSource().getSourceConcept();
-				if (availableSQPs.containsKey(conceptURL)) {
-					availableSQPs.get(conceptURL).add(sqpConfiguration);
+				String SQPName = sqpConfiguration.getSQPName();
+				
+				availableSQPsUsingNameAsKey.put(SQPName, sqpConfiguration);
+				
+				if (availableSQPsUsingConceptsAsKey.containsKey(conceptURL)) {
+					availableSQPsUsingConceptsAsKey.get(conceptURL).add(sqpConfiguration);
 				} else {
 					List<SQPConfiguration> sqps = new ArrayList<SQPConfiguration>();
 					sqps.add(sqpConfiguration);
-					availableSQPs.put(conceptURL, sqps);
+					availableSQPsUsingConceptsAsKey.put(conceptURL, sqps);
 				}
 			}
 		} catch (Exception e) {
@@ -70,8 +83,8 @@ public class SQPDerivationService {
 		List<String> result = new ArrayList<String>();
 		List<String> allDerivedConcepts = sparqlDerivation.getAllDerivedConcepts(concept);
 		for (String dependantConcept : allDerivedConcepts) {
-			if (availableSQPs.containsKey(dependantConcept)) {
-				for (SQPConfiguration sqpConfiguration : availableSQPs.get(concept)) {
+			if (availableSQPsUsingConceptsAsKey.containsKey(dependantConcept)) {
+				for (SQPConfiguration sqpConfiguration : availableSQPsUsingConceptsAsKey.get(concept)) {
 					result.add(sqpConfiguration.getSQPName());
 				}
 
@@ -81,8 +94,8 @@ public class SQPDerivationService {
 	}
 
 	public SQPConfiguration getSQPConfiguration(String concept, String orangeCommand) {
-		if (availableSQPs.containsKey(concept)) {
-			for (SQPConfiguration sqpConfiguration : availableSQPs.get(concept)) {
+		if (availableSQPsUsingConceptsAsKey.containsKey(concept)) {
+			for (SQPConfiguration sqpConfiguration : availableSQPsUsingConceptsAsKey.get(concept)) {
 
 				if (sqpConfiguration.getSQPName().equals(orangeCommand)) {
 					return sqpConfiguration;
@@ -93,4 +106,7 @@ public class SQPDerivationService {
 		}
 		return null;
 	}
+	
+	
+	
 }

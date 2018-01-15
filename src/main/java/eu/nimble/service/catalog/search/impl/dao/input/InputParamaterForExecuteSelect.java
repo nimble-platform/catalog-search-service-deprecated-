@@ -14,6 +14,17 @@ public class InputParamaterForExecuteSelect {
 	List<String> parametersURL = new ArrayList<String>();
 	List<Parameter> parametersIncludingPath = new ArrayList<Parameter>();
 	List<Filter> filters = new ArrayList<Filter>();
+	OrangeCommands orangeCommandSelected = new OrangeCommands();
+
+	
+	
+	public OrangeCommands getOrangeCommandSelected() {
+		return orangeCommandSelected;
+	}
+
+	public void setOrangeCommandSelected(OrangeCommands orangeCommandSelected) {
+		this.orangeCommandSelected = orangeCommandSelected;
+	}
 
 	public String getConcept() {
 		return concept;

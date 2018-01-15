@@ -34,6 +34,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromC
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
+import eu.nimble.service.catalog.search.impl.dao.sqp.SQPConfiguration;
 import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class MediatorSPARQLDerivationAndExecution {
@@ -60,7 +61,8 @@ public class MediatorSPARQLDerivationAndExecution {
 	}
 
 	public void updatesqpDerivationService(SQPDerivationService sqpDerivationService) {
-		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader, sqpDerivationService,this);
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader,
+				sqpDerivationService, this);
 		this.sqpDerivationService = sqpDerivationService;
 	}
 
@@ -73,8 +75,8 @@ public class MediatorSPARQLDerivationAndExecution {
 			reader = new MarmottaReader(uri);
 			propertyValuesCrawler = new MarmottaPropertyValuesCrawler(uri);
 			reader.setLanguageLabel(languagelabel);
-			this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution((MarmottaReader) reader,
-					sqpDerivationService,this);
+			this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
+					(MarmottaReader) reader, sqpDerivationService, this);
 			this.sqpDerivationService = sqpDerivationService;
 		}
 
@@ -85,7 +87,7 @@ public class MediatorSPARQLDerivationAndExecution {
 		reader.setModeToRemote();
 		reader.setLanguageLabel(languagelabel);
 		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution((MarmottaReader) reader,
-				sqpDerivationService,this);
+				sqpDerivationService, this);
 		this.sqpDerivationService = sqpDerivationService;
 	}
 
@@ -100,12 +102,15 @@ public class MediatorSPARQLDerivationAndExecution {
 		propertyValuesCrawler.setModeToLocal();
 		propertyValuesCrawler.loadOntologyModel(pntologyFile);
 
-		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader, sqpDerivationService,this);
+		this.nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader,
+				sqpDerivationService, this);
 		this.sqpDerivationService = sqpDerivationService;
 	}
 
 	public OutputForExecuteSelect createSPARQLAndExecuteIT(
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+
+		extendRequestedPropertiesWithRespectToOrangeCommands(inputParamaterForExecuteSelect);
 
 		if (!(reader instanceof MarmottaReader)) {
 
@@ -209,6 +214,67 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 			return new OutputForExecuteSelect();
 		}
+	}
+
+	private void extendRequestedPropertiesWithRespectToOrangeCommands(
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+		int index = 0;
+		for (String parameter : inputParamaterForExecuteSelect.getParameters()) {
+			if (sqpDerivationService.isITSAQPCommand(parameter)) {
+				SQPConfiguration sqpConfiguration = sqpDerivationService.getSpecificSQPConfiguration(parameter);
+				String[] pathTokens = sqpConfiguration.getSQPMapping().getTarget().getTargetPathFromSource().split(";");
+				String targetProperty = sqpConfiguration.getSQPMapping().getTarget().getTargetProperty();
+				Parameter parameter2 = inputParamaterForExecuteSelect.getParametersIncludingPath().get(index);
+				inputParamaterForExecuteSelect.getParameters().set(index, targetProperty);
+				parameter2.setUrlOfProperty(targetProperty);
+				parameter2.getPath().clear();
+
+				Tuple t1 = new Tuple();
+				t1.setConcept(inputParamaterForExecuteSelect.getConcept());
+				t1.setUrlOfProperty(null);
+				parameter2.getPath().add(t1);
+
+				for (String token : pathTokens) {
+					Tuple tuple = new Tuple();
+					parameter2.getPath().add(tuple);
+					tuple.setUrlOfProperty(token);
+				}
+
+			}
+			else{
+				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot find orange command: " + parameter);
+			}
+			index++;
+		}
+
+		// Adapt to speciifc orange commands
+		for (String name : inputParamaterForExecuteSelect.getOrangeCommandSelected().getNames()) {
+			if (sqpDerivationService.isITSAQPCommand(name)) {
+				SQPConfiguration sqpConfiguration = sqpDerivationService.getSpecificSQPConfiguration(name);
+				String[] pathTokens = sqpConfiguration.getSQPMapping().getTarget().getTargetPathFromSource().split(";");
+				String targetProperty = sqpConfiguration.getSQPMapping().getTarget().getTargetProperty();
+				Parameter parameter2 = new Parameter();
+				inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter2);
+				inputParamaterForExecuteSelect.getParameters().add(targetProperty);
+				parameter2.setUrlOfProperty(targetProperty);
+				parameter2.getPath().clear();
+
+				Tuple t1 = new Tuple();
+				t1.setConcept(inputParamaterForExecuteSelect.getConcept());
+				t1.setUrlOfProperty(null);
+				parameter2.getPath().add(t1);
+
+				for (String token : pathTokens) {
+					Tuple tuple = new Tuple();
+					parameter2.getPath().add(tuple);
+					tuple.setUrlOfProperty(token);
+				}
+			}
+			else{
+				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot find orange command: " + name);
+			}
+		}
+
 	}
 
 	public void reduceEachParamToItsName(String[] params) {
