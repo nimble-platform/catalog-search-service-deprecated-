@@ -469,8 +469,8 @@ public class SearchController {
 
 			String concept = inputParamterForGetLogicalView.getConcept();
 			OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation.getAllTransitiveProperties(concept);
+			concept = sparqlDerivation.getURIOfConcept(concept);
 			for (OutputForPropertyFromConcept prop : propertiesFromConcept.getOutputForPropertiesFromConcept()) {
-				concept = sparqlDerivation.getURIOfConcept(concept);
 				TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
 						propertiesFromConcept.getLanguage(), concept);
 				prop.setTranslatedProperty(name.getTranslation());
@@ -746,7 +746,7 @@ public class SearchController {
 	 * @return true if Marmotta is set as main data source of the search
 	 */
 	public boolean needANimbleSpecificAdapation() {
-		return (marmottaUri != null && marmottaUri.contains("htgtp")) ? true : false;
+		return (marmottaUri != null && marmottaUri.contains("http")) ? true : false;
 	}
 
 }

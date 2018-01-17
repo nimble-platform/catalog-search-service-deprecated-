@@ -922,7 +922,7 @@ public class MediatorSPARQLDerivationAndExecution {
 	 * 
 	 * @return true if Marmotta is set as main data source of the search
 	 */
-	public boolean needANimbleSpecificAdapation() {
+	private boolean needANimbleSpecificAdapation() {
 		return (reader instanceof MarmottaReader) ? true : false;
 	}
 
@@ -1000,6 +1000,10 @@ public class MediatorSPARQLDerivationAndExecution {
 		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
 		concept = getURIOfConcept(concept);
 		List<String> properties = reader.getAllPropertiesIncludingEverything(concept);
+		if (needANimbleSpecificAdapation()){
+			List<String> additionalProperties = nimbleSpecificSPARQLDeriviation.getAdditionalPropertiesWhichAreDerivedFromAbox(concept);
+			properties.addAll(additionalProperties);
+		}
 		for (String urlOfProperty : properties) {
 			PropertyType propertyType = reader.getPropertyType(urlOfProperty);
 			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
@@ -1013,6 +1017,8 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
 		}
+		
+		
 		return result;
 	}
 

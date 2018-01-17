@@ -21,7 +21,8 @@ public class TestNimbleSpecificSPARQLDeriviation {
 	@Ignore
 	@Test
 	public void testcreateSPARQLForAllDomainSpecificProperties() {
-		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(null, null,null);
+		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(null,
+				null, null);
 		String sparql = deriviation.createSPARQLForAllDomainSpecificProperties();
 		System.out.println(sparql);
 
@@ -29,39 +30,59 @@ public class TestNimbleSpecificSPARQLDeriviation {
 
 	@Ignore
 	@Test
-	public void testgetPropertyValuesForOrangeGroup(){
+	public void testgetPropertyValuesForOrangeGroup() {
 		File file = new File("./src/main/resources/sqpConfiguration.xml");
-		if (file.exists()){
-		Reader reader = new Reader();
-		reader.setModeToLocal();
-		reader.loadOntologyModel(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
-		
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(null, "./src/main/resources/sqpConfiguration.xml");
-		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader, sqpDerivationService,null);
-		String command = "companyName";
-		String concept = "http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair";
-		eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup result = deriviation.getPropertyValuesForOrangeGroup(command, concept);
-		System.out.println(result.getAllValues());
-		
-		
-		
-		}
-		else{
+		if (file.exists()) {
+			Reader reader = new Reader();
+			reader.setModeToLocal();
+			reader.loadOntologyModel(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
+
+			SQPDerivationService sqpDerivationService = new SQPDerivationService(null,
+					"./src/main/resources/sqpConfiguration.xml");
+			NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
+					reader, sqpDerivationService, null);
+			String command = "companyName";
+			String concept = "http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair";
+			eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup result = deriviation
+					.getPropertyValuesForOrangeGroup(command, concept);
+			System.out.println(result.getAllValues());
+
+		} else {
 			fail("No configuration file found");
 		}
 	}
 
 	@Ignore
 	@Test
-	public void testgetAllDifferentValuesForAProperty(){
+	public void testgetAllDifferentValuesForAProperty() {
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
-		MediatorSPARQLDerivationAndExecution  mediatorSPARQLDerivationAndExecution  = null;
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution, "./src/main/resources/sqpConfiguration.xml");
-		  mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution("https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
-		
-		  NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(reader,sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-		  List<String> result = deriviation.getAllDifferentValuesForAProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name");
-		  System.out.println(result);
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
+		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
+				"./src/main/resources/sqpConfiguration.xml");
+		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
+				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
+
+		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
+				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
+		List<String> result = deriviation.getAllDifferentValuesForAProperty(
+				"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish",
+				"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name");
+		System.out.println(result);
 	}
-	
+
+	@Ignore
+	@Test
+	public void testgetAdditionalPropertiesWhichAreDerivedFromAbox() {
+		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
+		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
+				"./src/main/resources/sqpConfiguration.xml");
+		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
+				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
+		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
+				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
+		List<String> result = deriviation.getAdditionalPropertiesWhichAreDerivedFromAbox(
+				"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		System.out.println(result);
+	}
 }

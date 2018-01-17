@@ -143,6 +143,23 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		return null;
 	}
 
+	public List<String> getAdditionalPropertiesWhichAreDerivedFromAbox(String conceptURL){
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+
+		sparql += " ?property";
+		
+
+		// Define it is a ItemType
+		sparql += " where{";
+		sparql += "?instance ?property ?propertyValue. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?codeValue.";
+		sparql += "Filter  regex( ?codeValue , \"" + conceptURL + "\").";
+		sparql += "}";
+		Object result = reader.query(sparql);
+		List<String> resultAsList = reader.createResultList(result, "property");
+		return resultAsList;
+		
+	}
+	
 	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL) {
 		NimbleSpecificSPARQLFactory factory = new NimbleSpecificSPARQLFactory(mediatorSPARQLDerivationAndExecution,
 				sqpDerivationService);
