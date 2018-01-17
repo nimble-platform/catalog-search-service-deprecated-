@@ -108,8 +108,10 @@ public class NimbleSpecificSPARQLFactory {
 	}
 
 	private String extendForDomainSpecificProperty(String propertyURL) {
-		// TODO Auto-generated method stub
-		String sparql =  " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?hasValue. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code2. ?code2 <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?value";
+
+		//this is the old query which uses the classificationCode to refer to an domain specific property
+		//String sparql =  " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?hasValue. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code2. ?code2 <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?value";
+		String sparql =  " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#linkedResourceURI> ?value";
 		sparql += " Filter  regex( ?value , \"" + propertyURL + "\").";
 		return sparql;
 	}
