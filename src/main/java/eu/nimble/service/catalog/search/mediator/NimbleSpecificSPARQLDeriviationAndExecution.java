@@ -19,6 +19,8 @@ import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class NimbleSpecificSPARQLDeriviationAndExecution {
 
+	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification";
+	private static final String HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 	private IReader reader = null;
 	private SQPDerivationService sqpDerivationService = null;
 	private MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
@@ -145,19 +147,21 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 
 	public List<String> getAdditionalPropertiesWhichAreDerivedFromAbox(String conceptURL){
 		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
-
 		sparql += " ?property";
-		
-
-		// Define it is a ItemType
 		sparql += " where{";
 		sparql += "?instance ?property ?propertyValue. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?codeValue.";
 		sparql += "Filter  regex( ?codeValue , \"" + conceptURL + "\").";
 		sparql += "}";
 		Object result = reader.query(sparql);
 		List<String> resultAsList = reader.createResultList(result, "property");
+		removeNimbleSpecificInternalProperties(resultAsList);
 		return resultAsList;
 		
+	}
+
+	public void removeNimbleSpecificInternalProperties(List<String> resultAsList) {
+		resultAsList.remove(HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE);
+		resultAsList.remove(URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION);
 	}
 	
 	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL) {
