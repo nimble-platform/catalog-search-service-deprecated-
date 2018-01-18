@@ -146,6 +146,7 @@ public class SearchController {
 	}
 
 	@CrossOrigin
+	@Deprecated
 	@RequestMapping(value = "/detectMeaning", method = RequestMethod.GET)
 	HttpEntity<Object> detectMeaning(@RequestParam("keyword") String keyword) {
 		try {

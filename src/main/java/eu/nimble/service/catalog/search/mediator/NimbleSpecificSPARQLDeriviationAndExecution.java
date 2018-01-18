@@ -1,12 +1,14 @@
 package eu.nimble.service.catalog.search.mediator;
 
 import java.security.cert.CollectionCertStoreParameters;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.biba.triple.store.access.IReader;
+import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.PropertyType;
 import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
@@ -145,7 +147,70 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		return null;
 	}
 
-	public List<String> getAdditionalPropertiesWhichAreDerivedFromAbox(String conceptURL){
+	public void removeInternalConceptsToHideItForTheUser(List<Entity> concepts) {
+
+		List<Entity> toBeRemoved = new ArrayList<Entity>();
+		for (Entity entity : concepts) {
+			
+			if (entity.getUrl().contains("ItemType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("AmountType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("CatalogueType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("CertificateType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("ComodityClassificationType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("DeliveryTermsType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("DimensionType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("DocumentReferenceType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("GoodsItemType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("ItemIdentificationType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("ItemLocationQuantityType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("ItemLPropertyType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("PackageType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("PartyType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("PeriodType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("PriceType")){
+				toBeRemoved.add(entity);
+			}
+			if (entity.getUrl().contains("QuantityType")){
+				toBeRemoved.add(entity);
+			}
+		}
+		
+		for (Entity entity: toBeRemoved){
+			concepts.remove(entity);
+		}
+	}
+
+	public List<String> getAdditionalPropertiesWhichAreDerivedFromAbox(String conceptURL) {
 		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
 		sparql += " ?property";
 		sparql += " where{";
@@ -156,14 +221,15 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		List<String> resultAsList = reader.createResultList(result, "property");
 		removeNimbleSpecificInternalProperties(resultAsList);
 		return resultAsList;
-		
+
 	}
 
 	public void removeNimbleSpecificInternalProperties(List<String> resultAsList) {
 		resultAsList.remove(HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE);
-		resultAsList.remove(URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION);
+		resultAsList.remove(
+				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION);
 	}
-	
+
 	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL) {
 		NimbleSpecificSPARQLFactory factory = new NimbleSpecificSPARQLFactory(mediatorSPARQLDerivationAndExecution,
 				sqpDerivationService);
@@ -179,7 +245,8 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			List<String> values = reader.createResultList(result, "hasValue");
 			return values;
 		} else {
-			Logger.getAnonymousLogger().log(Level.WARNING, "Couldn't create sparql queries for: " + concept + " & "+ propertyURL);
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Couldn't create sparql queries for: " + concept + " & " + propertyURL);
 		}
 		return Collections.EMPTY_LIST;
 	}

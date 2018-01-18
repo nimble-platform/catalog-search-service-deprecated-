@@ -674,7 +674,7 @@ public class MediatorSPARQLDerivationAndExecution {
 		List<de.biba.triple.store.access.enums.Language> langaues = reader.getNativeSupportedLangauges();
 
 		if (reader == null) {
-			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init failed");
 		} else {
 
 			List<Entity> concepts = null;
@@ -684,6 +684,9 @@ public class MediatorSPARQLDerivationAndExecution {
 			} else {
 				Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + Language.UNKNOWN);
 				concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
+			}
+			if (needANimbleSpecificAdapation()) {
+				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
 			}
 			return concepts;
 		}
@@ -1000,8 +1003,9 @@ public class MediatorSPARQLDerivationAndExecution {
 		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
 		concept = getURIOfConcept(concept);
 		List<String> properties = reader.getAllPropertiesIncludingEverything(concept);
-		if (needANimbleSpecificAdapation()){
-			List<String> additionalProperties = nimbleSpecificSPARQLDeriviation.getAdditionalPropertiesWhichAreDerivedFromAbox(concept);
+		if (needANimbleSpecificAdapation()) {
+			List<String> additionalProperties = nimbleSpecificSPARQLDeriviation
+					.getAdditionalPropertiesWhichAreDerivedFromAbox(concept);
 			properties.addAll(additionalProperties);
 		}
 		for (String urlOfProperty : properties) {
@@ -1017,8 +1021,7 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
 		}
-		
-		
+
 		return result;
 	}
 
