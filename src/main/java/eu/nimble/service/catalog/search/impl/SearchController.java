@@ -473,7 +473,7 @@ public class SearchController {
 			concept = sparqlDerivation.getURIOfConcept(concept);
 			for (OutputForPropertyFromConcept prop : propertiesFromConcept.getOutputForPropertiesFromConcept()) {
 				TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
-						propertiesFromConcept.getLanguage(), concept);
+						Language.fromString(inputParamterForGetLogicalView.getLanguage()), languageLabel);
 				prop.setTranslatedProperty(name.getTranslation());
 			}
 			String result = "";
