@@ -197,9 +197,12 @@ public class SearchController {
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
 			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
 					inputParameterdetectMeaningLanguageSpecific.getKeyword(),
-					inputParameterdetectMeaningLanguageSpecific.getLanguage());
+					inputParameterdetectMeaningLanguageSpecific.getLanguage(),languageLabel);
 			MeaningResult meaningResult = new MeaningResult();
 
+			
+		
+			
 			meaningResult.setConceptOverview(concepts);
 			meaningResult.setSearchTyp("ExplorativeSearch");
 
@@ -748,6 +751,22 @@ public class SearchController {
 	 */
 	public boolean needANimbleSpecificAdapation() {
 		return (marmottaUri != null && marmottaUri.contains("http")) ? true : false;
+	}
+
+	public String getMarmottaUri() {
+		return marmottaUri;
+	}
+
+	public void setMarmottaUri(String marmottaUri) {
+		this.marmottaUri = marmottaUri;
+	}
+
+	public String getLanguageLabel() {
+		return languageLabel;
+	}
+
+	public void setLanguageLabel(String languageLabel) {
+		this.languageLabel = languageLabel;
 	}
 
 }

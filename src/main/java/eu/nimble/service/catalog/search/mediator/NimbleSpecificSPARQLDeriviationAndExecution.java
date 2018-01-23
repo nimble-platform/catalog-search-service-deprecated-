@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.dmo.Entity;
+import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
@@ -251,4 +252,35 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		return Collections.EMPTY_LIST;
 	}
 
+	public 	List<Entity> detectNimbleSpecificMeaningFromAKeyword(String keyword, String translationLabel, Language language){
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <" + translationLabel + "> ?value FILTER regex( str(?value),\""+keyword+"\",\"i\").}";
+		Object result = reader.query(sparql);
+		String[] columns = new String[] { "subject", "value" };
+		List<String[]> allConcepts = reader.createResultListArray(result, columns);
+		List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
+		String languagepostfix = language.toOntologyPostfix(language);
+		for (String[] row : allConcepts) {
+			String value = row[1];
+			if (value != null && value.length() > 1 && value.contains(languagepostfix)) {
+				value = value.substring(0, value.indexOf(languagepostfix));
+
+				Entity entity = new Entity();
+				entity.setUrl(row[0]);
+				entity.setTranslatedURL(value);
+				entity.setLanguage(language);
+				resultOfSerachTerm.add(entity);
+			}
+			else{
+				if (!value.contains("@")){
+					Entity entity = new Entity();
+					entity.setUrl(row[0]);
+					entity.setTranslatedURL(value);
+					entity.setLanguage(Language.UNKNOWN);
+					resultOfSerachTerm.add(entity);
+				}
+			}
+		}
+		return resultOfSerachTerm;
+	}
+	
 }

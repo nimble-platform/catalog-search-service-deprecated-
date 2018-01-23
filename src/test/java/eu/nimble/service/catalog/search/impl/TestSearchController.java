@@ -3,6 +3,7 @@ package eu.nimble.service.catalog.search.impl;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URLEncoder;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -13,8 +14,12 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.gson.Gson;
 
+import de.biba.triple.store.access.dmo.Entity;
+import de.biba.triple.store.access.enums.Language;
+import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
@@ -27,14 +32,15 @@ public class TestSearchController {
 
 	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/ontology/FurnitureSectorTaxonomy-v1.8_BIBA.owl";
 
-	@Before
-	public void setUp() {
-		serachController = new SearchController();
-		serachController.setOntologyFile(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
-		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
-		serachController.init();
-
-	}
+//	@Ignore
+//	@Before
+//	public void setUp() {
+//		serachController = new SearchController();
+//		serachController.setOntologyFile(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
+//		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+//		serachController.init();
+//
+//	}
 
 	@Ignore
 	@Test
@@ -171,6 +177,54 @@ public class TestSearchController {
 
 	}
 
+	
+	@Test
+	public void testdetectMeaningLanguageSpecific(){
+		
+		InputParameterdetectMeaningLanguageSpecific input = new InputParameterdetectMeaningLanguageSpecific();
+		input.setLanguage("en");
+		input.setKeyword("High");
+		
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(input);
+		
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.init();
+		HttpEntity<Object> result = serachController.detectMeaningLanguageSpecific(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+	} 
+	
+	@Test
+	public void testdetectMeaningLanguageSpecificII(){
+		
+		InputParameterdetectMeaningLanguageSpecific input = new InputParameterdetectMeaningLanguageSpecific();
+		input.setLanguage("en");
+		input.setKeyword("Fruit");
+		
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(input);
+		
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+//		MarmottaReader marmottaReader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
+//		marmottaReader.setModeToRemote();
+	//	List<Entity> entities = marmottaReader.getAllConceptsLanguageSpecific("Fruit", Language.ENGLISH);
+	//	System.out.println(entities);
+		
+		HttpEntity<Object> result = serachController.detectMeaningLanguageSpecific(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+	} 
+	
 	@Test
 	@Ignore
 	public void testexecuteSPARQLWithOptionalSelect() {

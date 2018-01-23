@@ -668,9 +668,10 @@ public class MediatorSPARQLDerivationAndExecution {
 		return Collections.emptyList();
 	}
 
-	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language) {
+	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language, String translationLabel) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		Logger.getAnonymousLogger().log(Level.INFO, "Language specific serach for:  " + language.toString());
+		reader.setLanguageLabel(translationLabel);
 		List<de.biba.triple.store.access.enums.Language> langaues = reader.getNativeSupportedLangauges();
 
 		if (reader == null) {
@@ -686,6 +687,7 @@ public class MediatorSPARQLDerivationAndExecution {
 				concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
 			}
 			if (needANimbleSpecificAdapation()) {
+				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeyword(regex, translationLabel, language));
 				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
 			}
 			return concepts;
