@@ -5,19 +5,31 @@ import java.util.List;
 
 import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 
 public class InputParamaterForExecuteSelect {
 
-	String concept;
-	String language;
-	List<String> parameters = new ArrayList<String>();
-	List<String> parametersURL = new ArrayList<String>();
-	List<Parameter> parametersIncludingPath = new ArrayList<Parameter>();
-	List<Filter> filters = new ArrayList<Filter>();
-	OrangeCommands orangeCommandSelected = new OrangeCommands();
+	private String concept;
+	private String language;
+	private List<String> parameters = new ArrayList<String>();
+	private List<String> parametersURL = new ArrayList<String>();
+	private List<Parameter> parametersIncludingPath = new ArrayList<Parameter>();
+	private List<Filter> filters = new ArrayList<Filter>();
+	private OrangeCommands orangeCommandSelected = new OrangeCommands();
+	private List<PropertySource> propertySources = new ArrayList<PropertySource>();
 
 	
 	
+	
+
+	public List<PropertySource> getPropertySources() {
+		return propertySources;
+	}
+
+	public void setPropertySources(List<PropertySource> propertySources) {
+		this.propertySources = propertySources;
+	}
+
 	public OrangeCommands getOrangeCommandSelected() {
 		return orangeCommandSelected;
 	}

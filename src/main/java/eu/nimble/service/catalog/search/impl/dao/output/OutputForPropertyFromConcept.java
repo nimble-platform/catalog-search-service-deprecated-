@@ -1,14 +1,23 @@
 package eu.nimble.service.catalog.search.impl.dao.output;
 
+import de.biba.triple.store.access.enums.PropertyType;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+
 public class OutputForPropertyFromConcept {
 
 	private String propertyURL;
 	private boolean datatypeProperty;
 	private boolean objectProperty;
 	private String translatedProperty;
+	private PropertySource propertySource;
 	
 	
-	
+	public PropertySource getPropertySource() {
+		return propertySource;
+	}
+	public void setPropertySource(PropertySource propertySource) {
+		this.propertySource = propertySource;
+	}
 	public String getTranslatedProperty() {
 		return translatedProperty;
 	}
@@ -36,7 +45,8 @@ public class OutputForPropertyFromConcept {
 	@Override
 	public String toString() {
 		return "OutputForPropertyFromConcept [propertyURL=" + propertyURL + ", datatypeProperty=" + datatypeProperty
-				+ ", objectProperty=" + objectProperty + "]";
+				+ ", objectProperty=" + objectProperty + ", translatedProperty=" + translatedProperty
+				+ ", propertySource=" + propertySource + "]";
 	}
 	
 	

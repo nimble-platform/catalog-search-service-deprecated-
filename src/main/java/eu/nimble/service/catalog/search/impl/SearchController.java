@@ -488,6 +488,42 @@ public class SearchController {
 		}
 
 	}
+	
+	/**
+	 * Returns the properties of of a cocnept
+	 * 
+	 * @param inputAsJson
+	 *            The URL of the chosen concept
+	 * @return JSON including for each property the url and the type (datatype
+	 *         or object)
+	 */
+	@CrossOrigin
+	@RequestMapping(value = "/getInstantiatedPropertiesFromConcept", method = RequestMethod.GET)
+	HttpEntity<Object> getInstantiatedPropertiesFromConcept(@RequestParam("inputAsJson") String inputAsJson) {
+
+		try {
+			Gson gson = new Gson();
+			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
+					InputParamterForGetLogicalView.class);
+
+			String concept = inputParamterForGetLogicalView.getConcept();
+			OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation.getAllTransitiveProperties(concept);
+			concept = sparqlDerivation.getURIOfConcept(concept);
+			for (OutputForPropertyFromConcept prop : propertiesFromConcept.getOutputForPropertiesFromConcept()) {
+				TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
+						Language.fromString(inputParamterForGetLogicalView.getLanguage()), languageLabel);
+				prop.setTranslatedProperty(name.getTranslation());
+			}
+			String result = "";
+			result = gson.toJson(propertiesFromConcept);
+
+			return new ResponseEntity<Object>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
+	
 
 	/**
 	 * Returns the values for a given properties with respect t to the given
@@ -510,7 +546,7 @@ public class SearchController {
 					.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
 			String property = sparqlDerivation
 					.getURIOfProperty(inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
-			List<String> allValues = sparqlDerivation.getAllValuesForAGivenProperty(concept, property);
+			List<String> allValues = sparqlDerivation.getAllValuesForAGivenProperty(concept, property, inputParameterForPropertyValuesFromGreenGroup.getPropertySource());
 
 			OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new OutputForPropertyValuesFromGreenGroup();
 			outputForPropertyValuesFromGreenGroup.getAllValues().addAll(allValues);

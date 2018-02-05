@@ -24,6 +24,7 @@ import eu.nimble.service.catalog.search.impl.dao.DataPoint;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
@@ -668,7 +669,8 @@ public class MediatorSPARQLDerivationAndExecution {
 		return Collections.emptyList();
 	}
 
-	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language, String translationLabel) {
+	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language,
+			String translationLabel) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		Logger.getAnonymousLogger().log(Level.INFO, "Language specific serach for:  " + language.toString());
 		reader.setLanguageLabel(translationLabel);
@@ -687,7 +689,8 @@ public class MediatorSPARQLDerivationAndExecution {
 				concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
 			}
 			if (needANimbleSpecificAdapation()) {
-				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeyword(regex, translationLabel, language));
+				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeyword(regex,
+						translationLabel, language));
 				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
 			}
 			return concepts;
@@ -863,7 +866,7 @@ public class MediatorSPARQLDerivationAndExecution {
 		concept = getURIOfConcept(concept);
 		String shortPropertyName = property;
 		property = getURIOfProperty(property);
-		List<String> values = getAllValuesForAGivenProperty(concept, property);
+		List<String> values = getAllValuesForAGivenProperty(concept, property,null);
 		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
 			int index = str.lastIndexOf("^");
@@ -911,12 +914,12 @@ public class MediatorSPARQLDerivationAndExecution {
 		return n / 100f;
 	}
 
-	public List<String> getAllValuesForAGivenProperty(String concept, String property) {
+	public List<String> getAllValuesForAGivenProperty(String concept, String property, PropertySource propertySource) {
 		List<String> values = null;
 		if (!needANimbleSpecificAdapation()) {
 			values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
 		} else {
-			values = nimbleSpecificSPARQLDeriviation.getAllDifferentValuesForAProperty(concept, property);
+			values = nimbleSpecificSPARQLDeriviation.getAllDifferentValuesForAProperty(concept, property,propertySource);
 		}
 		return values;
 	}
@@ -1002,29 +1005,29 @@ public class MediatorSPARQLDerivationAndExecution {
 	}
 
 	public OutputForPropertiesFromConcept getAllTransitiveProperties(String concept) {
-		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
 		concept = getURIOfConcept(concept);
-		List<String> properties = reader.getAllPropertiesIncludingEverything(concept);
 		if (needANimbleSpecificAdapation()) {
-			List<String> additionalProperties = nimbleSpecificSPARQLDeriviation
-					.getAdditionalPropertiesWhichAreDerivedFromAbox(concept);
-			properties.addAll(additionalProperties);
-		}
-		for (String urlOfProperty : properties) {
-			PropertyType propertyType = reader.getPropertyType(urlOfProperty);
-			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
-			outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
-			if (propertyType == PropertyType.DATATYPEPROPERTY) {
-				outputForPropertyFromConcept.setDatatypeProperty(true);
-				outputForPropertyFromConcept.setObjectProperty(false);
-			} else {
-				outputForPropertyFromConcept.setDatatypeProperty(false);
-				outputForPropertyFromConcept.setObjectProperty(true);
-			}
-			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
-		}
+			return nimbleSpecificSPARQLDeriviation.getAllPropertiesIncludingEverything(concept);
+		} else {
+			OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
 
-		return result;
+			List<String> properties = reader.getAllPropertiesIncludingEverything(concept);
+			for (String urlOfProperty : properties) {
+				PropertyType propertyType = reader.getPropertyType(urlOfProperty);
+				OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
+				outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+				if (propertyType == PropertyType.DATATYPEPROPERTY) {
+					outputForPropertyFromConcept.setDatatypeProperty(true);
+					outputForPropertyFromConcept.setObjectProperty(false);
+				} else {
+					outputForPropertyFromConcept.setDatatypeProperty(false);
+					outputForPropertyFromConcept.setObjectProperty(true);
+				}
+				result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
+			}
+
+			return result;
+		}
 	}
 
 	public OutputForPropertyValuesFromOrangeGroup getPropertyValuesFromOrangeGroup(

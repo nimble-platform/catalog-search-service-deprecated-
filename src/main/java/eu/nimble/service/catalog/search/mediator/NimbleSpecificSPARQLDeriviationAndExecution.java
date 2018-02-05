@@ -13,7 +13,11 @@ import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.impl.dao.CustomPropertyInformation;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPConfiguration;
@@ -22,6 +26,7 @@ import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class NimbleSpecificSPARQLDeriviationAndExecution {
 
+	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification";
 	private static final String HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 	private IReader reader = null;
@@ -152,61 +157,61 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 
 		List<Entity> toBeRemoved = new ArrayList<Entity>();
 		for (Entity entity : concepts) {
-			
-			if (entity.getUrl().contains("ItemType")){
+
+			if (entity.getUrl().contains("ItemType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("AmountType")){
+			if (entity.getUrl().contains("AmountType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("CatalogueType")){
+			if (entity.getUrl().contains("CatalogueType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("CertificateType")){
+			if (entity.getUrl().contains("CertificateType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("ComodityClassificationType")){
+			if (entity.getUrl().contains("ComodityClassificationType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("DeliveryTermsType")){
+			if (entity.getUrl().contains("DeliveryTermsType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("DimensionType")){
+			if (entity.getUrl().contains("DimensionType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("DocumentReferenceType")){
+			if (entity.getUrl().contains("DocumentReferenceType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("GoodsItemType")){
+			if (entity.getUrl().contains("GoodsItemType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("ItemIdentificationType")){
+			if (entity.getUrl().contains("ItemIdentificationType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("ItemLocationQuantityType")){
+			if (entity.getUrl().contains("ItemLocationQuantityType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("ItemLPropertyType")){
+			if (entity.getUrl().contains("ItemLPropertyType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("PackageType")){
+			if (entity.getUrl().contains("PackageType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("PartyType")){
+			if (entity.getUrl().contains("PartyType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("PeriodType")){
+			if (entity.getUrl().contains("PeriodType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("PriceType")){
+			if (entity.getUrl().contains("PriceType")) {
 				toBeRemoved.add(entity);
 			}
-			if (entity.getUrl().contains("QuantityType")){
+			if (entity.getUrl().contains("QuantityType")) {
 				toBeRemoved.add(entity);
 			}
 		}
-		
-		for (Entity entity: toBeRemoved){
+
+		for (Entity entity : toBeRemoved) {
 			concepts.remove(entity);
 		}
 	}
@@ -225,13 +230,56 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 
 	}
 
+	public List<String> getAllAvailableDimensionsWhichAreDerivedFromAbox(String conceptURL) {
+		List<String> resultAsList = null;
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+		sparql += " ?value";
+		sparql += " where{";
+		sparql += "?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#DimensionType> ?propertyValue. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#AttributeID> ?value. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?codeValue.";
+		sparql += "Filter  regex( ?codeValue , \"" + conceptURL + "\").";
+		sparql += "}";
+		Object result = reader.query(sparql);
+		resultAsList = reader.createResultList(result, "value");
+
+		return resultAsList;
+	}
+
+	public List<CustomPropertyInformation> getAllAvailableCustomPropertiesWhichAreDerivedFromAbox(String conceptURL) {
+		List<String[]> resultAsList = null;
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+		sparql += " ?value ?name ?typeDes";
+		sparql += " where{";
+		sparql += "?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?propertyValue. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQualifier> ?typeDes.?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name> ?name. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?codeOfProperty. ?codeOfProperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#listID> ?value. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?codeValue.";
+		sparql += "Filter  (regex( ?codeValue , \"" + conceptURL + "\") && regex (?value, \"Custom\", \", i\")).";
+		sparql += "}";
+		Object result = reader.query(sparql);
+		resultAsList = reader.createResultListArray(result, new String[]{"name","typeDes"});
+		List<CustomPropertyInformation> customPropertyInformations = new ArrayList<CustomPropertyInformation>();
+		resultAsList.forEach(element -> {
+			String name = element[0];
+			String propertyDescription = element[1];
+			CustomPropertyInformation customPropertyInformation = new CustomPropertyInformation();
+			customPropertyInformation.setPropertyName(name);
+			customPropertyInformation.setTypeDescription(propertyDescription);
+			customPropertyInformations.add(customPropertyInformation);
+		});
+
+		
+		return customPropertyInformations;
+	}
+
+	
+	
+	
 	public void removeNimbleSpecificInternalProperties(List<String> resultAsList) {
 		resultAsList.remove(HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE);
 		resultAsList.remove(
 				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION);
+		resultAsList.remove(
+				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY);
 	}
 
-	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL) {
+	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL, PropertySource propertySource) {
 		NimbleSpecificSPARQLFactory factory = new NimbleSpecificSPARQLFactory(mediatorSPARQLDerivationAndExecution,
 				sqpDerivationService);
 		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
@@ -239,6 +287,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		String property = propertyURL.substring(propertyURL.indexOf("#") + 1);
 		inputParamaterForExecuteSelect.getParameters().add(property);
 		inputParamaterForExecuteSelect.getParametersURL().add(propertyURL);
+		inputParamaterForExecuteSelect.getPropertySources().add(propertySource);
 		List<String> sparqls = factory.createSparql(inputParamaterForExecuteSelect, reader);
 		if (sparqls != null && sparqls.size() > 0) {
 			String sparql = sparqls.get(0);
@@ -252,8 +301,10 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		return Collections.EMPTY_LIST;
 	}
 
-	public 	List<Entity> detectNimbleSpecificMeaningFromAKeyword(String keyword, String translationLabel, Language language){
-		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <" + translationLabel + "> ?value FILTER regex( str(?value),\""+keyword+"\",\"i\").}";
+	public List<Entity> detectNimbleSpecificMeaningFromAKeyword(String keyword, String translationLabel,
+			Language language) {
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <"
+				+ translationLabel + "> ?value FILTER regex( str(?value),\"" + keyword + "\",\"i\").}";
 		Object result = reader.query(sparql);
 		String[] columns = new String[] { "subject", "value" };
 		List<String[]> allConcepts = reader.createResultListArray(result, columns);
@@ -269,9 +320,8 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 				entity.setTranslatedURL(value);
 				entity.setLanguage(language);
 				resultOfSerachTerm.add(entity);
-			}
-			else{
-				if (!value.contains("@")){
+			} else {
+				if (!value.contains("@")) {
 					Entity entity = new Entity();
 					entity.setUrl(row[0]);
 					entity.setTranslatedURL(value);
@@ -282,5 +332,72 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		}
 		return resultOfSerachTerm;
 	}
+
 	
+	public List<String> getAllAvailableEClassOrDomainPropertiesFromAbox(String eclassOrconceptURL) {
+		List<String> resultList = null;
+		
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+		sparql += " ?value ?name";
+		sparql += " where{";
+		sparql += "?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?propertyValue. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name> ?name. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?codeOfProperty. ?codeOfProperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value>  ?value. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?codeValue.";
+		sparql += "Filter  (regex( ?codeValue , \"" + eclassOrconceptURL + "\") ).";
+		sparql += "}";
+		Object result = reader.query(sparql);
+		resultList = reader.createResultList(result, "name");
+		
+		return resultList;
+	}
+
+	private OutputForPropertyFromConcept createDefaultOutputForPropertyFromConcept(String urlOfProperty, OutputForPropertiesFromConcept result){
+		OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
+		outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+		outputForPropertyFromConcept.setDatatypeProperty(true);
+		outputForPropertyFromConcept.setObjectProperty(false);
+		PropertyType propertyType = reader.getPropertyType(urlOfProperty);
+		if (propertyType == PropertyType.OBJECTPROPERTY){
+			outputForPropertyFromConcept.setDatatypeProperty(false);
+			outputForPropertyFromConcept.setObjectProperty(true);
+		}
+		result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
+		
+		return outputForPropertyFromConcept;
+	}
+	
+	public OutputForPropertiesFromConcept getAllPropertiesIncludingEverything(String conceptURL) {
+		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
+		
+		List<String> allAdditionalProperties = getAdditionalPropertiesWhichAreDerivedFromAbox(conceptURL);
+		allAdditionalProperties.forEach( str -> {
+			OutputForPropertyFromConcept outputForPropertyFromConcept = createDefaultOutputForPropertyFromConcept(str, result);
+			outputForPropertyFromConcept.setPropertySource(PropertySource.DIRECT_PROPERTIES);
+		});
+		
+		allAdditionalProperties = getAllAvailableDimensionsWhichAreDerivedFromAbox(conceptURL);
+		allAdditionalProperties.forEach( str -> {
+			OutputForPropertyFromConcept outputForPropertyFromConcept = createDefaultOutputForPropertyFromConcept(str,result);
+			outputForPropertyFromConcept.setPropertySource(PropertySource.DIMENSION);
+		});
+			
+		
+		List<CustomPropertyInformation> customPropertyInformations = getAllAvailableCustomPropertiesWhichAreDerivedFromAbox(conceptURL);
+		customPropertyInformations.forEach( element -> {
+			OutputForPropertyFromConcept outputForPropertyFromConcept = createDefaultOutputForPropertyFromConcept(element.getPropertyName(),result);
+			if (element.getTypeDescription().toLowerCase().contains("string")){
+			outputForPropertyFromConcept.setPropertySource(PropertySource.CUSTOM_STRING);
+			}
+			else{
+				outputForPropertyFromConcept.setPropertySource(PropertySource.CUSTOM_DECIMAL);
+			}
+		});
+		
+		allAdditionalProperties = getAllAvailableEClassOrDomainPropertiesFromAbox(conceptURL);
+		allAdditionalProperties.forEach( str -> {
+			OutputForPropertyFromConcept outputForPropertyFromConcept = createDefaultOutputForPropertyFromConcept(str,result);
+			outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+		});
+		
+		return result;
+	}
+
 }

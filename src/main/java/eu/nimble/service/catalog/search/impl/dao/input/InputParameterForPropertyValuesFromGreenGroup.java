@@ -1,9 +1,13 @@
 package eu.nimble.service.catalog.search.impl.dao.input;
 
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+
 public class InputParameterForPropertyValuesFromGreenGroup {
 
 	private String conceptURL ;
 	private String propertyURL;
+	private PropertySource propertySource;
+	
 	public String getConceptURL() {
 		return conceptURL;
 	}
@@ -19,6 +23,12 @@ public class InputParameterForPropertyValuesFromGreenGroup {
 	@Override
 	public String toString() {
 		return "InputForPropertyValuesFromGreenGroup [conceptURL=" + conceptURL + ", propertyURL=" + propertyURL + "]";
+	}
+	public PropertySource getPropertySource() {
+		return propertySource;
+	}
+	public void setPropertySource(PropertySource propertySource) {
+		this.propertySource = propertySource;
 	}
 	
 	

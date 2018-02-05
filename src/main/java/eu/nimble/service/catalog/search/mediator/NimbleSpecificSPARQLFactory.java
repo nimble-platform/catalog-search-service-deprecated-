@@ -55,7 +55,7 @@ public class NimbleSpecificSPARQLFactory {
 				urlOfconcept = sparqlDerivation.getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
 			}
 
-			sparql += addPropertyForMarmotta(inputParamaterForExecuteSelect.getParametersURL().get(counter));
+			sparql += addPropertyForMarmotta(inputParamaterForExecuteSelect.getParametersURL().get(counter), inputParamaterForExecuteSelect.getPropertySources().get(counter));
 
 			sparql += "Filter  regex( ?codeValue , \"" + urlOfconcept + "\").";
 			sparql += "}";
@@ -65,11 +65,11 @@ public class NimbleSpecificSPARQLFactory {
 		return result;
 	}
 
-	private String addPropertyForMarmotta(String propertyURL) {
+	private String addPropertyForMarmotta(String propertyURL, PropertySource propertySource2) {
 
 		String result = "";
 
-		PropertySource propertySource = detectPropertySource(propertyURL);
+		PropertySource propertySource = detectPropertySource(propertyURL, propertySource2);
 		switch (propertySource) {
 		case ADDITIONAL_ITEM_PROPERTY:
 
@@ -88,13 +88,23 @@ public class NimbleSpecificSPARQLFactory {
 			result += extendForCertificate();
 			break;
 		case DIMENSION:
-			result += extendForDimension();
-			break;
+			result += extendForDimension(propertyURL);
+			return result;
 		case MANUFACTURER_ITEMS_IDENTIFICATION:
-			break;
+			result+= extendForManufacturerIdentification();
+			return result;
 		case MANUFACTURER_PARTY:
-			break;
-		}
+			result+= extendForManufacturerParty(propertyURL);
+			return result;
+			
+		case CUSTOM_STRING:
+			result += extendForCustomString(propertyURL);
+			return result;
+		case CUSTOM_DECIMAL:
+			result += extendForCustomDecimal(propertyURL);
+			return result;
+		
+	}
 
 		
 		if (propertySource != PropertySource.DOMAIN_SPECIFIC_PROPERTY){
@@ -107,6 +117,36 @@ public class NimbleSpecificSPARQLFactory {
 		return result;
 	}
 
+	private String extendForManufacturerIdentification() {
+		String sparql = "?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ManufacturersItemIdentification> ?ManufacturerParty. ?ManufacturerParty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ID> ?hasValue.";
+		sparql+= "?instance ?property  ?ManufacturerParty .";
+		return sparql;
+	}
+
+	private String extendForManufacturerParty(String propertyURL) {
+		String sparql = "?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ManufacturerParty> ?ManufacturerParty. ?ManufacturerParty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name> ?hasValue.";
+		sparql+= "?instance ?property  ?ManufacturerParty .";
+		return sparql;
+	}
+
+	private String extendForCustomString(String propertyName) {
+		String sparql= "?instance"
+				+ "  <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?propertyValue. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name> ?property. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?hasValue.  ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?codeOfProperty. ?codeOfProperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#listID> ?value.";
+		
+		sparql += "Filter  (regex( ?property , \"" + propertyName + "\") && regex (?value, \"Custom\", \" i\")).";
+		
+		return sparql;
+	}
+	
+	private String extendForCustomDecimal(String propertyName) {
+		String sparql= "?instance"
+				+ "  <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?propertyValue. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name> ?property. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQuantity> ?valueQ. ?valueQ <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueDecimal> ?hasValue.  ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?codeOfProperty. ?codeOfProperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#listID> ?value.";
+		
+		sparql += "Filter  (regex( ?property , \"" + propertyName + "\") && regex (?value, \"Custom\", \" i\")).";
+		
+		return sparql;
+	}
+
 	private String extendForDomainSpecificProperty(String propertyURL) {
 
 		//this is the old query which uses the classificationCode to refer to an domain specific property
@@ -116,9 +156,11 @@ public class NimbleSpecificSPARQLFactory {
 		return sparql;
 	}
 
-	private String extendForDimension() {
-		return "?instance"
-				+ "<urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#Dimension> ?hasValue .";
+	private String extendForDimension(String propertyName) {
+		String sparql= "?instance"
+				+ "<urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#Dimension> ?dimension. ?dimension <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#AttributeID> ?property. ?dimension <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Measure> ?measure. ?measure <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueDecimal> ?hasValue";
+		sparql += " Filter  regex( ?property , \"" + propertyName + "\").";
+		return sparql;
 	}
 
 	private String extendForCertificate() {
@@ -137,8 +179,22 @@ public class NimbleSpecificSPARQLFactory {
 		return "?instance" + "<"+NimbleAdaptionServiceOfSearchResults.propertyURLForName+">  ?hasValue .";
 	}
 
-	private PropertySource detectPropertySource(String propertyURL) {
-		// TODO Auto-generated method stub
+	private PropertySource detectPropertySource(String propertyURL, PropertySource propertySource2) {
+		
+		switch (propertySource2) {
+		case DIMENSION:
+			return PropertySource.DIMENSION;
+			
+		case CUSTOM_DECIMAL:
+			return PropertySource.CUSTOM_DECIMAL;
+			
+		case CUSTOM_STRING:
+			return PropertySource.CUSTOM_STRING;
+			
+		default:
+			
+		
+		
 		String propertyName = propertyURL.toLowerCase();
 		int index = propertyName.indexOf("#");
 		propertyName = propertyName.substring(index + 1);
@@ -148,17 +204,23 @@ public class NimbleSpecificSPARQLFactory {
 		if (propertyName.contains("description")) {
 			return PropertySource.DESCRIPTION;
 		}
-		if (propertyName.contains("dimension")) {
-			return PropertySource.DIMENSION;
-		}
+		
 		if (propertyName.contains("certi")) {
 			return PropertySource.CERTIFICATE;
+		}
+		
+		if (propertyName.contains("manufacturerparty")) {
+			return PropertySource.MANUFACTURER_PARTY;
+		}
+		
+		if (propertyName.contains("manufacturersitemidentification" )){
+			return PropertySource.MANUFACTURER_ITEMS_IDENTIFICATION;
 		}
 
 		if (nimbleSpecificSPARQLDeriviation.isItADomainSpecificPropertyWhichHasValues(propertyURL)){
 			return PropertySource.DOMAIN_SPECIFIC_PROPERTY;
 		}
-		
+		}
 		return PropertySource.ADDITIONAL_ITEM_PROPERTY;
 	}
 
