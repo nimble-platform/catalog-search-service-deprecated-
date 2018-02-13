@@ -316,6 +316,12 @@ public class MediatorSPARQLDerivationAndExecution {
 
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 
+		//If the NImble specific Marmotta structure is applied, a additional postprocessing is required
+		if (needANimbleSpecificAdapation()){
+			result =  nimbleSpecificSPARQLDeriviation.resolveOPtionalSPARQLAndExecuteITToFinalPropertyValues(result, inputParamaterForExecuteOptionalSelect.getUuid());
+		}
+		
+		
 		ArrayList<String> row = new ArrayList<String>();
 		for (String key : result.keySet()) {
 			Language language = inputParamaterForExecuteOptionalSelect.getLanguage();
@@ -334,7 +340,7 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 
 		}
-
+		
 		// Have to extend the result with the orange stuff
 		if (inputParamaterForExecuteOptionalSelect.getOrangeCommandSelected().getNames().size() > 0) {
 			String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ";
@@ -689,7 +695,11 @@ public class MediatorSPARQLDerivationAndExecution {
 				concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
 			}
 			if (needANimbleSpecificAdapation()) {
+<<<<<<< HEAD
+				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeywordReferringToInstances(regex,
+=======
 				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeyword(regex,
+>>>>>>> 435465c206650462162b92beebb5ee64acd49df6
 						translationLabel, language));
 				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
 			}
@@ -817,7 +827,7 @@ public class MediatorSPARQLDerivationAndExecution {
 
 	public String getURIOfConcept(String concept) {
 
-		if (concept.contains("#")) {
+		if (concept.contains("#") || (concept.contains("http://www.nimble-project.org/resource/eclass"))) {
 			return concept;
 		}
 
@@ -1034,6 +1044,6 @@ public class MediatorSPARQLDerivationAndExecution {
 			InputParameterForPropertyValuesFromOrangeGroup valuesFromOrangeGroup) {
 		String command = valuesFromOrangeGroup.getOrangeCommand();
 		String concept = valuesFromOrangeGroup.getConceptURL();
-		return nimbleSpecificSPARQLDeriviation.getPropertyValuesForOrangeGroup(command, concept);
+		return nimbleSpecificSPARQLDeriviation.getPropertyValuesForOrangeGroup(command, concept,needANimbleSpecificAdapation() );
 	}
 }
