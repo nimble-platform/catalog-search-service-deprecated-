@@ -21,6 +21,7 @@ import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
@@ -64,6 +65,51 @@ public class TestSearchController {
 		System.out.println(r);
 	}
 
+	
+	@Test
+	public void testgetLogicalView_Marmotta(){
+	
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		inputParamterForGetLogicalView.setConcept("http://www.nimble-project.org/resource/eclass/22292803");
+		inputParamterForGetLogicalView.setStepRange(1);
+		inputParamterForGetLogicalView.setLanguage("en");
+		
+		
+		HttpEntity<Object> result = serachController.getLogicalView(inputParamterForGetLogicalView);
+		String r = result.getBody().toString();
+		System.out.println(r);
+		
+	}
+	
+	@Test
+	public void testgetPropertyFromConcept(){
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		inputParamterForGetLogicalView.setConcept("http://www.nimble-project.org/resource/eclass/22292803");
+		inputParamterForGetLogicalView.setStepRange(1);
+		inputParamterForGetLogicalView.setLanguage("en");
+		
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(inputParamterForGetLogicalView);
+		HttpEntity<Object> result = serachController.getPropertyFromConcept(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+		
+	}
+	
 	@Test
 	@Ignore
 	public void testExecuteSPARQLSelectWithOrange() {

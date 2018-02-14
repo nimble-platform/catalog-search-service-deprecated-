@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
-import de.biba.triple.store.access.dmo.Entity;
+import eu.nimble.service.catalog.search.impl.dao.Entity;
 import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;

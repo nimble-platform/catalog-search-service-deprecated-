@@ -4,6 +4,8 @@ import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 
 public class Entity extends de.biba.triple.store.access.dmo.Entity{
 
+	
+	
 	private PropertySource propertySource;
 
 	@Override

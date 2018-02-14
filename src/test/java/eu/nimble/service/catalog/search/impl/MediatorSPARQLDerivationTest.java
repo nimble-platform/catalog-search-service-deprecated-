@@ -15,7 +15,7 @@ import com.google.gson.Gson;
 
 import static org.mockito.Mockito.*;
 
-import de.biba.triple.store.access.dmo.Entity;
+import eu.nimble.service.catalog.search.impl.dao.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;

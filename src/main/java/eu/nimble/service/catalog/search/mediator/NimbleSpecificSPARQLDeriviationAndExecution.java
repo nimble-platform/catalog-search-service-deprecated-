@@ -29,6 +29,7 @@ import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class NimbleSpecificSPARQLDeriviationAndExecution {
 
+	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_DIMENSION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#Dimension";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification";
 	private static final String HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
@@ -328,6 +329,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION);
 		resultAsList.remove(
 				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY);
+		resultAsList.remove(URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_DIMENSION);
 	}
 
 

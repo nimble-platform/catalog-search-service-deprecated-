@@ -316,12 +316,13 @@ public class MediatorSPARQLDerivationAndExecution {
 
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 
-		//If the NImble specific Marmotta structure is applied, a additional postprocessing is required
-		if (needANimbleSpecificAdapation()){
-			result =  nimbleSpecificSPARQLDeriviation.resolveOPtionalSPARQLAndExecuteITToFinalPropertyValues(result, inputParamaterForExecuteOptionalSelect.getUuid());
+		// If the NImble specific Marmotta structure is applied, a additional
+		// postprocessing is required
+		if (needANimbleSpecificAdapation()) {
+			result = nimbleSpecificSPARQLDeriviation.resolveOPtionalSPARQLAndExecuteITToFinalPropertyValues(result,
+					inputParamaterForExecuteOptionalSelect.getUuid());
 		}
-		
-		
+
 		ArrayList<String> row = new ArrayList<String>();
 		for (String key : result.keySet()) {
 			Language language = inputParamaterForExecuteOptionalSelect.getLanguage();
@@ -340,7 +341,7 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 
 		}
-		
+
 		// Have to extend the result with the orange stuff
 		if (inputParamaterForExecuteOptionalSelect.getOrangeCommandSelected().getNames().size() > 0) {
 			String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ";
@@ -696,9 +697,10 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 			if (needANimbleSpecificAdapation()) {
 
-				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeywordReferringToInstances(regex,
+				concepts.addAll(nimbleSpecificSPARQLDeriviation
+						.detectNimbleSpecificMeaningFromAKeywordReferringToInstances(regex,
 
-						translationLabel, language));
+								translationLabel, language));
 				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
 			}
 			return concepts;
@@ -767,41 +769,48 @@ public class MediatorSPARQLDerivationAndExecution {
 
 			String conceptAsUri = getURIOfConcept(concept);
 			Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " + conceptAsUri);
-			List<String> properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
-			for (String proeprty : properties) {
-				PropertyType pType = reader.getPropertyType(proeprty);
-				if (pType == PropertyType.DATATYPEPROPERTY) {
-					String translatedName = reduceURIJustToName(proeprty, language);
-					Entity entity = new Entity();
-					entity.setUrl(proeprty);
-					entity.setTranslatedURL(translatedName);
-
-					localOntologyView.addDataproperties(entity);
-				} else {
-					// It is a object property which means I must return the
-					// name of
-					// the concept
-					List<String> ranges = reader.getRangeOfProperty(proeprty);
-					for (int i = 0; i < ranges.size(); i++) {
-						String range = ranges.get(i);
-						String rangeReduced = reduceURIJustToName(range, language);
-						LocalOntologyView localOntologyView2 = new LocalOntologyView();
-
-						Entity conceptRange = new Entity();
-						conceptRange.setUrl(range);
-						String label = translateConcept(range, language, this.languagelabel).getTranslation();
-						conceptRange.setTranslatedURL(rangeReduced);
-						// conceptRan
-
-						localOntologyView2.setConcept(conceptRange);
-						localOntologyView2.setObjectPropertySource(proeprty);
-						localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
-						localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept() + 1);
-						List<String> newPaht = new ArrayList<String>(localOntologyView.getConceptURIPath());
-						newPaht.add(range);
-						localOntologyView2.setConceptURIPath(newPaht);
-						localOntologyView.getObjectproperties().put(range, localOntologyView2);
+			List<String> properties = new ArrayList<>();
+			
+			if (needANimbleSpecificAdapation()) {
+				OutputForPropertiesFromConcept outputForPropertiesFromConcept = nimbleSpecificSPARQLDeriviation
+						.getAllPropertiesIncludingEverything(concept);
+				List<OutputForPropertyFromConcept> props = outputForPropertiesFromConcept
+						.getOutputForPropertiesFromConcept();
+				for (OutputForPropertyFromConcept property: props){
+					PropertyType pType = reader.getPropertyType(property.getPropertyURL());
+					if (pType == PropertyType.DATATYPEPROPERTY || pType==PropertyType.UNKNOWN) {
+						String translatedName = reduceURIJustToName(property.getPropertyURL(), language);
+						eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
+						entity.setUrl(property.getPropertyURL());
+						entity.setTranslatedURL(translatedName);
+						entity.setPropertySource(property.getPropertySource());
+						localOntologyView.addDataproperties(entity);
 					}
+					else{
+						addObjectPropertyToLogicalView(instance, language, localOntologyView, property.getPropertyURL());
+					}
+				}
+				
+
+			} else {
+				properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
+				for (String proeprty : properties) {
+					PropertyType pType = reader.getPropertyType(proeprty);
+					if (pType == PropertyType.DATATYPEPROPERTY) {
+						String translatedName = reduceURIJustToName(proeprty, language);
+						eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
+						entity.setUrl(proeprty);
+						entity.setTranslatedURL(translatedName);
+						entity.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+
+						localOntologyView.addDataproperties(entity);
+					} else {
+						// It is a object property which means I must return the
+						// name of
+						// the concept
+						addObjectPropertyToLogicalView(instance, language, localOntologyView, proeprty);
+					}
+
 				}
 			}
 
@@ -815,6 +824,31 @@ public class MediatorSPARQLDerivationAndExecution {
 		}
 		return localOntologyView;
 
+	}
+
+	public void addObjectPropertyToLogicalView(LocalOntologyView instance, Language language,
+			LocalOntologyView localOntologyView, String proeprty) {
+		List<String> ranges = reader.getRangeOfProperty(proeprty);
+		for (int i = 0; i < ranges.size(); i++) {
+			String range = ranges.get(i);
+			String rangeReduced = reduceURIJustToName(range, language);
+			LocalOntologyView localOntologyView2 = new LocalOntologyView();
+
+			eu.nimble.service.catalog.search.impl.dao.Entity conceptRange = new eu.nimble.service.catalog.search.impl.dao.Entity();
+			conceptRange.setUrl(range);
+			String label = translateConcept(range, language, this.languagelabel).getTranslation();
+			conceptRange.setTranslatedURL(rangeReduced);
+			// conceptRan
+
+			localOntologyView2.setConcept(conceptRange);
+			localOntologyView2.setObjectPropertySource(proeprty);
+			localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
+			localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept() + 1);
+			List<String> newPaht = new ArrayList<String>(localOntologyView.getConceptURIPath());
+			newPaht.add(range);
+			localOntologyView2.setConceptURIPath(newPaht);
+			localOntologyView.getObjectproperties().put(range, localOntologyView2);
+		}
 	}
 
 	private String reduceURIJustToName(String uri, Language language) {
@@ -874,7 +908,7 @@ public class MediatorSPARQLDerivationAndExecution {
 		concept = getURIOfConcept(concept);
 		String shortPropertyName = property;
 		property = getURIOfProperty(property);
-		List<String> values = getAllValuesForAGivenProperty(concept, property,null);
+		List<String> values = getAllValuesForAGivenProperty(concept, property, null);
 		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
 			int index = str.lastIndexOf("^");
@@ -927,7 +961,8 @@ public class MediatorSPARQLDerivationAndExecution {
 		if (!needANimbleSpecificAdapation()) {
 			values = propertyValuesCrawler.getAllDifferentValuesForAProperty(concept, property);
 		} else {
-			values = nimbleSpecificSPARQLDeriviation.getAllDifferentValuesForAProperty(concept, property,propertySource);
+			values = nimbleSpecificSPARQLDeriviation.getAllDifferentValuesForAProperty(concept, property,
+					propertySource);
 		}
 		return values;
 	}
@@ -1042,6 +1077,7 @@ public class MediatorSPARQLDerivationAndExecution {
 			InputParameterForPropertyValuesFromOrangeGroup valuesFromOrangeGroup) {
 		String command = valuesFromOrangeGroup.getOrangeCommand();
 		String concept = valuesFromOrangeGroup.getConceptURL();
-		return nimbleSpecificSPARQLDeriviation.getPropertyValuesForOrangeGroup(command, concept,needANimbleSpecificAdapation() );
+		return nimbleSpecificSPARQLDeriviation.getPropertyValuesForOrangeGroup(command, concept,
+				needANimbleSpecificAdapation());
 	}
 }

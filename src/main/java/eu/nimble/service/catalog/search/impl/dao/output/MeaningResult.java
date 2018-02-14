@@ -5,6 +5,8 @@ import java.util.Map;
 
 import de.biba.triple.store.access.dmo.Entity;
 
+
+
 public class MeaningResult {
 
 	private String searchTyp;

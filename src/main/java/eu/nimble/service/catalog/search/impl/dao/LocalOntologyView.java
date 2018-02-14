@@ -9,7 +9,7 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 
-import de.biba.triple.store.access.dmo.Entity;
+import eu.nimble.service.catalog.search.impl.dao.Entity;
 
 public class LocalOntologyView {
 

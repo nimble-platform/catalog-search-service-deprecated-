@@ -169,7 +169,7 @@ public class SearchController {
 				index++;
 				String concept2 = concept.substring(index);
 
-				Entity entity = new Entity();
+				eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
 				entity.setLanguage(Language.UNKNOWN);
 				entity.setUrl(concept);
 				entity.setTranslatedURL(concept2);
@@ -316,7 +316,7 @@ public class SearchController {
 
 		LocalOntologyView ontologyView = new LocalOntologyView();
 
-		Entity concept = new Entity();
+		eu.nimble.service.catalog.search.impl.dao.Entity concept = new eu.nimble.service.catalog.search.impl.dao.Entity();
 		concept.setUrl(paramterForGetLogicalView.getConcept());
 		String label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(),
 				paramterForGetLogicalView.getLanguageAsLanguage(), languageLabel).getTranslation();
@@ -403,21 +403,21 @@ public class SearchController {
 		outputStructure.setCurrentSelections(paramterForGetLogicalView.getCurrentSelections());
 
 		// Try to extend the properties to Nimble specific ones
-		if (needANimbleSpecificAdapation()) {
-
-			List<Entity> additionalEntitiesViewStrucutre = nimbleAdaptionServiceOfSearchResults
-					.getAdditionalPropertiesForAConcept(outputStructure.getViewStructure().getDataproperties());
-			for (Entity entity : additionalEntitiesViewStrucutre) {
-				outputStructure.getViewStructure().getDataproperties().add(entity);
-			}
-
-			List<Entity> additionalEntitiesViewCompleteStructure = nimbleAdaptionServiceOfSearchResults
-					.getAdditionalPropertiesForAConcept(outputStructure.getCompleteStructure().getDataproperties());
-			for (Entity entity : additionalEntitiesViewCompleteStructure) {
-				outputStructure.getCompleteStructure().getDataproperties().add(entity);
-			}
-
-		}
+//		if (needANimbleSpecificAdapation()) {
+// 
+//			List<eu.nimble.service.catalog.search.impl.dao.Entity> additionalEntitiesViewStrucutre = nimbleAdaptionServiceOfSearchResults
+//					.getAdditionalPropertiesForAConcept(outputStructure.getViewStructure().getDataproperties());
+//			for (Entity entity : additionalEntitiesViewStrucutre) {
+//				outputStructure.getViewStructure().getDataproperties().add(entity);
+//			}
+//
+//			List<Entity> additionalEntitiesViewCompleteStructure = nimbleAdaptionServiceOfSearchResults
+//					.getAdditionalPropertiesForAConcept(outputStructure.getCompleteStructure().getDataproperties());
+//			for (Entity entity : additionalEntitiesViewCompleteStructure) {
+//				outputStructure.getCompleteStructure().getDataproperties().add(entity);
+//			}
+//
+//		}
 
 		String result = gson.toJson(outputStructure);
 		return result;
