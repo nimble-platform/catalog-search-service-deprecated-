@@ -490,22 +490,7 @@ public class SearchController {
 
 	}
 	
-<<<<<<< HEAD
-	
-	@CrossOrigin
-	@RequestMapping(value = "/getTable", method = RequestMethod.GET)
-	HttpEntity<Object> getTable() {
-		try {
-	
-		}
-		catch(Exception e){
-			
-		}
-		String result ="<!DOCTYPE html> <html lang=\"de\">  <head>    <meta charset=\"utf-8\"/>    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />    <title>Titel</title>  </head>  <body>  </body></html>";
-		return new ResponseEntity<Object>(result, HttpStatus.OK);
-	}
-=======
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 	/**
 	 * Returns the properties of of a cocnept
 	 * 

@@ -695,11 +695,9 @@ public class MediatorSPARQLDerivationAndExecution {
 				concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
 			}
 			if (needANimbleSpecificAdapation()) {
-<<<<<<< HEAD
+
 				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeywordReferringToInstances(regex,
-=======
-				concepts.addAll(nimbleSpecificSPARQLDeriviation.detectNimbleSpecificMeaningFromAKeyword(regex,
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 						translationLabel, language));
 				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
 			}

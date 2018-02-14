@@ -1,8 +1,8 @@
 //
 // Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
 // Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
-// Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.01.11 um 01:06:26 PM CET 
+// Aenderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
+// Generiert: 2018.01.11 um 01:06:26 PM CET l
 //
 
 
@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java-Klasse für SQPMapping complex type.
+ * <p>Java-Klasse fuer SQPMapping complex type.
  * 
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * 

@@ -189,7 +189,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
 		List<String> result = deriviation.getAllDifferentValuesForAProperty(
 				"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish",
-<<<<<<< HEAD
+
 				"drying time", PropertySource.CUSTOM_DECIMAL);
 		System.out.println(result);
 	}
@@ -208,9 +208,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		List<String> result = deriviation.getAllDifferentValuesForAProperty(
 				"http://www.nimble-project.org/resource/eclass/22292803",
 				"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ManufacturerParty", PropertySource.DIRECT_PROPERTIES);
-=======
-				"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name", PropertySource.DIRECT_PROPERTIES);
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 		System.out.println(result);
 	}
 	@Ignore
@@ -223,89 +221,8 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
 				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
 
-<<<<<<< HEAD
-=======
-	
-	@Ignore
-	@Test
-	public void testgetAllDifferentValuesForAProperty_Dimension() {
-		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
-		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
-				"./src/main/resources/sqpConfiguration.xml");
-		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
-				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
 
-		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
-				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-		List<String> result = deriviation.getAllDifferentValuesForAProperty(
-				"0173-1#01-ACO058#010",
-				"arm-reach (upward)", PropertySource.DIMENSION);
-		System.out.println(result);
-	}
-	@Ignore
-	@Test
-	public void testgetAllDifferentValuesForAProperty_Custom() {
-		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
-		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
-				"./src/main/resources/sqpConfiguration.xml");
-		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
-				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
 
-		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
-				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-		List<String> result = deriviation.getAllDifferentValuesForAProperty(
-				"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish",
-				"surface_characteristic", PropertySource.CUSTOM_STRING);
-		System.out.println(result);
-	}
-	
-	@Ignore
-	@Test
-	public void testgetAllDifferentValuesForAProperty_Custom_DECIMAL() {
-		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
-		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
-				"./src/main/resources/sqpConfiguration.xml");
-		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
-				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
-
-		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
-				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-		List<String> result = deriviation.getAllDifferentValuesForAProperty(
-				"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish",
-				"drying time", PropertySource.CUSTOM_DECIMAL);
-		System.out.println(result);
-	}
-	@Ignore
-	@Test
-	public void testgetAllDifferentValuesForAProperty_MANUFACTURERPARTY() {
-		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
-		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
-				"./src/main/resources/sqpConfiguration.xml");
-		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
-				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
-
-		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
-				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-		List<String> result = deriviation.getAllDifferentValuesForAProperty(
-				"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish",
-				"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ManufacturerParty", PropertySource.DIRECT_PROPERTIES);
-		System.out.println(result);
-	}
-	@Ignore
-	@Test
-	public void testgetAllDifferentValuesForAProperty_MANUFACTURERPARTYIDENTIFICATION() {
-		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
-		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
-				"./src/main/resources/sqpConfiguration.xml");
-		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
-				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
-
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
 		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
 				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
 		List<String> result = deriviation.getAllDifferentValuesForAProperty(
@@ -313,28 +230,8 @@ public class TestNimbleSpecificSPARQLDeriviation {
 				"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ManufacturersItemIdentification", PropertySource.DIRECT_PROPERTIES);
 		System.out.println(result);
 	}
-<<<<<<< HEAD
-=======
-	@Ignore
-	@Test
-	public void testgetAllDifferentValuesForAProperty_Description() {
-		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
-		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivationAndExecution = null;
-		SQPDerivationService sqpDerivationService = new SQPDerivationService(mediatorSPARQLDerivationAndExecution,
-				"./src/main/resources/sqpConfiguration.xml");
-		mediatorSPARQLDerivationAndExecution = new MediatorSPARQLDerivationAndExecution(
-				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
 
-		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
-				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-		List<String> result = deriviation.getAllDifferentValuesForAProperty(
-				"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish",
-				"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Description", PropertySource.DIRECT_PROPERTIES);
-		System.out.println(result);
-	}
-	
-	
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAProperty_Description() {
@@ -370,11 +267,9 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		System.out.println(result);
 	}
 	
-<<<<<<< HEAD
+
 	
-=======
-	@Ignore
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 	@Test
 	public void testgetAllAvailableCustomPropertiesWhichAreDerivedFromAbox (){
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -385,19 +280,13 @@ public class TestNimbleSpecificSPARQLDeriviation {
 				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
 		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
 				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-<<<<<<< HEAD
+
 		List<CustomPropertyInformation> result = deriviation.getAllAvailableCustomPropertiesWhichAreDerivedFromAbox("http://www.nimble-project.org/resource/eclass/22292803");
 		System.out.println(result);
 	
 	}
 	
-=======
-		List<CustomPropertyInformation> result = deriviation.getAllAvailableCustomPropertiesWhichAreDerivedFromAbox("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
-		System.out.println(result);
-	
-	}
-	@Ignore
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 	@Test
 	public void testgetAllAvailableDimensionsPropertiesWhichAreDerivedFromAbox (){
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -408,19 +297,13 @@ public class TestNimbleSpecificSPARQLDeriviation {
 				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
 		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
 				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-<<<<<<< HEAD
+
 		List<String> result = deriviation.getAllAvailableDimensionsWhichAreDerivedFromAbox("http://www.nimble-project.org/resource/eclass/22292803");
 		System.out.println(result);
 	
 	}
 	
-=======
-		List<String> result = deriviation.getAllAvailableDimensionsWhichAreDerivedFromAbox("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
-		System.out.println(result);
-	
-	}
-	@Ignore
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 	@Test
 	public void testgetAllAvailableEClassOrDomainProperties(){
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -431,11 +314,9 @@ public class TestNimbleSpecificSPARQLDeriviation {
 				"https://nimble-platform.salzburgresearch.at/marmotta", true, sqpDerivationService);
 		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
 				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-<<<<<<< HEAD
+
 		List<String> result = deriviation.getAllAvailableEClassOrDomainPropertiesFromAbox("http://www.nimble-project.org/resource/eclass/22292803");
-=======
-		List<String> result = deriviation.getAllAvailableEClassOrDomainPropertiesFromAbox("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 		System.out.println(result);
 	}
 	@Ignore
@@ -452,7 +333,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		OutputForPropertiesFromConcept result = deriviation.getAllPropertiesIncludingEverything("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
 		System.out.println(result.getOutputForPropertiesFromConcept());
 	}
-<<<<<<< HEAD
+
 	
 	@Test
 	public void testgetAllPropertiesIncludingEverythingEClass(){
@@ -467,6 +348,5 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		OutputForPropertiesFromConcept result = deriviation.getAllPropertiesIncludingEverything("http://www.nimble-project.org/resource/eclass/22292803");
 		System.out.println(result.getOutputForPropertiesFromConcept());
 	}
-=======
->>>>>>> 435465c206650462162b92beebb5ee64acd49df6
+
 }
