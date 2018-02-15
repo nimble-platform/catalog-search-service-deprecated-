@@ -17,6 +17,7 @@ import eu.nimble.service.catalog.search.impl.dao.Entity;
 import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
@@ -28,6 +29,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogica
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.MeaningResult;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 
 public class TestInputParamtersAndOutputParameterForUI {
@@ -145,6 +147,8 @@ public class TestInputParamtersAndOutputParameterForUI {
 		System.out.println(gson.toJson(InputParamterForGetLogicalView));
 	}	
 	
+	
+	
 	//InputParameterForgetPropertyValuesDiscretised
 	@Test
 	public void doJson_InputParameterForgetPropertyValuesDiscretised(){
@@ -159,11 +163,10 @@ public class TestInputParamtersAndOutputParameterForUI {
 	@Test
 	public void doJson_InputParamaterForExecuteSelect(){
 		
-		String concept = "HighChair";
-		String prop1 = "hasHeight";
-		String prop2 = "hasWidth";
-		String prop3 = "hasLegislationName";
-		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
+		String concept = "http://www.nimble-project.org/resource/eclass/22292803";
+		String prop1 = "name";
+		String prop2 = "hasColour";
+		String prop3 = "custom_dimensione";
 		
 		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
 		inputParamaterForExecuteSelect.setConcept(concept);
@@ -171,6 +174,16 @@ public class TestInputParamtersAndOutputParameterForUI {
 		inputParamaterForExecuteSelect.getParameters().add(prop2);
 		inputParamaterForExecuteSelect.getParameters().add(prop3);
 		inputParamaterForExecuteSelect.setLanguage("en");
+		
+		inputParamaterForExecuteSelect.getParametersURL().add("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name");
+		inputParamaterForExecuteSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+		inputParamaterForExecuteSelect.getParametersURL().add("custom_dimensione");
+		
+		
+		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DIRECT_PROPERTIES);
+		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DIMENSION);
+		
 		
 		Parameter parameter1 = new Parameter();
 		Parameter parameter2 = new Parameter();
