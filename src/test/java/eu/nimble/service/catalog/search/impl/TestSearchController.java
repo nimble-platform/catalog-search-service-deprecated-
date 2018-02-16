@@ -44,9 +44,13 @@ public class TestSearchController {
 	//
 	// }
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void testgetPropertyValuesFromOrangeGroup() {
+		serachController = new SearchController();
+		serachController.setOntologyFile(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.init();
 		String inputAsJson = "{\"conceptURL\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair\",\"orangeCommand\":\"companyName\"}";
 		System.out.println(URLEncoder.encode(inputAsJson));
 		HttpEntity<Object> result = serachController.getPropertyValuesFromOrangeGroup(inputAsJson);
@@ -65,54 +69,104 @@ public class TestSearchController {
 		System.out.println(r);
 	}
 
-	
 	@Test
-	public void testgetLogicalView_Marmotta(){
-	
+	public void testgetLogicalView_Marmotta() {
+
 		SearchController serachController = new SearchController();
 		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
 		serachController.setOntologyFile("null");
 		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
 		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
 		serachController.init();
-		
+
 		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
 		inputParamterForGetLogicalView.setConcept("http://www.nimble-project.org/resource/eclass/22292803");
 		inputParamterForGetLogicalView.setStepRange(1);
 		inputParamterForGetLogicalView.setLanguage("en");
-		
-		
+
 		HttpEntity<Object> result = serachController.getLogicalView(inputParamterForGetLogicalView);
 		String r = result.getBody().toString();
 		System.out.println(r);
-		
+
 	}
-	
+
 	@Test
-	public void testgetPropertyFromConcept(){
+	public void testgetPropertyFromConcept() {
 		SearchController serachController = new SearchController();
 		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
 		serachController.setOntologyFile("null");
 		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
 		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
 		serachController.init();
-		
+
 		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
 		inputParamterForGetLogicalView.setConcept("http://www.nimble-project.org/resource/eclass/22292803");
 		inputParamterForGetLogicalView.setStepRange(1);
 		inputParamterForGetLogicalView.setLanguage("en");
-		
+
 		Gson gson = new Gson();
 		String inputAsJson = gson.toJson(inputParamterForGetLogicalView);
 		HttpEntity<Object> result = serachController.getPropertyFromConcept(inputAsJson);
 		String r = result.getBody().toString();
 		System.out.println(r);
-		
+
 	}
-	
+
+	@Test
+	@Ignore
+	public void testExecuteSPARQLSelect_Bug_NIMBLE_81() {
+
+		/**
+		 * { "parametersIncludingPath": [ { "urlOfProperty":
+		 * "http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23hasHeight",
+		 * "path": [ { "concept":
+		 * "http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23HighChair"
+		 * } ] } ], "parameters": [ "tieneAltura" ], "parametersURL": [
+		 * "http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23hasHeight"
+		 * ], "filters": [], "orangeCommandSelected": { "names": [] },
+		 * "concept":
+		 * "http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23HighChair",
+		 * "language": "es" }
+		 */
+		
+		serachController = new SearchController();
+		serachController.setOntologyFile(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.init();
+		
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair");
+		inputParamaterForExecuteSelect.getParameters().add("tieneAltura");
+		inputParamaterForExecuteSelect.setLanguage("es");
+		inputParamaterForExecuteSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasHeight");
+		
+		Tuple t1 = new Tuple();
+		t1.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair");
+		t1.setUrlOfProperty(null);
+
+		Parameter parameter1 = new Parameter();
+		parameter1.getPath().add(t1);
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
+		
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(inputParamaterForExecuteSelect);
+
+		HttpEntity<Object> result = serachController.executeSPARQLSelect(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+	}
+
 	@Test
 	@Ignore
 	public void testExecuteSPARQLSelectWithOrange() {
+		
+		
+		
+		serachController = new SearchController();
+		serachController.setOntologyFile(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.init();
+		
 		String ontology = "C:/ontology/FurnitureSectorTaxonomy-v1.8_BIBA.owl";
 
 		String concept = "HighChair";
@@ -169,6 +223,13 @@ public class TestSearchController {
 	@Test
 	@Ignore
 	public void testExecuteSPARQLSelectWithOrangeII() {
+		
+		
+		serachController = new SearchController();
+		serachController.setOntologyFile(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.init();
+		
 		String ontology = "C:/ontology/FurnitureSectorTaxonomy-v1.8_BIBA.owl";
 
 		String concept = "HighChair";
@@ -295,46 +356,46 @@ public class TestSearchController {
 		inputParamaterForExecuteSelect.getParameters().add(prop2);
 		// inputParamaterForExecuteSelect.getParameters().add(prop3);
 
-		inputParamaterForExecuteSelect.getParametersURL().add("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name");
-		inputParamaterForExecuteSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+		inputParamaterForExecuteSelect.getParametersURL()
+				.add("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name");
+		inputParamaterForExecuteSelect.getParametersURL()
+				.add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
 		inputParamaterForExecuteSelect.getParametersURL().add("custom_dimensione");
-		
+
 		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DIRECT_PROPERTIES);
 		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
-		
-		
-		
+
 		inputParamaterForExecuteSelect.setLanguage("en");
 
 		Parameter parameter1 = new Parameter();
 		Parameter parameter2 = new Parameter();
 		Parameter parameter3 = new Parameter();
 
-//		Tuple t1 = new Tuple();
-//		t1.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair");
-//		t1.setUrlOfProperty(null);
-//
-//		parameter1.getPath().add(t1);
-//		parameter2.getPath().add(t1);
-//		// parameter3.getPath().add(t1);
-//
-//		Tuple t2 = new Tuple();
-//		t2.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Manufacturer");
-//		t2.setUrlOfProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#isManufacturedBy");
-//
-//		Tuple t3 = new Tuple();
-//		t3.setConcept("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#Legislation");
-//		t3.setUrlOfProperty(
-//				"http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#compliesWithLegislation");
-//
-//		parameter3.getPath().add(t2);
-//		parameter3.getPath().add(t3);
+		// Tuple t1 = new Tuple();
+		// t1.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#HighChair");
+		// t1.setUrlOfProperty(null);
+		//
+		// parameter1.getPath().add(t1);
+		// parameter2.getPath().add(t1);
+		// // parameter3.getPath().add(t1);
+		//
+		// Tuple t2 = new Tuple();
+		// t2.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Manufacturer");
+		// t2.setUrlOfProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#isManufacturedBy");
+		//
+		// Tuple t3 = new Tuple();
+		// t3.setConcept("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#Legislation");
+		// t3.setUrlOfProperty(
+		// "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#compliesWithLegislation");
+		//
+		// parameter3.getPath().add(t2);
+		// parameter3.getPath().add(t3);
 
 		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
 		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter2);
 		// inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter3);
 
-		//inputParamaterForExecuteSelect.getOrangeCommandSelected().getNames().add("companyName");
+		// inputParamaterForExecuteSelect.getOrangeCommandSelected().getNames().add("companyName");
 
 		Gson gson = new Gson();
 		String inputAsJson = gson.toJson(inputParamaterForExecuteSelect);
@@ -345,7 +406,6 @@ public class TestSearchController {
 		System.out.println(r);
 	}
 
-	
 	@Test
 	public void testExecuteOptionalSPARQLSelectAgainstEClass() {
 
@@ -369,7 +429,7 @@ public class TestSearchController {
 		String r = result.getBody().toString();
 		System.out.println(r);
 	}
-	
+
 	@Test
 	@Ignore
 	public void testexecuteSPARQLWithOptionalSelect() {
