@@ -1,1 +1,1 @@
-mvnDebug spring-boot:run -Dnimble.shared.property.marmottauri=https://nimble-platform.salzburgresearch.at/marmotta
+mvn spring-boot:run -Dnimble.shared.property.marmottauri=https://nimble-platform.salzburgresearch.at/marmotta -Dnimble.shared.property.languagelabel=http://www.w3.org/2004/02/skos/core#prefLabel
