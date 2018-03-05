@@ -111,6 +111,28 @@ public class TestSearchController {
 		System.out.println(r);
 
 	}
+	
+	@Test
+	public void testgetPropertyFromConceptII() {
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+
+		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		inputParamterForGetLogicalView.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		inputParamterForGetLogicalView.setStepRange(1);
+		inputParamterForGetLogicalView.setLanguage("en");
+
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(inputParamterForGetLogicalView);
+		HttpEntity<Object> result = serachController.getPropertyFromConcept(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+
+	}
 
 	@Test
 	@Ignore
@@ -290,7 +312,7 @@ public class TestSearchController {
 
 		InputParameterdetectMeaningLanguageSpecific input = new InputParameterdetectMeaningLanguageSpecific();
 		input.setLanguage("en");
-		input.setKeyword("High");
+		input.setKeyword("Varnish");
 
 		Gson gson = new Gson();
 		String inputAsJson = gson.toJson(input);
@@ -310,7 +332,8 @@ public class TestSearchController {
 
 		InputParameterdetectMeaningLanguageSpecific input = new InputParameterdetectMeaningLanguageSpecific();
 		input.setLanguage("en");
-		input.setKeyword("Fruit");
+		//input.setKeyword("Fruit");
+		input.setKeyword("Varnish");
 
 		Gson gson = new Gson();
 		String inputAsJson = gson.toJson(input);

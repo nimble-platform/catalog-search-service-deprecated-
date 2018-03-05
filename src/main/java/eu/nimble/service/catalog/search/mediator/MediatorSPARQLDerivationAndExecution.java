@@ -705,6 +705,7 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 			if (needANimbleSpecificAdapation()) {
 
+				concepts.clear();
 				concepts.addAll(nimbleSpecificSPARQLDeriviation
 						.detectNimbleSpecificMeaningFromAKeywordReferringToInstances(regex,
 

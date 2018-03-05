@@ -29,6 +29,7 @@ import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class NimbleSpecificSPARQLDeriviationAndExecution {
 
+	private static final String HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL = "http://www.w3.org/2004/02/skos/core#prefLabel";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_DIMENSION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#Dimension";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification";
@@ -313,15 +314,8 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			customPropertyInformations.add(customPropertyInformation);
 		});
 
-
 		return customPropertyInformations;
 	}
-
-
-
-	
-	
-	
 
 	public void removeNimbleSpecificInternalProperties(List<String> resultAsList) {
 		resultAsList.remove(HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE);
@@ -331,7 +325,6 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY);
 		resultAsList.remove(URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_DIMENSION);
 	}
-
 
 	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL,
 			PropertySource propertySource) {
@@ -356,7 +349,6 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		}
 		return Collections.EMPTY_LIST;
 	}
-
 
 	/**
 	 * This method use the e-class to dtermine possible concepts
@@ -412,41 +404,81 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 	 */
 	public List<Entity> detectNimbleSpecificMeaningFromAKeywordReferringToInstances(String keyword,
 			String translationLabel, Language language) {
-		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <"
-				+ translationLabel
-				+ "> ?value. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue.FILTER regex( str(?value),\""
-				+ keyword + "\",\"i\"). FILTER regex(str(?subject), str(?codeValue))}";
-		Object result = reader.query(sparql);
-		String[] columns = new String[] { "subject", "value" };
-		List<String[]> allConcepts = reader.createResultListArray(result, columns);
+//		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <"
+//				+ translationLabel
+//				+ "> ?value. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue.FILTER regex( str(?value),\""
+//				+ keyword + "\",\"i\"). FILTER regex(str(?subject), str(?codeValue))}";
+//		Object result = reader.query(sparql);
+//		String[] columns = new String[] { "subject", "value" };
+//		List<String[]> allConcepts = reader.createResultListArray(result, columns);
+//		
+//		List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
+//		String languagepostfix = language.toOntologyPostfix(language);
+//		for (String[] row : allConcepts) {
+//			String value = row[1];
+//			if (value != null && value.length() > 1 && value.contains(languagepostfix)) {
+//				value = value.substring(0, value.indexOf(languagepostfix));
+//
+//				Entity entity = new Entity();
+//				entity.setUrl(row[0]);
+//				entity.setTranslatedURL(value);
+//				entity.setConceptSource(ConceptSource.CUSTOM);
+//				entity.setLanguage(language);
+//				resultOfSerachTerm.add(entity);
+//			} else {
+//				if (!value.contains("@")) {
+//
+//					Entity entity = new Entity();
+//					entity.setUrl(row[0]);
+//					entity.setTranslatedURL(value);
+//					entity.setConceptSource(ConceptSource.CUSTOM);
+//					entity.setLanguage(Language.UNKNOWN);
+//					resultOfSerachTerm.add(entity);
+//				}
+//			}
+//		}
 		List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
-		String languagepostfix = language.toOntologyPostfix(language);
-		for (String[] row : allConcepts) {
-			String value = row[1];
-			if (value != null && value.length() > 1 && value.contains(languagepostfix)) {
-				value = value.substring(0, value.indexOf(languagepostfix));
-
-				Entity entity = new Entity();
-				entity.setUrl(row[0]);
-				entity.setTranslatedURL(value);
-				entity.setConceptSource(ConceptSource.CUSTOM);
-				entity.setLanguage(language);
-				resultOfSerachTerm.add(entity);
-			} else {
-				if (!value.contains("@")) {
-
-					Entity entity = new Entity();
-					entity.setUrl(row[0]);
-					entity.setTranslatedURL(value);
-					entity.setConceptSource(ConceptSource.CUSTOM);
-					entity.setLanguage(Language.UNKNOWN);
-					resultOfSerachTerm.add(entity);
-				}
-			}
-		}
+		requestBasedOnConceptsURI(resultOfSerachTerm, keyword);
+		requestBasedOnTranslationLabel(resultOfSerachTerm, keyword,language);
 		return resultOfSerachTerm;
 	}
 
+	private void requestBasedOnTranslationLabel(List<Entity> allConcepts, String keyword, Language language) {
+		MarmottaReader readerMarmotta = (MarmottaReader) reader;
+		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
+		List<Entity> entities = readerMarmotta.getAllConceptsLanguageSpecific(keyword, language);
+		for (Entity entity : entities) {
+			 boolean  contained = false;
+			for (Entity e: allConcepts){
+				if (e.getUrl().equals(entity.getUrl())){
+					contained = true;
+					break;
+				}
+			}
+			if (!contained){
+				allConcepts.add(entity);
+			}
+		}
+		
+	}
+
+	private void requestBasedOnConceptsURI(List<Entity> allConcepts, String keyword) {
+		MarmottaReader readerMarmotta = (MarmottaReader) reader;
+		List<Entity> entities = readerMarmotta.getAllConceptsFocusOnlyOnURI(keyword);
+		for (Entity entity : entities) {
+			 boolean  contained = false;
+			for (Entity e: allConcepts){
+				if (e.getUrl().equals(entity.getUrl())){
+					contained = true;
+					break;
+				}
+			}
+			if (!contained){
+				allConcepts.add(entity);
+			}
+		}
+
+	}
 
 	public List<String> getAllAvailableEClassOrDomainPropertiesFromAbox(String eclassOrconceptURL) {
 		List<String> resultList = null;
@@ -479,7 +511,6 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			outputForPropertyFromConcept.setObjectProperty(true);
 		}
 		result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
-
 
 		return outputForPropertyFromConcept;
 	}
@@ -554,6 +585,5 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		return resultFinal;
 
 	}
-
 
 }
