@@ -4,9 +4,9 @@ import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 
 public class InputParameterForPropertyValuesFromGreenGroup {
 
-	private String conceptURL ;
-	private String propertyURL;
-	private PropertySource propertySource;
+	public String conceptURL ;
+	public String propertyURL;
+	public PropertySource propertySource;
 	
 	public String getConceptURL() {
 		return conceptURL;

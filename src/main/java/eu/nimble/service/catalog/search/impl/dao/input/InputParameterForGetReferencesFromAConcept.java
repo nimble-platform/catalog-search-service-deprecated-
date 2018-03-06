@@ -4,8 +4,8 @@ import de.biba.triple.store.access.enums.Language;
 
 public class InputParameterForGetReferencesFromAConcept {
 
-	private String conceptURL;
-	private String language ="";
+	public String conceptURL;
+	public String language ="";
 
 	public String getConceptURL() {
 		return conceptURL;

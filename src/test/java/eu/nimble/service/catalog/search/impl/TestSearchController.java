@@ -20,6 +20,7 @@ import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
@@ -134,6 +135,35 @@ public class TestSearchController {
 
 	}
 
+	@Test
+	public void testgetPropertyValuesFromGreenGroup_BUG_NIMBLE93() {
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+		InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = new InputParameterForPropertyValuesFromGreenGroup();
+		inputParameterForPropertyValuesFromGreenGroup.setConceptURL("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		//inputParameterForPropertyValuesFromGreenGroup.setPropertySource(PropertySource.CUSTOM_DECIMAL);
+		inputParameterForPropertyValuesFromGreenGroup.setPropertyURL("dryingTime");
+		
+		Gson gson = new Gson();
+		
+		String inputAsJson = gson.toJson(inputParameterForPropertyValuesFromGreenGroup);
+		System.out.println(inputAsJson);
+		HttpEntity<Object> result = serachController.getPropertyValuesFromGreenGroup(inputAsJson);
+		
+		String r = result.getBody().toString();
+		System.out.println(r);
+		
+		assertTrue(r.contains("20"));
+		
+	}
+
+	
+	
 	@Test
 	@Ignore
 	public void testExecuteSPARQLSelect_Bug_NIMBLE_81() {

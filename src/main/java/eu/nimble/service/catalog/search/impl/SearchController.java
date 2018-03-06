@@ -1,6 +1,7 @@
 package eu.nimble.service.catalog.search.impl;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -526,6 +527,34 @@ public class SearchController {
 
 	}
 	
+	private void checkVariableValuesForJSONONput(Object o) throws Exception{
+		List<String>  emptyVariables = new ArrayList<String>();
+		
+		for (Field field : o.getClass().getDeclaredFields()) {
+			
+			try {
+				if (field.get(o) == null){
+					emptyVariables.add(field.getName());
+				}
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		if (emptyVariables.size() > 0){
+			String message = "Missing input for JSON Attributes: ";
+			for (String str:  emptyVariables){
+				message += str + ";";
+			}
+			Exception e = new Exception(message);
+			throw e;
+		}
+		
+	}
 
 	/**
 	 * Returns the values for a given properties with respect t to the given
@@ -548,6 +577,9 @@ public class SearchController {
 					.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
 			String property = sparqlDerivation
 					.getURIOfProperty(inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
+			
+			checkVariableValuesForJSONONput(inputParameterForPropertyValuesFromGreenGroup);
+			
 			List<String> allValues = sparqlDerivation.getAllValuesForAGivenProperty(concept, property, inputParameterForPropertyValuesFromGreenGroup.getPropertySource());
 
 			OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new OutputForPropertyValuesFromGreenGroup();
@@ -579,6 +611,8 @@ public class SearchController {
 			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept = gson
 					.fromJson(inputAsJson, InputParameterForGetReferencesFromAConcept.class);
 
+			checkVariableValuesForJSONONput(inputParameterForGetReferencesFromAConcept);
+			
 			List<String[]> allReferences = sparqlDerivation.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
 					inputParameterForGetReferencesFromAConcept);
 
@@ -639,6 +673,9 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterForPropertyValuesFromOrangeGroup inputParameterForPropertyValuesFromOrangeGroup = gson.fromJson(inputAsJson, InputParameterForPropertyValuesFromOrangeGroup.class);
 			String result = "";
+			
+			checkVariableValuesForJSONONput(inputParameterForPropertyValuesFromOrangeGroup);
+			
 			result = gson.toJson(sparqlDerivation.getPropertyValuesFromOrangeGroup(inputParameterForPropertyValuesFromOrangeGroup));
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 			
