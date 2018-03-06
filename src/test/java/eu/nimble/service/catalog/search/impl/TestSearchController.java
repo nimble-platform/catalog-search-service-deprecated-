@@ -146,8 +146,35 @@ public class TestSearchController {
 		
 		InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = new InputParameterForPropertyValuesFromGreenGroup();
 		inputParameterForPropertyValuesFromGreenGroup.setConceptURL("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
-		//inputParameterForPropertyValuesFromGreenGroup.setPropertySource(PropertySource.CUSTOM_DECIMAL);
+		inputParameterForPropertyValuesFromGreenGroup.setPropertySource(PropertySource.CUSTOM_DECIMAL);
 		inputParameterForPropertyValuesFromGreenGroup.setPropertyURL("dryingTime");
+		
+		Gson gson = new Gson();
+		
+		String inputAsJson = gson.toJson(inputParameterForPropertyValuesFromGreenGroup);
+		System.out.println(inputAsJson);
+		HttpEntity<Object> result = serachController.getPropertyValuesFromGreenGroup(inputAsJson);
+		
+		String r = result.getBody().toString();
+		System.out.println(r);
+		
+		assertTrue(r.contains("20"));
+		
+	}
+	
+	@Test
+	public void testgetPropertyValuesFromGreenGroup_BUG_DomainSpecificProperties() {
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+		InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = new InputParameterForPropertyValuesFromGreenGroup();
+		inputParameterForPropertyValuesFromGreenGroup.setConceptURL("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		inputParameterForPropertyValuesFromGreenGroup.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+		inputParameterForPropertyValuesFromGreenGroup.setPropertyURL("http://www.aidimme.es/FurnitureSectorOntology.owl#hasViscosity");
 		
 		Gson gson = new Gson();
 		
