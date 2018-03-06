@@ -2,6 +2,8 @@ package eu.nimble.service.catalog.search.mediator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
@@ -65,6 +67,8 @@ public class NimbleSpecificSPARQLFactory {
 			break;
 			
 		default:
+			Logger.getAnonymousLogger().log(Level.WARNING, "Found no specific property mapping. ");
+			
 			return null;
 		}
 
@@ -228,6 +232,9 @@ public class NimbleSpecificSPARQLFactory {
 		case CUSTOM_DECIMAL:
 			result += extendForCustomDecimal(propertyURL);
 			return result;
+		default:
+			Logger.getAnonymousLogger().log(Level.WARNING, "Found no specific property mapping, all properties will be requested");
+			break;
 
 
 
