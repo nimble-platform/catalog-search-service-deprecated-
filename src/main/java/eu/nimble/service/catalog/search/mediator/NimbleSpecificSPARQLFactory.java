@@ -218,6 +218,10 @@ public class NimbleSpecificSPARQLFactory {
 			return result;
 
 
+		case CATALOGUE_DOCUMENT_REFERENCE:
+			result += extendForCatalogueDocuemntReference(propertyURL);
+			return result;	
+			
 		case CUSTOM_STRING:
 			result += extendForCustomString(propertyURL);
 			return result;
@@ -236,6 +240,12 @@ public class NimbleSpecificSPARQLFactory {
 		}
 
 		return result;
+	}
+
+	private String extendForCatalogueDocuemntReference(String propertyURL) {
+		String sparql = "?instance  <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference> ?documentReference. ?documentReference <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ID> ?hasValue.";
+		sparql += "?instance ?property  ?documentReference .";
+		return sparql;
 	}
 
 	private String extendForManufacturerIdentification() {

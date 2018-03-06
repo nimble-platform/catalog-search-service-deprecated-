@@ -746,11 +746,16 @@ public class SearchController {
 	HttpEntity<Object> executeSPARQLSelect(@RequestParam("inputAsJson") String inputAsJson) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLSelect: " + inputAsJson);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+		
+		
 		try {
 			Gson gson = new Gson();
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
 					InputParamaterForExecuteSelect.class);
 
+			//checkVariableValuesForJSONONput(inputParamaterForExecuteSelect);
+			
+			
 			outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 
 			String result = "";

@@ -504,4 +504,40 @@ public class TestSearchController {
 		System.out.println(r);
 	}
 
+	@Test
+	public void testExecuteSparQLSeelct_Bug_NIMBLE_94(){
+		//String inputAsJson = "{\"input\":{ \"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish\", \"language\":\"en\", \"parameters\":[\"CatalogueDocumentReference\"], \"parametersURL\":[\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference\"], \"parametersIncludingPath\":[  {   \"urlOfProperty\":\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference\",   \"path\":[{\"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish\"}]} } ],\"filters\":[],\"orangeCommandSelected\":{\"names\":[]}, \"propertySources\":[\"DIRECT_PROPERTIES\"]]}";
+	
+		
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		inputParamaterForExecuteSelect.getParameters().add("CatalogueDocumentReference");
+		inputParamaterForExecuteSelect.setLanguage("en");
+		inputParamaterForExecuteSelect.getParametersURL().add("urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference");
+		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DIRECT_PROPERTIES);
+		Tuple t1 = new Tuple();
+		t1.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		t1.setUrlOfProperty(null);
+
+		Parameter parameter1 = new Parameter();
+		parameter1.getPath().add(t1);
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
+		
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(inputParamaterForExecuteSelect);
+		
+		
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+		HttpEntity<Object> result = serachController.executeSPARQLSelect(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+	
+	}
+	
 }
