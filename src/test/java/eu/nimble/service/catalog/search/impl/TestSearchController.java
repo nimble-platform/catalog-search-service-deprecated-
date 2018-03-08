@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
@@ -189,6 +190,9 @@ public class TestSearchController {
 		
 	}
 
+	
+	
+	
 	
 	
 	@Test
@@ -566,5 +570,88 @@ public class TestSearchController {
 		System.out.println(r);
 	
 	}
+	
+	@Test
+	public void testExecuteSparQLSeelct_Bug_NIMBLE_94_Filter(){
+		//String inputAsJson = "{\"input\":{ \"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish\", \"language\":\"en\", \"parameters\":[\"CatalogueDocumentReference\"], \"parametersURL\":[\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference\"], \"parametersIncludingPath\":[  {   \"urlOfProperty\":\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference\",   \"path\":[{\"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish\"}]} } ],\"filters\":[],\"orangeCommandSelected\":{\"names\":[]}, \"propertySources\":[\"DIRECT_PROPERTIES\"]]}";
+	
+		
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		inputParamaterForExecuteSelect.getParameters().add("CatalogueDocumentReference");
+		inputParamaterForExecuteSelect.setLanguage("en");
+		inputParamaterForExecuteSelect.getParametersURL().add("urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference");
+		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DIRECT_PROPERTIES);
+		Tuple t1 = new Tuple();
+		t1.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		t1.setUrlOfProperty(null);
+
+		Parameter parameter1 = new Parameter();
+		parameter1.getPath().add(t1);
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
+		
+		Filter filter = new Filter();
+		filter.setProperty("urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference");
+		filter.setExactValue("db46244e-8e43-48a6-b523-51b4da3a82f2");
+		inputParamaterForExecuteSelect.getFilters().add(filter);
+		
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(inputParamaterForExecuteSelect);
+		
+		
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+		HttpEntity<Object> result = serachController.executeSPARQLSelect(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+	
+	}
+	
+	@Test
+	public void testExecuteSparQLSeelct_Bug_NIMBLE_94_Filter_DomainSpecific(){
+		//String inputAsJson = "{\"input\":{ \"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish\", \"language\":\"en\", \"parameters\":[\"CatalogueDocumentReference\"], \"parametersURL\":[\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference\"], \"parametersIncludingPath\":[  {   \"urlOfProperty\":\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CatalogueDocumentReference\",   \"path\":[{\"concept\":\"http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish\"}]} } ],\"filters\":[],\"orangeCommandSelected\":{\"names\":[]}, \"propertySources\":[\"DIRECT_PROPERTIES\"]]}";
+	
+		
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		inputParamaterForExecuteSelect.getParameters().add("hasViscosity");
+		inputParamaterForExecuteSelect.setLanguage("en");
+		inputParamaterForExecuteSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasViscosity");
+		inputParamaterForExecuteSelect.getPropertySources().add(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+		Tuple t1 = new Tuple();
+		t1.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		t1.setUrlOfProperty(null);
+
+		Parameter parameter1 = new Parameter();
+		parameter1.getPath().add(t1);
+		inputParamaterForExecuteSelect.getParametersIncludingPath().add(parameter1);
+		
+		Filter filter = new Filter();
+		filter.setProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#hasViscosity");
+		filter.setExactValue("15");
+		inputParamaterForExecuteSelect.getFilters().add(filter);
+		
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(inputParamaterForExecuteSelect);
+		
+		
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("https://nimble-platform.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+		
+		HttpEntity<Object> result = serachController.executeSPARQLSelect(inputAsJson);
+		String r = result.getBody().toString();
+		System.out.println(r);
+	
+	}
+	
 	
 }

@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
@@ -181,11 +182,30 @@ public class NimbleSpecificSPARQLFactory {
 
 
 			sparql += "Filter  regex( ?codeValue , \"" + urlOfconcept + "\").";
+			sparql += addFilter (param, inputParamaterForExecuteSelect.getFilters());
 			sparql += "}";
 			result.add(sparql);
 			counter++;
 		}
 		return result;
+	}
+
+	private String addFilter(String param, List<Filter> filters) {
+		Filter chosen = null;
+		for (Filter filter : filters){
+			if (filter.getProperty().substring(filter.getProperty().indexOf("#")+1).equals(param)){
+				chosen = filter;
+				break;
+			}
+		}
+		
+		if (chosen==null){
+			return "";
+		}
+		else{
+			return "Filter  regex( ?hasValue , \"" + chosen.getExactValue() + "\").";
+		}
+		
 	}
 
 	private String addPropertyForMarmotta(String propertyURL, PropertySource propertySource2) {
