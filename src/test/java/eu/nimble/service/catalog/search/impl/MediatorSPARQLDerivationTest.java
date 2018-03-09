@@ -2,6 +2,7 @@ package eu.nimble.service.catalog.search.impl;
 
 import static org.junit.Assert.assertTrue;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,9 +11,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.google.gson.Gson;
+
 import static org.mockito.Mockito.*;
 
-import de.biba.triple.store.access.dmo.Entity;
+import eu.nimble.service.catalog.search.impl.dao.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
@@ -24,9 +27,10 @@ import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivation;
+import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
+import eu.nimble.service.catalog.search.mediator.NimbleSpecificSPARQLFactory;
 
-public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
+public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivationAndExecution {
 
 	 @Mock
 	    MarmottaReader readerMock;
@@ -36,7 +40,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	@Test
 	@Ignore
 	public void testGroupingOfPropertyValues() {
-		MediatorSPARQLDerivation mediatorSPARQLDerivation = new MediatorSPARQLDerivation();
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivation = new MediatorSPARQLDerivationAndExecution();
 
 		String concept = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#Bed";
 		String property = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#price";
@@ -49,7 +53,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	@Test
 	@Ignore
 	public void testgetViewForOneStepRange() {
-		MediatorSPARQLDerivation mediatorSPARQLDerivation = new MediatorSPARQLDerivation(
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivation = new MediatorSPARQLDerivationAndExecution(
 				C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		LocalOntologyView helper = new LocalOntologyView();
 		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
@@ -71,7 +75,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	@Ignore
 	public void testgetViewForHighChair() {
 		
-		MediatorSPARQLDerivation mediatorSPARQLDerivation = new MediatorSPARQLDerivation(
+		MediatorSPARQLDerivationAndExecution mediatorSPARQLDerivation = new MediatorSPARQLDerivationAndExecution(
 				C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		LocalOntologyView helper = new LocalOntologyView();
 		String translationLabel = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#translation";
@@ -185,7 +189,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 	}
 
 	@Test
-	//@Ignore
+	@Ignore
 	public void testcreateSPARQLAndExecuteITII(){
 		initForSpecificOntology(C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL);
 		String concept = "HighChair";
@@ -236,6 +240,10 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		
 	}
 	
+	
+	
+	
+	
 	//http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#T950_Plus_Natural
 	@Test
 	@Ignore
@@ -264,6 +272,36 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivation {
 		
 		TranslationResult result = translateConcept("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#ContactPerson", Language.SPANISH,translationLabel );
 		System.out.println("Result: " + result);
+		
+	}
+	
+	@Test
+	@Ignore
+	public void testSPARQLFactory(){
+		InputParamaterForExecuteSelect  paramaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		paramaterForExecuteSelect.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		List<String> parameters = new ArrayList<String>();
+		parameters.add("name");
+		parameters.add("description");
+		parameters.add("vanish");
+		
+		List<String> parameterURLS = new ArrayList<String>();
+		parameterURLS.add("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name");
+		parameterURLS.add("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Description");
+		parameterURLS.add("http://www.aidimme.es/FurnitureSectorOntology.owl#Varnish");
+		paramaterForExecuteSelect.setParameters(parameters);
+		paramaterForExecuteSelect.setParametersURL(parameterURLS);
+		
+		Gson gson = new Gson();
+		System.out.println(URLEncoder.encode(gson.toJson(paramaterForExecuteSelect)));
+		
+		MarmottaReader marmottaReader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
+		
+		NimbleSpecificSPARQLFactory factory = new NimbleSpecificSPARQLFactory(null,null);
+		List<String>  sparqls = factory.createSparql(paramaterForExecuteSelect, marmottaReader);
+		for (String str: sparqls){
+			System.out.println(str);
+		}
 		
 	}
 }

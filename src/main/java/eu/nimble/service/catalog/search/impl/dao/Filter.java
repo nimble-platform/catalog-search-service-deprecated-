@@ -5,6 +5,14 @@ public class Filter {
 	String property;
 	float min;
 	float max;
+	String exactValue;
+	
+	public String getExactValue() {
+		return exactValue;
+	}
+	public void setExactValue(String exactValue) {
+		this.exactValue = exactValue;
+	}
 	public String getProperty() {
 		return property;
 	}
@@ -25,7 +33,7 @@ public class Filter {
 	}
 	@Override
 	public String toString() {
-		return "Filter [property=" + property + ", min=" + min + ", max=" + max + "]";
+		return "Filter [property=" + property + ", min=" + min + ", max=" + max + ", exactValue=" + exactValue + "]";
 	}
 	
 	

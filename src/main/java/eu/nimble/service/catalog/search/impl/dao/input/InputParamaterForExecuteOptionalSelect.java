@@ -6,6 +6,7 @@ public class InputParamaterForExecuteOptionalSelect {
 
 	private String uuid;
 	private String language;
+	OrangeCommands orangeCommandSelected = new OrangeCommands();
 
 	public String getUuid() {
 		return uuid;
@@ -25,6 +26,14 @@ public class InputParamaterForExecuteOptionalSelect {
 	}
 	public void setLanguage(String language) {
 		this.language = language;
+	}
+
+	public OrangeCommands getOrangeCommandSelected() {
+		return orangeCommandSelected;
+	}
+
+	public void setOrangeCommandSelected(OrangeCommands orangeCommandSelected) {
+		this.orangeCommandSelected = orangeCommandSelected;
 	}
 	
 }

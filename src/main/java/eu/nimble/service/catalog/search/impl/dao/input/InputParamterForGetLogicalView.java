@@ -3,6 +3,7 @@ package eu.nimble.service.catalog.search.impl.dao.input;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 
@@ -11,6 +12,8 @@ public class InputParamterForGetLogicalView {
 	private String concept ="";
 	private int stepRange = 0;
 	private String language ="";
+	private ConceptSource conceptSource = ConceptSource.ONTOLOGICAL;
+	
 	
 	private String frozenConcept ="";
 	private int distanceToFrozenConcept = 0;
@@ -24,14 +27,24 @@ public class InputParamterForGetLogicalView {
 
 	@Override
 	public String toString() {
-		return "InputParamterForGetLogicalView [concept=" + concept + ", stepRange=" + stepRange + ", language=" + language + ", frozenConcept="
-				+ frozenConcept +  ", distanceToFrozenConcept=" + distanceToFrozenConcept + "]";
+		return "InputParamterForGetLogicalView [concept=" + concept + ", stepRange=" + stepRange + ", language="
+				+ language + ", conceptSource=" + conceptSource + ", frozenConcept=" + frozenConcept
+				+ ", distanceToFrozenConcept=" + distanceToFrozenConcept + ", oldJsonLogicalView=" + oldJsonLogicalView
+				+ ", conceptURIPath=" + conceptURIPath + ", currentSelections=" + currentSelections + "]";
 	}
 	
 	public String getLanguage() {
 		return language;
 	}
 	
+	public ConceptSource getConceptSource() {
+		return conceptSource;
+	}
+
+	public void setConceptSource(ConceptSource conceptSource) {
+		this.conceptSource = conceptSource;
+	}
+
 	public Language getLanguageAsLanguage() {
 		return Language.fromString(language);
 	}
