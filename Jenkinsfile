@@ -15,15 +15,15 @@ node('nimble-jenkins-slave') {
     }
 
     // push and apply only master branch
-    if (env.BRANCH_NAME == 'master') {
-        stage('Push Docker') {
-            withDockerRegistry([credentialsId: 'NimbleDocker']) {
-                sh 'docker push nimbleplatform/catalog-search-service'
-            }
-        }
-
-        stage('Apply to Cluster') {
-            sh 'kubectl apply -f kubernetes/deploy-prod.yml -n prod --validate=false'
-        }
-    }
+//    if (env.BRANCH_NAME == 'master') {
+//        stage('Push Docker') {
+//            withDockerRegistry([credentialsId: 'NimbleDocker']) {
+//                sh 'docker push nimbleplatform/catalog-search-service'
+//            }
+//        }
+//
+//        stage('Apply to Cluster') {
+//            sh 'kubectl apply -f kubernetes/deploy-prod.yml -n prod --validate=false'
+//        }
+//    }
 }
