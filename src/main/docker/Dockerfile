@@ -1,5 +1,10 @@
 FROM nimbleplatform/nimble-base
 MAINTAINER Salzburg Research <nimble-srfg@salzburgresearch.at>
+
+# copy resource foldersqpConfiguration.xml
+COPY /resources /resources
+RUN ls /resources
+
 VOLUME /tmp
 ARG finalName
 ENV JAR '/'$finalName
@@ -8,5 +13,4 @@ ADD $finalName $JAR
 RUN touch $JAR
 ENV PORT 8443
 EXPOSE $PORT
-CMD [${JAR}]
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-jar", "catalog-search-service.jar"]

@@ -29,4 +29,4 @@ nimble:
       languagelabel: ${LANGUAGE_LABEL:}
       catalogue:
         search:
-          configuration: ${CATALOG_SEARCH_CONFIG:}
+          configuration: ${CATALOG_SEARCH_CONFIG:/resources/sqpConfiguration-default.xml}
