@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -58,6 +59,8 @@ import springfox.documentation.service.AllowableRangeValues;
 @Controller
 public class SearchController {
 
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SearchController.class);
+
 	private static final String NULL_ASSIGNED_VALUE = "null";
 
 	@Value("${nimble.shared.property.config.d:C:/Resources/NIMBLE/config.xml}")
@@ -81,6 +84,9 @@ public class SearchController {
 
 	@PostConstruct
 	public void init() {
+
+		logger.info("Initializing with marmottaUri: {}, languageLabel: {}, sqpConfigurationPath: {}",
+				marmottaUri, languageLabel, sqpConfigurationPath);
 
 		if (ontologyFile.equals(NULL_ASSIGNED_VALUE) && (marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
 			sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
