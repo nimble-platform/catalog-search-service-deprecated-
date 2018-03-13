@@ -1,5 +1,3 @@
-server:
-  port: ${PORT:8090}
 spring:
   application:
     # the name of the application represents the global identifier of this microservice.
@@ -31,4 +29,4 @@ nimble:
       languagelabel: ${LANGUAGE_LABEL:}
       catalogue:
         search:
-          configuration: ${gs:}
+          configuration: ${CATALOG_SEARCH_CONFIG:}

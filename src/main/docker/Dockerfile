@@ -6,7 +6,7 @@ ENV JAR '/'$finalName
 ARG port
 ADD $finalName $JAR
 RUN touch $JAR
-ENV PORT 8085
+ENV PORT 8443
 EXPOSE $PORT
 CMD [${JAR}]
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-jar", "catalog-search-service.jar"]
