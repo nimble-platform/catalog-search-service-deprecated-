@@ -10,8 +10,22 @@ node('nimble-jenkins-slave') {
         sh 'mvn clean package -DskipTests'
     }
 
-    stage('Build Docker') {
-        sh 'mvn docker:build -P docker'
+    if (env.BRANCH_NAME == 'staging') {
+        stage('Build Docker') {
+            sh 'mvn docker:build -P docker -DdockerImageTag=staging'
+        }
+
+        stage('Push Docker') {
+            sh 'docker push nimbleplatform/catalog-search-service:staging'
+        }
+
+        stage('Deploy') {
+            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single search-service"'
+        }
+    } else {
+        stage('Build Docker') {
+            sh 'mvn docker:build -P docker'
+        }
     }
 
     // push and apply only master branch
