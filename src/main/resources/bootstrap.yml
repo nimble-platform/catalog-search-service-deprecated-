@@ -1,3 +1,5 @@
+server:
+  port: ${PORT:8090}
 spring:
   application:
     # the name of the application represents the global identifier of this microservice.
