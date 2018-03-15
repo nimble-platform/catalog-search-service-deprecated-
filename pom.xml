@@ -25,6 +25,7 @@
 		<springfox.version>2.5.0</springfox.version>
 		<default.package>eu.nimble.service.catalog.search</default.package>
 		<swagger.api.src>src/main/resources/api.yml</swagger.api.src>
+		<dockerImageTag>${project.version}</dockerImageTag>
 	</properties>
 
 	<parent>
@@ -290,14 +291,12 @@
 									<include>**.jar</include>
 								</resource>
 								<resource>
-									<targetPath>/</targetPath>
-									<directory>${project.basedir}/src/main/docker</directory>
-									<include>entrypoint.sh</include>
+									<targetPath>/resources</targetPath>
+									<directory>${project.basedir}/src/main/resources</directory>
 								</resource>
 							</resources>
 							<imageTags>
-								<imageTag>${project.version}</imageTag>
-								<imageTag>latest</imageTag>
+								<imageTag>${dockerImageTag}</imageTag>
 							</imageTags>
 							<serverId>docker-hub</serverId>
 							<registryUrl>https://index.docker.io/v1/</registryUrl>
