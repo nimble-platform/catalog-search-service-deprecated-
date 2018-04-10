@@ -127,7 +127,7 @@
 		<dependency>
 			<groupId>de.biba.mediator</groupId>
 			<artifactId>de.biba.triple.store.access</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.8-SNAPSHOT</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
 		<dependency>

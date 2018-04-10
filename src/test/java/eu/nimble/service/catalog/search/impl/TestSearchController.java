@@ -394,7 +394,7 @@ public class TestSearchController {
 		InputParameterdetectMeaningLanguageSpecific input = new InputParameterdetectMeaningLanguageSpecific();
 		input.setLanguage("en");
 		//input.setKeyword("Fruit");
-		input.setKeyword("Varnish");
+		input.setKeyword("MDF laminated");
 
 		Gson gson = new Gson();
 		String inputAsJson = gson.toJson(input);
