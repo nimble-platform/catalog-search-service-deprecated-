@@ -98,6 +98,11 @@
 		<!-- Mediator dependencies -->
 		<!-- https://mvnrepository.com/artifact/org.apache.marmotta/marmotta-client-java -->
 		<dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-solrj</artifactId>
+			<version>7.1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.marmotta</groupId>
 			<artifactId>marmotta-client-java</artifactId>
 			<version>3.3.0</version>
@@ -204,7 +209,7 @@
 							<include>**/*.jar</include>
 						</includes>
 					</resource>
-					 <encoding>UTF-8</encoding>
+					<encoding>UTF-8</encoding>
 				</configuration>
 				<executions>
 					<execution>
