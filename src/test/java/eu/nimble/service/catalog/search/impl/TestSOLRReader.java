@@ -9,7 +9,7 @@ public class TestSOLRReader {
 	@Test
 	public void getConnection(){
 		SOLRReader solrReader = new SOLRReader();
-		Object response = solrReader.query("*");
+		Object response = solrReader.query("");
 		System.out.println(solrReader.createResultList(response, "item_manufacturer_name"));
 		//:*&rows=0&wt=csv
 		

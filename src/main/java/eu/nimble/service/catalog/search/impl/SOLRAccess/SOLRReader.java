@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+//import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
 import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.dmo.Entity;
@@ -19,17 +19,17 @@ import de.biba.triple.store.access.dmo.PropertyConceptAssignment;
 import de.biba.triple.store.access.dmo.PropertyInformation;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
-import org.apache.solr.client.solrj.SolrClient;
+/*import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrDocumentList;*/
 
 public class SOLRReader implements IReader {
 
-	HttpSolrClient client = null;
+	//HttpSolrClient client = null;
 	String url = "https://nimble-platform.salzburgresearch.at/marmotta/solr/catalogue2";
 
 	public SOLRReader() {
@@ -37,7 +37,7 @@ public class SOLRReader implements IReader {
 	}
 
 	public void init() {
-		client = new HttpSolrClient.Builder(url).build();
+		//client = new HttpSolrClient.Builder(url).build();
 	}
 
 	public SOLRReader(String url) {
@@ -48,17 +48,17 @@ public class SOLRReader implements IReader {
 	@Override
 	public List<String> createResultList(Object arg0, String arg1) {
 		List<String> result = new ArrayList<String>();
-		QueryResponse response = (QueryResponse) arg0;
-		SolrDocumentList results = response.getResults();
-		for (int i = 0; i < results.size(); ++i) {
-			SolrDocument solrDocument = (results.get(i));
-			System.out.println(solrDocument.getFieldNames());
-			String value = String.valueOf(solrDocument.getFieldValue(arg1));
-			if (!result.contains(value)) {
-				result.add(value);
-			}
-
-		}
+//		QueryResponse response = (QueryResponse) arg0;
+//		SolrDocumentList results = response.getResults();
+//		for (int i = 0; i < results.size(); ++i) {
+//			SolrDocument solrDocument = (results.get(i));
+//			System.out.println(solrDocument.getFieldNames());
+//			String value = String.valueOf(solrDocument.getFieldValue(arg1));
+//			if (!result.contains(value)) {
+//				result.add(value);
+//			}
+//
+//		}
 		return result;
 	}
 
@@ -94,18 +94,18 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public Object query(String arg0) {
-		SolrQuery query = new SolrQuery();
-		query.setQuery(arg0);
-		// query.addFilterQuery("cat:electronics","store:amazon.com");
-		query.setFields("*");
-		query.setStart(0);
-		// query.set("defType", "edismax");
-		try {
-			QueryResponse response = client.query(query);
-			return response;
-		} catch (Exception e) {
-			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
-		}
+//		SolrQuery query = new SolrQuery();
+//		query.setQuery(arg0);
+//		// query.addFilterQuery("cat:electronics","store:amazon.com");
+//		query.setFields("*");
+//		query.setStart(0);
+//		// query.set("defType", "edismax");
+//		try {
+//			QueryResponse response = client.query(query);
+//			return response;
+//		} catch (Exception e) {
+//			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
+//		}
 		return null;
 	}
 
@@ -160,18 +160,18 @@ public class SOLRReader implements IReader {
 	@Override
 	public List<String[]> createResultListArray(Object arg0, String[] arg1) {
 		List<String[]> result = new ArrayList<String[]>();
-		QueryResponse response = (QueryResponse) arg0;
-		SolrDocumentList results = response.getResults();
-		for (int i = 0; i < results.size(); ++i) {
-			SolrDocument solrDocument = (results.get(i));
-			String[] values = new String[arg1.length];
-			result.add(values);
-			for (int a = 0; a < arg1.length; a++) {
-				String value = String.valueOf(solrDocument.getFieldValue(arg1[a]));
-				values[a] = value;
-			}
-
-		}
+//		QueryResponse response = (QueryResponse) arg0;
+//		SolrDocumentList results = response.getResults();
+//		for (int i = 0; i < results.size(); ++i) {
+//			SolrDocument solrDocument = (results.get(i));
+//			String[] values = new String[arg1.length];
+//			result.add(values);
+//			for (int a = 0; a < arg1.length; a++) {
+//				String value = String.valueOf(solrDocument.getFieldValue(arg1[a]));
+//				values[a] = value;
+//			}
+//
+//		}
 		return result;
 	}
 
