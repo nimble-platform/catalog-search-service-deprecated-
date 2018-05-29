@@ -27,6 +27,7 @@ import com.google.gson.Gson;
 
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
+import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
@@ -71,6 +72,9 @@ public class SearchController {
 
 	@Value("${nimble.shared.property.marmottauri:null}")
 	private String marmottaUri;
+	
+	@Value("${nimble.shared.property.useSOLRIndex:false}")
+	private boolean useSOLRIndex;
 
 	@Value("${nimble.shared.property.languagelabel:http://www.aidimme.es/FurnitureSectorOntology.owl#translation}")
 	private String languageLabel;
@@ -81,6 +85,7 @@ public class SearchController {
 	private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
 	private SQPDerivationService sQPDerivationService = null;
 	private NimbleAdaptionServiceOfSearchResults nimbleAdaptionServiceOfSearchResults = null;
+	private 	SOLRReader solrReader = null;
 
 	@PostConstruct
 	public void init() {
@@ -114,6 +119,10 @@ public class SearchController {
 		sparqlDerivation.updatesqpDerivationService(sQPDerivationService);
 		nimbleAdaptionServiceOfSearchResults = new NimbleAdaptionServiceOfSearchResults(sparqlDerivation,
 				languageLabel);
+		
+		if (useSOLRIndex){
+			this.solrReader = new SOLRReader();
+		}
 	}
 
 	public String getSqpConfigurationPath() {
@@ -203,22 +212,29 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
+			if (!useSOLRIndex){
 			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
 					inputParameterdetectMeaningLanguageSpecific.getKeyword(),
 					inputParameterdetectMeaningLanguageSpecific.getLanguage(),languageLabel);
 			MeaningResult meaningResult = new MeaningResult();
-
-			
-		
-			
 			meaningResult.setConceptOverview(concepts);
 			meaningResult.setSearchTyp("ExplorativeSearch");
 
 			Gson output = new Gson();
 			String result = "";
 			result = output.toJson(meaningResult);
-
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
+			}
+			else{
+				MeaningResult meaningResult = new MeaningResult();
+				meaningResult.setConceptOverview(solrReader.getAllConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific.getKeyword(), inputParameterdetectMeaningLanguageSpecific.getLanguage()));
+				meaningResult.setSearchTyp("ExplorativeSearch");
+				String result = "";
+				Gson output = new Gson();
+				result = output.toJson(meaningResult);
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+			}
+
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

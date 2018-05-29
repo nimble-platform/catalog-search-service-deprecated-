@@ -231,7 +231,7 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public List<String> getAllConcepts(String arg0) {
-		String query = "class:*\"arg0\"";
+		String query = "class: *\""+arg0+"\"*";
 		Object response = queryIntensional(query);
 		List<String> result = createResultList(response, "class");
 		List<String> finalResult = new ArrayList<String>();
