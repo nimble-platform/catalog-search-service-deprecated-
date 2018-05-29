@@ -95,13 +95,18 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<version>1.4.2.RELEASE</version><!--$NO-MVN-MAN-VER$ -->
 		</dependency>
+		
+		
+		
+		
 		<!-- Mediator dependencies -->
-		<!-- https://mvnrepository.com/artifact/org.apache.marmotta/marmotta-client-java 
+		
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
-			<version>7.1.0</version>
-		</dependency> -->
+			<version>6.0.0</version>
+		</dependency> 
+		
 		<dependency>
 			<groupId>org.apache.marmotta</groupId>
 			<artifactId>marmotta-client-java</artifactId>

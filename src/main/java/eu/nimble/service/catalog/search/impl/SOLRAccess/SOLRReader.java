@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 //import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -17,27 +18,34 @@ import de.biba.triple.store.access.dmo.IndividualInformation;
 import de.biba.triple.store.access.dmo.ObjectPropertyToDatatypePropertyMapping;
 import de.biba.triple.store.access.dmo.PropertyConceptAssignment;
 import de.biba.triple.store.access.dmo.PropertyInformation;
+import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
-/*import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;*/
+import org.apache.solr.common.SolrDocumentList;
 
 public class SOLRReader implements IReader {
 
-	//HttpSolrClient client = null;
-	String url = "https://nimble-platform.salzburgresearch.at/marmotta/solr/catalogue2";
+	private HttpSolrClient client = null;
+	private HttpSolrClient clientForIntensionalQueries = null;
+	private String url = "https://nimble-platform.salzburgresearch.at/marmotta/solr/catalogue2";
+	private String urlForIntensionalQueries = "https://nimble-platform.salzburgresearch.at/marmotta/solr/properties";
 
 	public SOLRReader() {
 		init();
 	}
 
 	public void init() {
-		//client = new HttpSolrClient.Builder(url).build();
+		SystemDefaultHttpClient httpClient = new SystemDefaultHttpClient();
+//		client = new HttpSolrClient.Builder(url).build();
+//		clientForIntensionalQueries = new HttpSolrClient.Builder(urlForIntensionalQueries).build();
+		client = new  HttpSolrClient(url, httpClient);
+		clientForIntensionalQueries = new  HttpSolrClient(urlForIntensionalQueries, httpClient);
 	}
 
 	public SOLRReader(String url) {
@@ -48,18 +56,30 @@ public class SOLRReader implements IReader {
 	@Override
 	public List<String> createResultList(Object arg0, String arg1) {
 		List<String> result = new ArrayList<String>();
-//		QueryResponse response = (QueryResponse) arg0;
-//		SolrDocumentList results = response.getResults();
-//		for (int i = 0; i < results.size(); ++i) {
-//			SolrDocument solrDocument = (results.get(i));
-//			System.out.println(solrDocument.getFieldNames());
-//			String value = String.valueOf(solrDocument.getFieldValue(arg1));
-//			if (!result.contains(value)) {
-//				result.add(value);
-//			}
-//
-//		}
+		QueryResponse response = (QueryResponse) arg0;
+		SolrDocumentList results = response.getResults();
+		for (int i = 0; i < results.size(); ++i) {
+			SolrDocument solrDocument = (results.get(i));
+			System.out.println(solrDocument.getFieldNames());
+			System.out.println(solrDocument.getFieldNames());
+			String value = String.valueOf(solrDocument.getFieldValue(arg1));
+			String[] allValues = value.split(",");
+			for (String oneValue : allValues) {
+				oneValue = postProcessSolrValue(oneValue);
+				if (!result.contains(oneValue)) {
+					result.add(oneValue);
+				}
+			}
+
+		}
 		return result;
+	}
+
+	public String postProcessSolrValue(String oneValue) {
+		oneValue = oneValue.replace("[", "");
+		oneValue = oneValue.replace("]", "");
+		oneValue = oneValue.replace(" ", "");
+		return oneValue;
 	}
 
 	@Override
@@ -94,18 +114,34 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public Object query(String arg0) {
-//		SolrQuery query = new SolrQuery();
-//		query.setQuery(arg0);
-//		// query.addFilterQuery("cat:electronics","store:amazon.com");
-//		query.setFields("*");
-//		query.setStart(0);
-//		// query.set("defType", "edismax");
-//		try {
-//			QueryResponse response = client.query(query);
-//			return response;
-//		} catch (Exception e) {
-//			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
-//		}
+		SolrQuery query = new SolrQuery();
+		query.setQuery(arg0);
+		// query.addFilterQuery("cat:electronics","store:amazon.com");
+		query.setFields("*");
+		query.setStart(0);
+		// query.set("defType", "edismax");
+		try {
+			QueryResponse response = client.query(query);
+			return response;
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
+		}
+		return null;
+	}
+
+	public Object queryIntensional(String arg0) {
+		SolrQuery query = new SolrQuery();
+		query.setQuery(arg0);
+		// query.addFilterQuery("cat:electronics","store:amazon.com");
+		query.setFields("*");
+		query.setStart(0);
+		// query.set("defType", "edismax");
+		try {
+			QueryResponse response = clientForIntensionalQueries.query(query);
+			return response;
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
+		}
 		return null;
 	}
 
@@ -160,18 +196,18 @@ public class SOLRReader implements IReader {
 	@Override
 	public List<String[]> createResultListArray(Object arg0, String[] arg1) {
 		List<String[]> result = new ArrayList<String[]>();
-//		QueryResponse response = (QueryResponse) arg0;
-//		SolrDocumentList results = response.getResults();
-//		for (int i = 0; i < results.size(); ++i) {
-//			SolrDocument solrDocument = (results.get(i));
-//			String[] values = new String[arg1.length];
-//			result.add(values);
-//			for (int a = 0; a < arg1.length; a++) {
-//				String value = String.valueOf(solrDocument.getFieldValue(arg1[a]));
-//				values[a] = value;
-//			}
-//
-//		}
+		QueryResponse response = (QueryResponse) arg0;
+		SolrDocumentList results = response.getResults();
+		for (int i = 0; i < results.size(); ++i) {
+			SolrDocument solrDocument = (results.get(i));
+			String[] values = new String[arg1.length];
+			result.add(values);
+			for (int a = 0; a < arg1.length; a++) {
+				String value = String.valueOf(solrDocument.getFieldValue(arg1[a]));
+				values[a] = value;
+			}
+
+		}
 		return result;
 	}
 
@@ -195,8 +231,19 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public List<String> getAllConcepts(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		String query = "class:*\"arg0\"";
+		Object response = queryIntensional(query);
+		List<String> result = createResultList(response, "class");
+		List<String> finalResult = new ArrayList<String>();
+		String searchTermLowerCase = arg0.toLowerCase();
+		result.forEach(str -> {
+			String strLowerCase = str.toLowerCase();
+			if (strLowerCase.contains(searchTermLowerCase)) {
+				System.out.println(strLowerCase + "->" + searchTermLowerCase);
+				finalResult.add(str);
+			}
+		});
+		return finalResult;
 	}
 
 	@Override
@@ -205,10 +252,20 @@ public class SOLRReader implements IReader {
 		return null;
 	}
 
+	// TODO not supported yet. Therefore, it is used the old one
 	@Override
 	public List<Entity> getAllConceptsLanguageSpecific(String arg0, Language arg1) {
-		// TODO Auto-generated method stub
-		return null;
+		List<String> concepts = getAllConcepts(arg0);
+		List<Entity> entities = new ArrayList<Entity>();
+		for (String cocnept : concepts) {
+			Entity entity = new Entity();
+			entity.setConceptSource(ConceptSource.ONTOLOGICAL);
+			entity.setLanguage(Language.UNKNOWN);
+			entity.setUrl(cocnept);
+			String shortName = cocnept.substring(cocnept.lastIndexOf("#") + 1);
+			entities.add(entity);
+		}
+		return entities;
 	}
 
 	@Override
@@ -259,10 +316,15 @@ public class SOLRReader implements IReader {
 		return null;
 	}
 
+	/**
+	 * arg0 have to be a concept URL
+	 */
 	@Override
 	public List<String> getAllPropertiesIncludingEverything(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		String query = "class: \""+arg0+"\"";
+		Object response = queryIntensional(query);
+		List<String> propertyURLS = createResultList(response, "lmf.uri");
+		return propertyURLS;
 	}
 
 	@Override
@@ -333,8 +395,27 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public PropertyType getPropertyType(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		String query = "lmf.uri:\"" + arg0 + "\"";
+		Object response = queryIntensional(query);
+		List<String> result = createResultList(response, "lmf.type");
+		if (result.size() > 0) {
+
+			for (String pType : result) {
+				pType = pType.replace(" ", "");
+				if (pType.equals("http://www.w3.org/2002/07/owl#ObjectProperty")) {
+					return PropertyType.OBJECTPROPERTY;
+				}
+				if (pType.equals("http://www.w3.org/2002/07/owl#DatatypeProperty")) {
+					return PropertyType.DATATYPEPROPERTY;
+				}
+				Logger.getAnonymousLogger().log(Level.WARNING, "Found no propertyType for: " + arg0);
+				return PropertyType.UNKNOWN;
+			}
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Found no propertyType for: " + arg0);
+		}
+
+		return PropertyType.UNKNOWN;
 	}
 
 	@Override
