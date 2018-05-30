@@ -27,9 +27,11 @@ import com.google.gson.Gson;
 
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
+import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
@@ -93,8 +95,11 @@ public class SearchController {
 		logger.info("Initializing with marmottaUri: {}, languageLabel: {}, sqpConfigurationPath: {}",
 				marmottaUri, languageLabel, sqpConfigurationPath);
 
-		if (ontologyFile.equals(NULL_ASSIGNED_VALUE) && (marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
+		if (ontologyFile == null ||ontologyFile.equals(NULL_ASSIGNED_VALUE) && (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
 			sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
+			if (useSOLRIndex){
+				this.solrReader = new SOLRReader();
+			}
 		} else {
 
 			if (!ontologyFile.equals(NULL_ASSIGNED_VALUE)) {
@@ -114,11 +119,13 @@ public class SearchController {
 				sparqlDerivation = new MediatorSPARQLDerivationAndExecution(marmottaUri, true,sQPDerivationService);
 			}
 		}
+		if (!useSOLRIndex){
 		sparqlDerivation.setLanguagelabel(languageLabel);
 		sQPDerivationService = new SQPDerivationService(sparqlDerivation, sqpConfigurationPath);
 		sparqlDerivation.updatesqpDerivationService(sQPDerivationService);
 		nimbleAdaptionServiceOfSearchResults = new NimbleAdaptionServiceOfSearchResults(sparqlDerivation,
 				languageLabel);
+		}
 		
 		if (useSOLRIndex){
 			this.solrReader = new SOLRReader();
@@ -526,12 +533,16 @@ public class SearchController {
 	@RequestMapping(value = "/getInstantiatedPropertiesFromConcept", method = RequestMethod.GET)
 	HttpEntity<Object> getInstantiatedPropertiesFromConcept(@RequestParam("inputAsJson") String inputAsJson) {
 
+		
 		try {
 			Gson gson = new Gson();
 			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParamterForGetLogicalView.class);
 
 			String concept = inputParamterForGetLogicalView.getConcept();
+			
+			if (!useSOLRIndex){
+			
 			OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation.getAllTransitiveProperties(concept);
 			concept = sparqlDerivation.getURIOfConcept(concept);
 			for (OutputForPropertyFromConcept prop : propertiesFromConcept.getOutputForPropertiesFromConcept()) {
@@ -543,6 +554,43 @@ public class SearchController {
 			result = gson.toJson(propertiesFromConcept);
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
+			
+			}
+			else{
+				OutputForPropertiesFromConcept propertiesFromConcept = new OutputForPropertiesFromConcept();
+				propertiesFromConcept.setLanguage(inputParamterForGetLogicalView.getLanguageAsLanguage());
+				List<String> properties = solrReader.getAllPropertiesIncludingEverything(concept);
+				for (String prop: properties){
+					OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
+					PropertySource source = PropertySource.DOMAIN_SPECIFIC_PROPERTY;  
+					outputForPropertyFromConcept.setPropertySource(source);
+					PropertyType type = solrReader.getPropertyType(prop);
+					if (type == PropertyType.DATATYPEPROPERTY){
+						outputForPropertyFromConcept.setDatatypeProperty(true);
+						outputForPropertyFromConcept.setObjectProperty(false);
+					}
+					if (type == PropertyType.OBJECTPROPERTY){
+						outputForPropertyFromConcept.setDatatypeProperty(false);
+						outputForPropertyFromConcept.setObjectProperty(true);
+					}
+					if (type == PropertyType.UNKNOWN){
+						outputForPropertyFromConcept.setDatatypeProperty(false);
+						outputForPropertyFromConcept.setObjectProperty(false);
+						Logger.getAnonymousLogger().log(Level.WARNING, "Found no type for: " + prop);
+					}
+					outputForPropertyFromConcept.setPropertyURL(prop);
+					String translatedProperty = solrReader.translateProperty(prop, inputParamterForGetLogicalView.getLanguageAsLanguage());
+					outputForPropertyFromConcept.setTranslatedProperty(translatedProperty);
+					propertiesFromConcept.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
+				}
+				
+				String result = "";
+				result = gson.toJson(propertiesFromConcept);
+
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+				
+			}
+			
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -887,6 +935,14 @@ public class SearchController {
 
 	public void setLanguageLabel(String languageLabel) {
 		this.languageLabel = languageLabel;
+	}
+
+	public boolean isUseSOLRIndex() {
+		return useSOLRIndex;
+	}
+
+	public void setUseSOLRIndex(boolean useSOLRIndex) {
+		this.useSOLRIndex = useSOLRIndex;
 	}
 
 }

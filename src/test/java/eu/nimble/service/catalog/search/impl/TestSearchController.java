@@ -653,5 +653,27 @@ public class TestSearchController {
 	
 	}
 	
-	
+	@Test
+	public void testgetInstantiatedPropertiesFromConceptForSOLR(){
+		
+		//pre
+		SearchController serachController = new SearchController();
+		serachController.setUseSOLRIndex(true);
+		serachController.init();
+		
+		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		inputParamterForGetLogicalView.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#Seat");
+		inputParamterForGetLogicalView.setLanguage("es");
+		
+		Gson gson = new Gson();
+		String input = gson.toJson(inputParamterForGetLogicalView);
+		HttpEntity<Object> result = serachController.getInstantiatedPropertiesFromConcept(input);
+		
+		
+		String r = result.getBody().toString();
+		System.out.println(r);
+		
+		
+		serachController.init();
+	}
 }
