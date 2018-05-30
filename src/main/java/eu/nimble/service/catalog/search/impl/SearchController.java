@@ -831,6 +831,9 @@ public class SearchController {
 	@RequestMapping(value = "/getSupportedLanguages", method = RequestMethod.GET)
 	public HttpEntity<Object> getSupportedLanguages() {
 		try {
+			
+			if (!useSOLRIndex){
+			
 			List<String> languages = sparqlDerivation.getSupportedLanguages();
 
 			Gson output = new Gson();
@@ -840,6 +843,21 @@ public class SearchController {
 			result = output.toJson(supportedLanguages);
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
+			
+			}
+			else{
+				List<Language> languages = solrReader.getNativeSupportedLangauges();
+				OutoutForGetSupportedLanguages supportedLanguages = new OutoutForGetSupportedLanguages();
+				
+				languages.forEach( language -> supportedLanguages.getLanguages().add(language.toString()));
+				
+				Gson output = new Gson();
+				String result = "";
+				result = output.toJson(supportedLanguages);
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+				
+			}
+			
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

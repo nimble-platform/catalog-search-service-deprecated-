@@ -387,10 +387,36 @@ public class SOLRReader implements IReader {
 		return null;
 	}
 
+	/**
+	 * This method checks for a predefined list of languages whether there are labels available
+	 */
 	@Override
 	public List<Language> getNativeSupportedLangauges() {
-		// TODO Auto-generated method stub
-		return null;
+		List<Language> languges = new ArrayList<Language>();
+		String query = "label_es:*";
+		Object response = queryIntensional(query);
+		List<String> result = createResultList(response, "id");
+		if (result.size()>0){
+			languges.add(Language.ENGLISH);
+		}
+		
+		query = "label_de:*";
+		response = queryIntensional(query);
+		result = createResultList(response, "id");
+		if (result.size()>0){
+			languges.add(Language.GERMAN);
+		}
+		
+		query = "label_es:*";
+		response = queryIntensional(query);
+		result = createResultList(response, "id");
+		if (result.size()>0){
+			languges.add(Language.SPANISH);
+		}
+		
+		
+		
+		return languges;
 	}
 
 	@Override

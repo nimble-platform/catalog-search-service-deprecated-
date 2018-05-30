@@ -4,13 +4,14 @@ import java.util.List;
 
 import org.junit.Test;
 
+import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 
 public class TestSOLRReader {
 
 	@Test
-	public void getConnection(){
+	public void testgetConnection(){
 		SOLRReader solrReader = new SOLRReader();
 		Object response = solrReader.query("*.*");
 		System.out.println(solrReader.createResultList(response, "item_manufacturer_name"));
@@ -20,7 +21,7 @@ public class TestSOLRReader {
 	
 	
 	@Test
-	public void getConcepts(){
+	public void testgetConcepts(){
 		SOLRReader solrReader = new SOLRReader();
 		List<String> concepts = solrReader.getAllConcepts("PieceOfFurniture");
 		System.out.println(concepts);
@@ -28,7 +29,7 @@ public class TestSOLRReader {
 	
 	//getPropertyType
 	@Test
-	public void getPropertyType(){
+	public void testgetPropertyType(){
 		SOLRReader solrReader = new SOLRReader();
 		PropertyType properType  = solrReader.getPropertyType("http://www.aidimme.es/FurnitureSectorOntology.owl#hasCatalogue");
 		System.out.println(properType);
@@ -36,9 +37,16 @@ public class TestSOLRReader {
 	
 	//getAllPropertiesIncludingEverything
 	@Test
-	public void getgetAllPropertiesIncludingEverything(){
+	public void testgetgetAllPropertiesIncludingEverything(){
 		SOLRReader solrReader = new SOLRReader();
 		List<String> properType  = solrReader.getAllPropertiesIncludingEverything("http://www.aidimme.es/FurnitureSectorOntology.owl#Company");
 		System.out.println(properType);
+	}
+	
+	@Test
+	public void testgetNativeSupportedLangauges(){
+		SOLRReader reader = new SOLRReader();
+		List<Language> result = reader.getNativeSupportedLangauges();
+		System.out.println(result);
 	}
 }
