@@ -31,11 +31,16 @@ import org.apache.solr.common.SolrDocumentList;
 
 public class SOLRReader implements IReader {
 
+	private static final String FIELD_FOR_PROPERTY_URI = "lmf.uri";
 	private HttpSolrClient client = null;
 	private HttpSolrClient clientForIntensionalQueries = null;
 	private String url = "https://nimble-platform.salzburgresearch.at/marmotta/solr/catalogue2";
 	private String urlForIntensionalQueries = "https://nimble-platform.salzburgresearch.at/marmotta/solr/properties";
-
+	private final String labelFieldForSpanish = "label_es";
+	private final String labelFieldForEnglish = "label_en";
+	private final String labelFieldForGerman = "label_de";
+	
+	
 	public SOLRReader() {
 		init();
 	}
@@ -78,7 +83,15 @@ public class SOLRReader implements IReader {
 	public String postProcessSolrValue(String oneValue) {
 		oneValue = oneValue.replace("[", "");
 		oneValue = oneValue.replace("]", "");
-		oneValue = oneValue.replace(" ", "");
+		if (oneValue.length() > 1){
+			if (oneValue.charAt(0)== ' '){
+				oneValue = oneValue.substring(1);
+			}
+			if (oneValue.charAt(oneValue.length()-1)== ' '){
+				oneValue = oneValue.substring(0, oneValue.length()-1);
+			}
+		}
+		
 		return oneValue;
 	}
 
@@ -255,6 +268,11 @@ public class SOLRReader implements IReader {
 	// TODO not supported yet. Therefore, it is used the old one
 	@Override
 	public List<Entity> getAllConceptsLanguageSpecific(String arg0, Language arg1) {
+		
+//		String query = createQueryForLanguageLabel(arg1, arg0);
+//		Object response 
+		
+		
 		List<String> concepts = getAllConcepts(arg0);
 		List<Entity> entities = new ArrayList<Entity>();
 		for (String cocnept : concepts) {
@@ -266,6 +284,14 @@ public class SOLRReader implements IReader {
 			entities.add(entity);
 		}
 		return entities;
+	}
+
+	private String createQueryForLanguageLabel(Language arg1, String token) {
+		String queryPrefix = deriveFieldFromLanguage (arg1);
+		
+		String query = queryPrefix + ":" + "*\"" + token + "\"";
+		
+		return query;
 	}
 
 	@Override
@@ -323,7 +349,7 @@ public class SOLRReader implements IReader {
 	public List<String> getAllPropertiesIncludingEverything(String arg0) {
 		String query = "class: \""+arg0+"\"";
 		Object response = queryIntensional(query);
-		List<String> propertyURLS = createResultList(response, "lmf.uri");
+		List<String> propertyURLS = createResultList(response, FIELD_FOR_PROPERTY_URI);
 		return propertyURLS;
 	}
 
@@ -390,24 +416,25 @@ public class SOLRReader implements IReader {
 	/**
 	 * This method checks for a predefined list of languages whether there are labels available
 	 */
+	
 	@Override
 	public List<Language> getNativeSupportedLangauges() {
 		List<Language> languges = new ArrayList<Language>();
-		String query = "label_es:*";
+		String query =  labelFieldForEnglish+ ":*";
 		Object response = queryIntensional(query);
 		List<String> result = createResultList(response, "id");
 		if (result.size()>0){
 			languges.add(Language.ENGLISH);
 		}
 		
-		query = "label_de:*";
+		query = labelFieldForGerman +":*";
 		response = queryIntensional(query);
 		result = createResultList(response, "id");
 		if (result.size()>0){
 			languges.add(Language.GERMAN);
 		}
 		
-		query = "label_es:*";
+		query = labelFieldForSpanish+ ":*";
 		response = queryIntensional(query);
 		result = createResultList(response, "id");
 		if (result.size()>0){
@@ -560,4 +587,37 @@ public class SOLRReader implements IReader {
 		return false;
 	}
 
+	public String translateProperty(String propertyURL, Language language ){
+		String query = FIELD_FOR_PROPERTY_URI + ":\"" + propertyURL + "\"";
+		String fieldOfInterest = deriveFieldFromLanguage(language);
+		Object response = queryIntensional(query);
+		List<String> results = createResultList(response, fieldOfInterest);
+		if (results.size() > 0){
+			return results.get(0);
+		}
+		
+		return "";
+	}
+
+	private String deriveFieldFromLanguage(Language language) {
+		String queryPrefix ="";
+		switch (language) {
+		case ENGLISH:
+			queryPrefix = labelFieldForEnglish;
+			break;
+		case GERMAN:
+			queryPrefix = labelFieldForGerman;
+			break;
+		case SPANISH:
+			queryPrefix = labelFieldForSpanish;
+			break;
+
+		default:
+			Logger.getAnonymousLogger().log(Level.WARNING, "Received no language information. Use the English translation");
+			queryPrefix = labelFieldForEnglish;
+			break;
+		}
+		
+		return queryPrefix;
+	}
 }

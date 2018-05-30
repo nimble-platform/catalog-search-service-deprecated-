@@ -49,4 +49,14 @@ public class TestSOLRReader {
 		List<Language> result = reader.getNativeSupportedLangauges();
 		System.out.println(result);
 	}
+	
+	@Test
+	public void testtranslateProperty(){
+		SOLRReader reader = new SOLRReader();
+		String label = reader.translateProperty("http://www.w3.org/ns/org#memberOf", Language.ENGLISH);
+		System.out.println(label);
+		
+		String label2 = reader.translateProperty("http://www.w3.org/ns/org#memberOf", Language.SPANISH);
+		System.out.println(label2);
+	}
 }
