@@ -1,0 +1,1 @@
+mvnDebug spring-boot:run -Dnimble.shared.property.useSOLRIndex=true

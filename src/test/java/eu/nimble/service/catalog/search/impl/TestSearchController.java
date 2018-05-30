@@ -667,6 +667,7 @@ public class TestSearchController {
 		
 		Gson gson = new Gson();
 		String input = gson.toJson(inputParamterForGetLogicalView);
+		System.out.println(URLEncoder.encode(input));
 		HttpEntity<Object> result = serachController.getInstantiatedPropertiesFromConcept(input);
 		
 		
