@@ -21,6 +21,8 @@ import de.biba.triple.store.access.dmo.PropertyInformation;
 import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -33,9 +35,11 @@ public class SOLRReader implements IReader {
 
 	private static final String FIELD_FOR_PROPERTY_URI = "lmf.uri";
 	private HttpSolrClient client = null;
-	private HttpSolrClient clientForIntensionalQueries = null;
+	private HttpSolrClient clientForIntensionalQueriesProperties = null;
 	private String url = "https://nimble-platform.salzburgresearch.at/marmotta/solr/catalogue2";
-	private String urlForIntensionalQueries = "https://nimble-platform.salzburgresearch.at/marmotta/solr/properties";
+	private String urlForIntensionalQueriesProperties = "https://nimble-platform.salzburgresearch.at/marmotta/solr/properties";
+	private String urlForIntensionalQueriesConcepts = "https://nimble-platform.salzburgresearch.at/marmotta/solr/Concepts";
+	
 	private final String labelFieldForSpanish = "label_es";
 	private final String labelFieldForEnglish = "label_en";
 	private final String labelFieldForGerman = "label_de";
@@ -50,11 +54,28 @@ public class SOLRReader implements IReader {
 //		client = new HttpSolrClient.Builder(url).build();
 //		clientForIntensionalQueries = new HttpSolrClient.Builder(urlForIntensionalQueries).build();
 		client = new  HttpSolrClient(url, httpClient);
-		clientForIntensionalQueries = new  HttpSolrClient(urlForIntensionalQueries, httpClient);
+		clientForIntensionalQueriesProperties = new  HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
 	}
 
 	public SOLRReader(String url) {
+		if (url.charAt(url.length()-1)== '/'){
+			url = url.substring(0, url.length()-1);
+		}
+		
+		urlForIntensionalQueriesProperties = url + "/" + "properties";
+		urlForIntensionalQueriesConcepts = url + "/" + "Concepts";
+		this.url = url +"/" + "catalogue2";
+		
 		this.url = url;
+		
+		init();
+	}
+
+	public SOLRReader(String url, String urlForIntensionalQueriesProperties, String urlForIntensionalQueriesConcepts) {
+		super();
+		this.url = url;
+		this.urlForIntensionalQueriesProperties = urlForIntensionalQueriesProperties;
+		this.urlForIntensionalQueriesConcepts = urlForIntensionalQueriesConcepts;
 		init();
 	}
 
@@ -150,7 +171,7 @@ public class SOLRReader implements IReader {
 		query.setStart(0);
 		// query.set("defType", "edismax");
 		try {
-			QueryResponse response = clientForIntensionalQueries.query(query);
+			QueryResponse response = clientForIntensionalQueriesProperties.query(query);
 			return response;
 		} catch (Exception e) {
 			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
@@ -619,5 +640,12 @@ public class SOLRReader implements IReader {
 		}
 		
 		return queryPrefix;
+	}
+
+	public List<String> getAllValuesForAGivenProperty(String concept, String property, PropertySource propertySource) {
+		String query = "item_commodity_classification_uri:" + "\"" + concept + "\"";
+		Object  response = query(query);
+		List<String> values = createResultList(response, property);
+ 		return values;
 	}
 }

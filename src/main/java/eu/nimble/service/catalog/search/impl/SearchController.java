@@ -643,6 +643,8 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = gson
 					.fromJson(inputAsJson, InputParameterForPropertyValuesFromGreenGroup.class);
+			
+			if (!useSOLRIndex){
 			String concept = sparqlDerivation
 					.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
 			String property = sparqlDerivation
@@ -659,6 +661,23 @@ public class SearchController {
 			result = gson.toJson(outputForPropertyValuesFromGreenGroup);
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
+			}
+			
+			else{
+				
+				String concept = inputParameterForPropertyValuesFromGreenGroup.getConceptURL();
+				String property = inputParameterForPropertyValuesFromGreenGroup.getPropertyURL();
+				
+				List<String> allValues = solrReader.getAllValuesForAGivenProperty(concept, property, inputParameterForPropertyValuesFromGreenGroup.getPropertySource());
+				OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new OutputForPropertyValuesFromGreenGroup();
+				outputForPropertyValuesFromGreenGroup.getAllValues().addAll(allValues);
+
+				String result = "";
+				result = gson.toJson(outputForPropertyValuesFromGreenGroup);
+
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+				
+			}
 
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

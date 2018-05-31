@@ -7,6 +7,7 @@ import org.junit.Test;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 
 public class TestSOLRReader {
 
@@ -58,5 +59,11 @@ public class TestSOLRReader {
 		
 		String label2 = reader.translateProperty("http://www.w3.org/ns/org#memberOf", Language.SPANISH);
 		System.out.println(label2);
+	}
+	
+	@Test
+	public void testgetAllValuesForAGivenProperty(){
+		SOLRReader reader = new SOLRReader("http://nimble-staging.salzburgresearch.at/marmotta/solr/catalogue_semantic_search/", "", "");
+		List<String> result = reader.getAllValuesForAGivenProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard", "item_price", PropertySource.ADDITIONAL_ITEM_PROPERTY);
 	}
 }
