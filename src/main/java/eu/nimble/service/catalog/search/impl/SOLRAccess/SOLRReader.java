@@ -23,11 +23,15 @@ import de.biba.triple.store.access.dmo.PropertyInformation;
 import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
+import eu.nimble.service.catalog.search.factories.ValueGroupingFactory;
+import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -421,9 +425,12 @@ public class SOLRReader implements IReader {
 	}
 
 	@Override
-	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(String conceptURL) {
+		String query = "class: " + "\"" + conceptURL + "\""+ " And lmf.type : \"http://www.w3.org/2002/07/owl#ObjectProperty\"";
+		Object response = queryIntensionalProperties(query);
+		
+		List<String[]> allProperties = createResultListArray(response, new String[] { "lmf.uri", "class" });
+		return allProperties;
 	}
 
 	@Override
@@ -768,6 +775,11 @@ public class SOLRReader implements IReader {
 	public List<String> getAllValuesForAGivenProperty(String concept, String property, PropertySource propertySource) {
 		String query = "item_commodity_classification_uri:" + "\"" + concept + "\"";
 		Object response = query(query);
+		if (response == null || ((QueryResponse)response).getResults().size()==0){
+			Logger.getAnonymousLogger().log(Level.WARNING, "No connection or item_commodity_classification_uri doesn't exists. Try without concept binding");
+		response = query ("*:*");
+		}
+		property = entityMappingService.mapPropertyURIToFieldName(property);
 		List<String> values = createResultList(response, property);
 		return values;
 	}
@@ -947,5 +959,59 @@ public class SOLRReader implements IReader {
 			localOntologyView2.setConceptURIPath(newPaht);
 			localOntologyView.getObjectproperties().put(range, localOntologyView2);
 		}
+	}
+
+	
+	public Map<String, List<Group>> generateGroup(int amountOfGroups, String conceptURL, String propertyURL) {
+		
+		String shortPropertyName = "";
+		if (propertyURL.contains("#")){
+			shortPropertyName = propertyURL.substring(propertyURL.indexOf("#")+1);
+		}
+		else{
+			if (propertyURL.contains("/")){
+				shortPropertyName = propertyURL.substring(propertyURL.lastIndexOf("/")+1);
+			}	
+		}
+		
+		List<String> values = getAllValuesForAGivenProperty(conceptURL, propertyURL, null);
+		for (int i = 0; i < values.size(); i++) {
+			String str = values.get(i);
+			int index = str.lastIndexOf("^");
+			if (index > -1) {
+				str = str.substring(0, index - 1);
+			}
+			str = str.replace(",", ".");
+			values.set(i, str);
+		}
+		if (values != null && values.size() > 0) {
+			try {
+				ValueGroupingFactory valueGroupingFactory = new ValueGroupingFactory();
+				return valueGroupingFactory.generateGrouping(amountOfGroups, values, shortPropertyName);
+
+			} catch (Exception e) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Cannot transform data from " + propertyURL + " into floats");
+			}
+		} else {
+			return new HashMap<String, List<Group>>();
+		}
+		return new HashMap<String, List<Group>>();
+	
+	}
+
+	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept) {
+		return getAllObjectPropertiesIncludingEverythingAndReturnItsRange(inputParameterForGetReferencesFromAConcept.getConceptURL());
+	}
+
+	public TranslationResult translateProperty(String value, Language language, String languageLabel) {
+		// TODO Auto-generated method stub
+		String translation = translateProperty(value, language);
+		TranslationResult translationResult = new TranslationResult();
+		translationResult.setOriginal(value);
+		translationResult.setTranslation(translation);
+		translationResult.setSuccess(true);
+		return translationResult;
 	}
 }

@@ -717,8 +717,15 @@ public class SearchController {
 
 			checkVariableValuesForJSONONput(inputParameterForGetReferencesFromAConcept);
 			
-			List<String[]> allReferences = sparqlDerivation.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+			List<String[]> allReferences = null;
+			if (!useSOLRIndex){			
+				allReferences = sparqlDerivation.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
 					inputParameterForGetReferencesFromAConcept);
+			}
+			else{
+				allReferences = solrReader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+						inputParameterForGetReferencesFromAConcept);
+			}
 
 			OutputForGetReferencesFromAConcept outputForGetReferencesFromAConcept = new OutputForGetReferencesFromAConcept();
 			if (allReferences != null && (allReferences.size() > 0)) {
@@ -729,12 +736,24 @@ public class SearchController {
 						int index = outputForGetReferencesFromAConcept.isReferenceAlreadyIncluded(propertyURL);
 						Language language = Language
 								.fromString(inputParameterForGetReferencesFromAConcept.getLanguage());
-						TranslationResult result = sparqlDerivation.translateProperty(value, language, languageLabel);
+						TranslationResult result = null;
+								if (!useSOLRIndex){	
+									result= sparqlDerivation.translateProperty(value, language, languageLabel);
+								}
+								else{
+									result= solrReader.translateProperty(value, language, languageLabel);
+								}
 
 						if (index == -1) {
 							Reference reference = new Reference();
+							if (!useSOLRIndex){	
 							reference.setTranslatedProperty(sparqlDerivation
 									.translateProperty(propertyURL, language, languageLabel).getTranslation());
+							}
+							else{
+								reference.setTranslatedProperty(solrReader
+										.translateProperty(propertyURL, language, languageLabel).getTranslation());
+							}
 							reference.setObjectPropertyURL(propertyURL);
 							reference.getRange().add(result);
 							outputForGetReferencesFromAConcept.getAllAvailableReferences().add(reference);
@@ -823,12 +842,23 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterForgetPropertyValuesDiscretised paramterForGetLogicalView = gson.fromJson(inputAsJson,
 					InputParameterForgetPropertyValuesDiscretised.class);
+			
+			if (!useSOLRIndex){
 			Map<String, List<Group>> mapOfPropertyGroups = sparqlDerivation.generateGroup(
 					paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
 					paramterForGetLogicalView.getProperty());
 			String result = "";
 			result = gson.toJson(mapOfPropertyGroups);
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
+			}
+			else{
+				Map<String, List<Group>> mapOfPropertyGroups = solrReader.generateGroup(
+						paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
+						paramterForGetLogicalView.getProperty());
+				String result = "";
+				result = gson.toJson(mapOfPropertyGroups);
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+			}
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

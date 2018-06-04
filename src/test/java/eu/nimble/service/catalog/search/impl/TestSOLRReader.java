@@ -1,6 +1,7 @@
 package eu.nimble.service.catalog.search.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
+import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
@@ -130,6 +132,7 @@ public class TestSOLRReader {
 	}
 
 	@Test
+	@Ignore
 	public void testgetRangeOfProperty(){
 		SOLRReader reader = new SOLRReader();
 		List<String> ranges = reader.getRangeOfProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#hasStyle");
@@ -137,5 +140,24 @@ public class TestSOLRReader {
 		
 	}
 	
+	@Test
+	@Ignore
+	public void testgenerateGroup(){
+		SOLRReader reader = new SOLRReader();
+		 Map<String, List<Group>> result = reader.generateGroup(2,"http://www.aidimme.es/FurnitureSectorOntology.owl#PieceOfFurniture", "item_price");
+		 System.out.println(result);
+	}
+	
+	@Test
+	@Ignore
+	public void testgetAllObjectPropertiesIncludingEverythingAndReturnItsRange(){
+		SOLRReader reader = new SOLRReader();
+		String conceptURL = ("http://www.aidimme.es/FurnitureSectorOntology.owl#PieceOfFurniture");
+		 List<String[]> obs = (reader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(conceptURL ));
+		 for (String[] o: obs){
+			 System.out.println(o[0] +"->" + o[1]);
+		 }
+		
+	}
 	
 }

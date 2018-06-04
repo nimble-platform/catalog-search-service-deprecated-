@@ -20,6 +20,7 @@ import de.biba.triple.store.access.jena.PropertyValuesCrawler;
 import de.biba.triple.store.access.jena.Reader;
 import de.biba.triple.store.access.marmotta.MarmottaPropertyValuesCrawler;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.factories.ValueGroupingFactory;
 import eu.nimble.service.catalog.search.impl.dao.DataPoint;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
@@ -929,27 +930,29 @@ public class MediatorSPARQLDerivationAndExecution {
 		}
 		if (values != null && values.size() > 0) {
 			try {
-				Map<String, List<Group>> result = new HashMap<String, List<Group>>();
-				float min = getMinOfData(values);
-				float max = getMaxOfData(values);
-				float stepRate = (max - min) / (float) amountOfGroups;
-				List<Group> discreditedGroups = new ArrayList<Group>();
-				for (int i = 0; i < amountOfGroups; i++) {
-					Group group = new Group();
-					float newMin = min + (stepRate * i);
-					float newMax = min + (stepRate * (i + 1));
-					if (newMin > 2) {
-						newMin = round(newMin);
-						newMax = round(newMax);
-					}
-					group.setDescription("From: " + newMin + " to " + newMax);
-					group.setMin(newMin);
-					group.setMax(newMax);
-					group.setProperty(shortPropertyName);
-					discreditedGroups.add(group);
-				}
-				result.put(shortPropertyName, discreditedGroups);
-				return result;
+				ValueGroupingFactory valueGroupingFactory = new ValueGroupingFactory();
+				return valueGroupingFactory.generateGrouping(amountOfGroups, values, shortPropertyName);
+//				Map<String, List<Group>> result = new HashMap<String, List<Group>>();
+//				float min = getMinOfData(values);
+//				float max = getMaxOfData(values);
+//				float stepRate = (max - min) / (float) amountOfGroups;
+//				List<Group> discreditedGroups = new ArrayList<Group>();
+//				for (int i = 0; i < amountOfGroups; i++) {
+//					Group group = new Group();
+//					float newMin = min + (stepRate * i);
+//					float newMax = min + (stepRate * (i + 1));
+//					if (newMin > 2) {
+//						newMin = round(newMin);
+//						newMax = round(newMax);
+//					}
+//					group.setDescription("From: " + newMin + " to " + newMax);
+//					group.setMin(newMin);
+//					group.setMax(newMax);
+//					group.setProperty(shortPropertyName);
+//					discreditedGroups.add(group);
+//				}
+//				result.put(shortPropertyName, discreditedGroups);
+//				return result;
 			} catch (Exception e) {
 				Logger.getAnonymousLogger().log(Level.WARNING,
 						"Cannot transform data from " + property + " into floats");
@@ -960,10 +963,10 @@ public class MediatorSPARQLDerivationAndExecution {
 		return new HashMap<String, List<Group>>();
 	}
 
-	private float round(float value) {
-		int n = (int) value * 100;
-		return n / 100f;
-	}
+//	private float round(float value) {
+//		int n = (int) value * 100;
+//		return n / 100f;
+//	}
 
 	public List<String> getAllValuesForAGivenProperty(String concept, String property, PropertySource propertySource) {
 		List<String> values = null;
@@ -986,29 +989,29 @@ public class MediatorSPARQLDerivationAndExecution {
 		return (reader instanceof MarmottaReader) ? true : false;
 	}
 
-	private float getMinOfData(List<String> values) {
-		float min = 999999;
-		for (String value : values) {
-			float number = Float.valueOf(value);
-			if (number < min) {
-				min = number;
-			}
-		}
+//	private float getMinOfData(List<String> values) {
+//		float min = 999999;
+//		for (String value : values) {
+//			float number = Float.valueOf(value);
+//			if (number < min) {
+//				min = number;
+//			}
+//		}
+//
+//		return min;
+//	}
 
-		return min;
-	}
-
-	private float getMaxOfData(List<String> values) {
-		float max = -999999;
-		for (String value : values) {
-			float number = Float.valueOf(value);
-			if (number > max) {
-				max = number;
-			}
-		}
-
-		return max;
-	}
+//	private float getMaxOfData(List<String> values) {
+//		float max = -999999;
+//		for (String value : values) {
+//			float number = Float.valueOf(value);
+//			if (number > max) {
+//				max = number;
+//			}
+//		}
+//
+//		return max;
+//	}
 
 	public String getLanguagelabel() {
 		return languagelabel;
