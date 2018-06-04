@@ -774,21 +774,21 @@ public class SearchController {
 
 	}
 
-	/**
-	 * Returns thevalues for a given properties with respec t to the given
-	 * cocnept
-	 * 
-	 * @param inputAsJson
-	 *            The URL of the chosen concept
-	 * @return JSON including for each property the url and the type (datatype
-	 *         or object)
-	 */
-	@CrossOrigin
-	@RequestMapping(value = "/executeSQPBasedSparql", method = RequestMethod.GET)
-	HttpEntity<Object> executeSQPBasedSparql(@RequestParam("inputAsJson") String inputAsJson) {
-		return null;
-
-	}
+//	/**
+//	 * Returns thevalues for a given properties with respec t to the given
+//	 * cocnept
+//	 * 
+//	 * @param inputAsJson
+//	 *            The URL of the chosen concept
+//	 * @return JSON including for each property the url and the type (datatype
+//	 *         or object)
+//	 */
+//	@CrossOrigin
+//	@RequestMapping(value = "/executeSQPBasedSparql", method = RequestMethod.GET)
+//	HttpEntity<Object> executeSQPBasedSparql(@RequestParam("inputAsJson") String inputAsJson) {
+//		return null;
+//
+//	}
 
 	/**
 	 * Returns from a given concept the data properties and obejctproperties and
@@ -844,8 +844,13 @@ public class SearchController {
 
 			//checkVariableValuesForJSONONput(inputParamaterForExecuteSelect);
 			
-			
+			if (!useSOLRIndex){
 			outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+			
+			}
+			else{
+				outputForExecuteSelect = solrReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+			}
 
 			String result = "";
 			result = gson.toJson(outputForExecuteSelect);
@@ -881,6 +886,9 @@ public class SearchController {
 				InputParamaterForExecuteOptionalSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
 						InputParamaterForExecuteOptionalSelect.class);
 
+				
+				if (!useSOLRIndex){
+				
 				outputForExecuteSelect = sparqlDerivation
 						.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 
@@ -888,6 +896,18 @@ public class SearchController {
 				result = gson.toJson(outputForExecuteSelect);
 
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
+				
+				}
+				else{
+					outputForExecuteSelect = solrReader
+							.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+
+					String result = "";
+					result = gson.toJson(outputForExecuteSelect);
+
+					return new ResponseEntity<Object>(result, HttpStatus.OK);
+				}
+				
 			} catch (Exception e) {
 				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}

@@ -7,7 +7,10 @@ import org.junit.Test;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
+import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 
 public class TestSOLRReader {
 
@@ -65,5 +68,36 @@ public class TestSOLRReader {
 	public void testgetAllValuesForAGivenProperty(){
 		SOLRReader reader = new SOLRReader("http://nimble-staging.salzburgresearch.at/marmotta/solr/catalogue_semantic_search/", "", "");
 		List<String> result = reader.getAllValuesForAGivenProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard", "item_price", PropertySource.ADDITIONAL_ITEM_PROPERTY);
+	}
+	
+	@Test
+	public void createSPARQLAndExecuteIT(){
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept("*");
+		inputParamaterForExecuteSelect.setLanguage("en");
+		inputParamaterForExecuteSelect.getParametersURL().add("item_name");
+		inputParamaterForExecuteSelect.getParametersURL().add("item_price");
+		
+		SOLRReader reader = new SOLRReader();
+		OutputForExecuteSelect executeSelect =  reader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+		System.out.println(executeSelect);
+	}
+	
+	@Test
+	public void createSPARQLAndExecuteITMinValue(){
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept("*");
+		inputParamaterForExecuteSelect.setLanguage("en");
+		inputParamaterForExecuteSelect.getParametersURL().add("item_name");
+		inputParamaterForExecuteSelect.getParametersURL().add("item_price");
+		
+		Filter filter = new Filter();
+		filter.setMin(100);
+		filter.setProperty("item_price");
+		inputParamaterForExecuteSelect.getFilters().add(filter);
+		
+		SOLRReader reader = new SOLRReader();
+		OutputForExecuteSelect executeSelect =  reader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+		System.out.println(executeSelect);
 	}
 }

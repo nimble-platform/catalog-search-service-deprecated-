@@ -22,6 +22,9 @@ import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -33,41 +36,44 @@ import org.apache.solr.common.SolrDocumentList;
 
 public class SOLRReader implements IReader {
 
-	private static final String FIELD_FOR_PROPERTY_URI = "lmf.uri";
+	private static final String LMF_URI = "lmf.uri";
+	private static final String FIELD_FOR_PROPERTY_URI = LMF_URI;
 	private HttpSolrClient client = null;
 	private HttpSolrClient clientForIntensionalQueriesProperties = null;
+	private HttpSolrClient clientForIntensionalQueriesConcepts = null;
 	private String url = "https://nimble-platform.salzburgresearch.at/marmotta/solr/catalogue2";
 	private String urlForIntensionalQueriesProperties = "https://nimble-platform.salzburgresearch.at/marmotta/solr/properties";
 	private String urlForIntensionalQueriesConcepts = "https://nimble-platform.salzburgresearch.at/marmotta/solr/Concepts";
-	
+
 	private final String labelFieldForSpanish = "label_es";
 	private final String labelFieldForEnglish = "label_en";
 	private final String labelFieldForGerman = "label_de";
-	
-	
+
 	public SOLRReader() {
 		init();
 	}
 
 	public void init() {
 		SystemDefaultHttpClient httpClient = new SystemDefaultHttpClient();
-//		client = new HttpSolrClient.Builder(url).build();
-//		clientForIntensionalQueries = new HttpSolrClient.Builder(urlForIntensionalQueries).build();
-		client = new  HttpSolrClient(url, httpClient);
-		clientForIntensionalQueriesProperties = new  HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
+		// client = new HttpSolrClient.Builder(url).build();
+		// clientForIntensionalQueries = new
+		// HttpSolrClient.Builder(urlForIntensionalQueries).build();
+		client = new HttpSolrClient(url, httpClient);
+		clientForIntensionalQueriesProperties = new HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
+		clientForIntensionalQueriesConcepts = new HttpSolrClient(urlForIntensionalQueriesConcepts, httpClient);
 	}
 
 	public SOLRReader(String url) {
-		if (url.charAt(url.length()-1)== '/'){
-			url = url.substring(0, url.length()-1);
+		if (url.charAt(url.length() - 1) == '/') {
+			url = url.substring(0, url.length() - 1);
 		}
-		
+
 		urlForIntensionalQueriesProperties = url + "/" + "properties";
 		urlForIntensionalQueriesConcepts = url + "/" + "Concepts";
-		this.url = url +"/" + "catalogue2";
-		
+		this.url = url + "/" + "catalogue2";
+
 		this.url = url;
-		
+
 		init();
 	}
 
@@ -104,15 +110,15 @@ public class SOLRReader implements IReader {
 	public String postProcessSolrValue(String oneValue) {
 		oneValue = oneValue.replace("[", "");
 		oneValue = oneValue.replace("]", "");
-		if (oneValue.length() > 1){
-			if (oneValue.charAt(0)== ' '){
+		if (oneValue.length() > 1) {
+			if (oneValue.charAt(0) == ' ') {
 				oneValue = oneValue.substring(1);
 			}
-			if (oneValue.charAt(oneValue.length()-1)== ' '){
-				oneValue = oneValue.substring(0, oneValue.length()-1);
+			if (oneValue.charAt(oneValue.length() - 1) == ' ') {
+				oneValue = oneValue.substring(0, oneValue.length() - 1);
 			}
 		}
-		
+
 		return oneValue;
 	}
 
@@ -163,7 +169,38 @@ public class SOLRReader implements IReader {
 		return null;
 	}
 
-	public Object queryIntensional(String arg0) {
+	public Object query(String arg0, String field) {
+		SolrQuery query = new SolrQuery();
+		query.setQuery(arg0);
+		query.setFields(field);
+		// query.addFilterQuery("cat:electronics","store:amazon.com");
+		query.setStart(0);
+		// query.set("defType", "edismax");
+		try {
+			QueryResponse response = client.query(query);
+			return response;
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
+		}
+		return null;
+	}
+
+	public Object query(String arg0, String field, String... filter) {
+		SolrQuery query = new SolrQuery();
+		query.setQuery(arg0);
+		query.setFields(field);
+		query.setFilterQueries(filter);
+		query.setStart(0);
+		try {
+			QueryResponse response = client.query(query);
+			return response;
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
+		}
+		return null;
+	}
+
+	public Object queryIntensionalProperties(String arg0) {
 		SolrQuery query = new SolrQuery();
 		query.setQuery(arg0);
 		// query.addFilterQuery("cat:electronics","store:amazon.com");
@@ -172,6 +209,22 @@ public class SOLRReader implements IReader {
 		// query.set("defType", "edismax");
 		try {
 			QueryResponse response = clientForIntensionalQueriesProperties.query(query);
+			return response;
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
+		}
+		return null;
+	}
+
+	public Object queryIntensionalConcepts(String arg0) {
+		SolrQuery query = new SolrQuery();
+		query.setQuery(arg0);
+		// query.addFilterQuery("cat:electronics","store:amazon.com");
+		query.setFields("*");
+		query.setStart(0);
+		// query.set("defType", "edismax");
+		try {
+			QueryResponse response = clientForIntensionalQueriesConcepts.query(query);
 			return response;
 		} catch (Exception e) {
 			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
@@ -265,8 +318,8 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public List<String> getAllConcepts(String arg0) {
-		String query = "class: *\""+arg0+"\"*";
-		Object response = queryIntensional(query);
+		String query = "class: *\"" + arg0 + "\"*";
+		Object response = queryIntensionalProperties(query);
 		List<String> result = createResultList(response, "class");
 		List<String> finalResult = new ArrayList<String>();
 		String searchTermLowerCase = arg0.toLowerCase();
@@ -289,11 +342,10 @@ public class SOLRReader implements IReader {
 	// TODO not supported yet. Therefore, it is used the old one
 	@Override
 	public List<Entity> getAllConceptsLanguageSpecific(String arg0, Language arg1) {
-		
-//		String query = createQueryForLanguageLabel(arg1, arg0);
-//		Object response 
-		
-		
+
+		// String query = createQueryForLanguageLabel(arg1, arg0);
+		// Object response
+
 		List<String> concepts = getAllConcepts(arg0);
 		List<Entity> entities = new ArrayList<Entity>();
 		for (String cocnept : concepts) {
@@ -308,10 +360,10 @@ public class SOLRReader implements IReader {
 	}
 
 	private String createQueryForLanguageLabel(Language arg1, String token) {
-		String queryPrefix = deriveFieldFromLanguage (arg1);
-		
+		String queryPrefix = deriveFieldFromLanguage(arg1);
+
 		String query = queryPrefix + ":" + "*\"" + token + "\"";
-		
+
 		return query;
 	}
 
@@ -368,8 +420,8 @@ public class SOLRReader implements IReader {
 	 */
 	@Override
 	public List<String> getAllPropertiesIncludingEverything(String arg0) {
-		String query = "class: \""+arg0+"\"";
-		Object response = queryIntensional(query);
+		String query = "class: \"" + arg0 + "\"";
+		Object response = queryIntensionalProperties(query);
 		List<String> propertyURLS = createResultList(response, FIELD_FOR_PROPERTY_URI);
 		return propertyURLS;
 	}
@@ -435,42 +487,41 @@ public class SOLRReader implements IReader {
 	}
 
 	/**
-	 * This method checks for a predefined list of languages whether there are labels available
+	 * This method checks for a predefined list of languages whether there are
+	 * labels available
 	 */
-	
+
 	@Override
 	public List<Language> getNativeSupportedLangauges() {
 		List<Language> languges = new ArrayList<Language>();
-		String query =  labelFieldForEnglish+ ":*";
-		Object response = queryIntensional(query);
+		String query = labelFieldForEnglish + ":*";
+		Object response = queryIntensionalProperties(query);
 		List<String> result = createResultList(response, "id");
-		if (result.size()>0){
+		if (result.size() > 0) {
 			languges.add(Language.ENGLISH);
 		}
-		
-		query = labelFieldForGerman +":*";
-		response = queryIntensional(query);
+
+		query = labelFieldForGerman + ":*";
+		response = queryIntensionalProperties(query);
 		result = createResultList(response, "id");
-		if (result.size()>0){
+		if (result.size() > 0) {
 			languges.add(Language.GERMAN);
 		}
-		
-		query = labelFieldForSpanish+ ":*";
-		response = queryIntensional(query);
+
+		query = labelFieldForSpanish + ":*";
+		response = queryIntensionalProperties(query);
 		result = createResultList(response, "id");
-		if (result.size()>0){
+		if (result.size() > 0) {
 			languges.add(Language.SPANISH);
 		}
-		
-		
-		
+
 		return languges;
 	}
 
 	@Override
 	public PropertyType getPropertyType(String arg0) {
 		String query = "lmf.uri:\"" + arg0 + "\"";
-		Object response = queryIntensional(query);
+		Object response = queryIntensionalProperties(query);
 		List<String> result = createResultList(response, "lmf.type");
 		if (result.size() > 0) {
 
@@ -608,20 +659,44 @@ public class SOLRReader implements IReader {
 		return false;
 	}
 
-	public String translateProperty(String propertyURL, Language language ){
+	public String translateProperty(String propertyURL, Language language) {
 		String query = FIELD_FOR_PROPERTY_URI + ":\"" + propertyURL + "\"";
 		String fieldOfInterest = deriveFieldFromLanguage(language);
-		Object response = queryIntensional(query);
+		Object response = queryIntensionalProperties(query);
 		List<String> results = createResultList(response, fieldOfInterest);
-		if (results.size() > 0){
+		if (results.size() > 0) {
 			return results.get(0);
 		}
-		
-		return "";
+
+		if (propertyURL.contains("#")) {
+			propertyURL = propertyURL.substring(propertyURL.indexOf("#") + 1);
+		} else {
+			propertyURL = propertyURL.substring(propertyURL.lastIndexOf("/") + 1);
+		}
+		Logger.getAnonymousLogger().log(Level.WARNING, "Cannot translate proeprty: " + propertyURL);
+		return propertyURL;
+	}
+
+	public String translateConcept(String conceptURL, Language language) {
+		String query = LMF_URI + ":\"" + conceptURL + "\"";
+		String fieldOfInterest = deriveFieldFromLanguage(language);
+		Object response = queryIntensionalConcepts(query);
+		List<String> results = createResultList(response, fieldOfInterest);
+		if (results.size() > 0) {
+			return results.get(0);
+		}
+
+		if (conceptURL.contains("#")) {
+			conceptURL = conceptURL.substring(conceptURL.indexOf("#") + 1);
+		} else {
+			conceptURL = conceptURL.substring(conceptURL.lastIndexOf("/") + 1);
+		}
+		Logger.getAnonymousLogger().log(Level.WARNING, "Cannot translate cocnept: " + conceptURL);
+		return conceptURL;
 	}
 
 	private String deriveFieldFromLanguage(Language language) {
-		String queryPrefix ="";
+		String queryPrefix = "";
 		switch (language) {
 		case ENGLISH:
 			queryPrefix = labelFieldForEnglish;
@@ -634,18 +709,121 @@ public class SOLRReader implements IReader {
 			break;
 
 		default:
-			Logger.getAnonymousLogger().log(Level.WARNING, "Received no language information. Use the English translation");
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Received no language information. Use the English translation");
 			queryPrefix = labelFieldForEnglish;
 			break;
 		}
-		
+
 		return queryPrefix;
 	}
 
 	public List<String> getAllValuesForAGivenProperty(String concept, String property, PropertySource propertySource) {
 		String query = "item_commodity_classification_uri:" + "\"" + concept + "\"";
-		Object  response = query(query);
+		Object response = query(query);
 		List<String> values = createResultList(response, property);
- 		return values;
+		return values;
+	}
+
+	public OutputForExecuteSelect createSPARQLAndExecuteIT(
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+		EntityMappingService entityMappingService = new EntityMappingService();
+		String concept = inputParamaterForExecuteSelect.getConcept();
+		String query = "item_commodity_classification_uri:" + "\"" + concept + "\"";
+		if (concept.equals("*")){
+			query = "*:*";
+			Logger.getAnonymousLogger().log(Level.WARNING, "Have no concept information. Set to all!!!");
+		}
+		String fq = "";
+		for (eu.nimble.service.catalog.search.impl.dao.Filter filter : inputParamaterForExecuteSelect.getFilters()) {
+			if ((filter.getExactValue() != null) && (filter.getExactValue().length() > 0)) {
+				String proeprtyUI = filter.getProperty();
+				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " : ";
+				fq += filter.getExactValue();
+			}
+
+			if (filter.isHasMaxBeenSet() && filter.isHasMinBeenSet()) {
+				
+				String proeprtyUI = filter.getProperty();
+				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " : ";
+				
+				// min max
+			
+				 proeprtyUI = filter.getProperty();
+				fq += " +" + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " : ";
+				fq += "[" + filter.getMinAsInt() + " TO " + filter.getMaxAsInt() + "]";
+
+			} else {
+
+				String proeprtyUI = filter.getProperty();
+				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " : ";
+				
+				if (filter.isHasMaxBeenSet()) {
+					fq += "[" + "*" + " TO " + filter.getMaxAsInt() + "]";
+				} else {
+					if (filter.isHasMinBeenSet()) {
+						fq += "[" + filter.getMinAsInt() + " TO " + "*" + "]";
+					}
+				}
+
+			}
+
+			fq += " ";
+
+		}
+
+		String fl = "";
+		for (String uri : inputParamaterForExecuteSelect.getParametersURL()) {
+			fl += entityMappingService.mapPropertyURIToFieldName(uri) + " , ";
+		}
+		;
+		if (fl.length() > 2) {
+			fl += LMF_URI;
+		}
+		Object response = query(query, fl, fq);
+		String[] columns = new String[inputParamaterForExecuteSelect.getParametersURL().size() + 1];
+		int index = 0;
+		for (String uri : inputParamaterForExecuteSelect.getParametersURL()) {
+			String field = entityMappingService.mapPropertyURIToFieldName(uri);
+			columns[index] = field;
+			index++;
+		}
+		columns[index] = LMF_URI;
+		List<String[]> result = createResultListArray(response, columns);
+		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
+		List<String> columnsInTargetLangauge = new ArrayList<String>();
+		// last element will not be translated, because it is the id
+		for (int i = 0; i < columns.length - 1; i++) {
+			String propertyURL = inputParamaterForExecuteSelect.getParametersURL().get(i);
+			columnsInTargetLangauge.add(translateProperty(propertyURL, inputParamaterForExecuteSelect.getLanguage()));
+		}
+
+		outputForExecuteSelect.setColumns(columnsInTargetLangauge);
+
+		for (String[] row : result) {
+
+			// 0..n-1 property values
+			List<String> dataRow = new ArrayList<String>();
+			for (int i = 0; i < row.length - 1; i++) {
+				dataRow.add(row[i]);
+			}
+
+			// n-1 uuid
+			outputForExecuteSelect.getUuids().add(row[row.length - 1]);
+			outputForExecuteSelect.getRows().add((ArrayList<String>) dataRow);
+		}
+
+		return outputForExecuteSelect;
+	}
+
+	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
+			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteSelect) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -6,6 +6,9 @@ public class Filter {
 	float min;
 	float max;
 	String exactValue;
+	boolean hasMinBeenSet = false;
+	boolean hasMaxBeenSet = false;
+	
 	
 	public String getExactValue() {
 		return exactValue;
@@ -19,23 +22,49 @@ public class Filter {
 	public float getMin() {
 		return min;
 	}
+	
+	public int getMinAsInt() {
+		return (int) min;
+	}
+	
 	public void setMin(float min) {
+		hasMinBeenSet = true;
 		this.min = min;
 	}
 	public float getMax() {
 		return max;
 	}
+	
+	
+	public int getMaxAsInt() {
+		return (int) max;
+	}
+	
 	public void setMax(float max) {
+		hasMinBeenSet = true;
 		this.max = max;
 	}
 	public void setProperty(String property) {
 		this.property = property;
 	}
-	@Override
-	public String toString() {
-		return "Filter [property=" + property + ", min=" + min + ", max=" + max + ", exactValue=" + exactValue + "]";
+	public boolean isHasMinBeenSet() {
+		return hasMinBeenSet;
+	}
+	public void setHasMinBeenSet(boolean hasMinBeenSet) {
+		this.hasMinBeenSet = hasMinBeenSet;
+	}
+	public boolean isHasMaxBeenSet() {
+		return hasMaxBeenSet;
+	}
+	public void setHasMaxBeenSet(boolean hasMaxBeenSet) {
+		this.hasMaxBeenSet = hasMaxBeenSet;
 	}
 	
+	@Override
+	public String toString() {
+		return "Filter [property=" + property + ", min=" + min + ", max=" + max + ", exactValue=" + exactValue
+				+ ", hasMinBeenSet=" + hasMinBeenSet + ", hasMaxBeenSet=" + hasMaxBeenSet + "]";
+	}
 	
 	
 	
