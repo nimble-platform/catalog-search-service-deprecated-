@@ -675,6 +675,37 @@ public class TestSearchController {
 		System.out.println(r);
 		
 		
-		serachController.init();
 	}
+	
+	@Test
+	public void testgetLogicalViewForSOLR(){
+		
+		//pre
+		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		inputParamterForGetLogicalView.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#PieceOfFurniture");
+		inputParamterForGetLogicalView.setLanguage("es");
+		inputParamterForGetLogicalView.setStepRange(2);
+		
+		
+		SearchController serachController = new SearchController();
+		serachController.setUseSOLRIndex(true);
+		serachController.init();
+		
+		
+		
+		Gson gson = new Gson();
+		String input = gson.toJson(inputParamterForGetLogicalView);
+		System.out.println(URLEncoder.encode(input));
+		HttpEntity<Object> result = serachController.getLogicalView(inputParamterForGetLogicalView);
+		
+		
+		String r = result.getBody().toString();
+		System.out.println(r);
+		
+		
+		
+	}	
+	
+	
+	
 }

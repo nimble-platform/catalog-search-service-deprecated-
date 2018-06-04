@@ -348,8 +348,15 @@ public class SearchController {
 
 		eu.nimble.service.catalog.search.impl.dao.Entity concept = new eu.nimble.service.catalog.search.impl.dao.Entity();
 		concept.setUrl(paramterForGetLogicalView.getConcept());
-		String label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(),
+		String label ="";
+		
+		if (!useSOLRIndex){
+			label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(),
 				paramterForGetLogicalView.getLanguageAsLanguage(), languageLabel).getTranslation();
+		}
+		else{
+			label = solrReader.translateConcept(paramterForGetLogicalView.getConcept(), paramterForGetLogicalView.getLanguageAsLanguage());
+		}
 		concept.setTranslatedURL(label);
 		concept.setLanguage(paramterForGetLogicalView.getLanguageAsLanguage());
 
@@ -403,9 +410,17 @@ public class SearchController {
 		allAdressedConcepts.put(helper, parentOfHelper);
 		for (int i = 0; i < paramterForGetLogicalView.getStepRange(); i++) {
 			for (LocalOntologyView concept2 : allAdressedConcepts.keySet()) {
-				LocalOntologyView view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(),
+				LocalOntologyView view = null;
+				if (!useSOLRIndex){
+				view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(),
 						concept2, allAdressedConcepts.get(concept2),
 						Language.fromString(paramterForGetLogicalView.getLanguage()));
+				}
+				else{
+					view = solrReader.getViewForOneStepRange(concept2.getConcept().getUrl(),
+							concept2, allAdressedConcepts.get(concept2),
+							Language.fromString(paramterForGetLogicalView.getLanguage()));
+				}
 				if (i == 0) {
 					if (referenceLocalViewRoot == null) {
 						referenceLocalViewRoot = view;

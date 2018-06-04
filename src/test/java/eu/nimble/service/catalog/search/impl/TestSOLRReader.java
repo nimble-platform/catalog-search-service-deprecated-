@@ -129,4 +129,13 @@ public class TestSOLRReader {
 		System.out.println(executeSelect);
 	}
 
+	@Test
+	public void testgetRangeOfProperty(){
+		SOLRReader reader = new SOLRReader();
+		List<String> ranges = reader.getRangeOfProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#hasStyle");
+		System.out.println(ranges);
+		
+	}
+	
+	
 }

@@ -23,6 +23,7 @@ import de.biba.triple.store.access.dmo.PropertyInformation;
 import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
+import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
@@ -649,9 +650,13 @@ public class SOLRReader implements IReader {
 	}
 
 	@Override
-	public List<String> getRangeOfProperty(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> getRangeOfProperty(String propertyURL) {
+		String query = LMF_URI + ": " + "\"" + propertyURL + "\"";
+		Object response = queryIntensionalProperties(query);
+		List<String> result = createResultList(response, "range");
+		
+		
+		return result;
 	}
 
 	@Override
@@ -713,6 +718,16 @@ public class SOLRReader implements IReader {
 		String query = LMF_URI + ":\"" + conceptURL + "\"";
 		String fieldOfInterest = deriveFieldFromLanguage(language);
 		Object response = queryIntensionalConcepts(query);
+		if (response == null){
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot translate the concept...." + conceptURL);
+			if (conceptURL.contains("#")){
+				return conceptURL.substring(conceptURL.indexOf("#")+1);
+			}
+			else{
+				return conceptURL.substring(conceptURL.indexOf("/")+1);
+			}
+		}
+		
 		List<String> results = createResultList(response, fieldOfInterest);
 		if (results.size() > 0) {
 			return results.get(0);
@@ -873,5 +888,64 @@ public class SOLRReader implements IReader {
 		
 
 		return outputForExecuteSelect;
+	}
+
+	public LocalOntologyView getViewForOneStepRange(String conceptAsUri, LocalOntologyView instance,
+			LocalOntologyView parentInstance, Language language) {
+		
+		LocalOntologyView localOntologyView = null;
+		
+		if (instance == null) {
+			localOntologyView = new LocalOntologyView();
+		} else {
+			localOntologyView = instance;
+		}
+		
+		List<String> properties = getAllPropertiesIncludingEverything(conceptAsUri);
+		for (String proeprty : properties) {
+			PropertyType pType = getPropertyType(proeprty);
+			if (pType == PropertyType.DATATYPEPROPERTY) {
+				String translatedName = translateProperty(proeprty, language);
+				eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
+				entity.setUrl(proeprty);
+				entity.setTranslatedURL(translatedName);
+				entity.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+
+				localOntologyView.addDataproperties(entity);
+			} else {
+				// It is a object property which means I must return the
+				// name of
+				// the concept
+				addObjectPropertyToLogicalView(instance, language, localOntologyView, proeprty);
+			}
+
+		}
+		
+		return localOntologyView;
+	}
+	
+	public void addObjectPropertyToLogicalView(LocalOntologyView instance, Language language,
+			LocalOntologyView localOntologyView, String proeprty) {
+		List<String> ranges = getRangeOfProperty(proeprty);
+		for (int i = 0; i < ranges.size(); i++) {
+			String range = ranges.get(i);
+			String rangeReduced = translateConcept(range, language);
+			LocalOntologyView localOntologyView2 = new LocalOntologyView();
+
+			eu.nimble.service.catalog.search.impl.dao.Entity conceptRange = new eu.nimble.service.catalog.search.impl.dao.Entity();
+			conceptRange.setUrl(range);
+			String label = translateConcept(range, language);
+			conceptRange.setTranslatedURL(rangeReduced);
+			// conceptRan
+
+			localOntologyView2.setConcept(conceptRange);
+			localOntologyView2.setObjectPropertySource(proeprty);
+			localOntologyView2.setFrozenConcept(instance.getFrozenConcept());
+			localOntologyView2.setDistanceToFrozenConcept(instance.getDistanceToFrozenConcept() + 1);
+			List<String> newPaht = new ArrayList<String>(localOntologyView.getConceptURIPath());
+			newPaht.add(range);
+			localOntologyView2.setConceptURIPath(newPaht);
+			localOntologyView.getObjectproperties().put(range, localOntologyView2);
+		}
 	}
 }

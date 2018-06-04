@@ -773,7 +773,7 @@ public class MediatorSPARQLDerivationAndExecution {
 		}
 
 		if (reader == null) {
-			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
+			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init failed");
 		} else {
 
 			String conceptAsUri = getURIOfConcept(concept);
