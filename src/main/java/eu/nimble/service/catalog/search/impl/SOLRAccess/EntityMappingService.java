@@ -11,6 +11,7 @@ public class EntityMappingService {
 	}
 
 	public boolean isAPropertySpecificField(String column) {
+		//TODO the following assumption doesn't hold. Have to be more specific. 
 		return column.contains("lmf.")?false:true;
 	}
 
