@@ -380,7 +380,16 @@ public class SOLRReader implements IReader {
 			entity.setConceptSource(ConceptSource.ONTOLOGICAL);
 			entity.setLanguage(Language.UNKNOWN);
 			entity.setUrl(cocnept);
-			String shortName = cocnept.substring(cocnept.lastIndexOf("#") + 1);
+			
+			String shortName = "";
+			if (cocnept.contains("#")){
+				shortName  = cocnept.substring(cocnept.lastIndexOf("#") + 1);	
+			}
+			else{
+				shortName  = cocnept.substring(cocnept.lastIndexOf("/") + 1);
+			}
+			entity.setTranslatedURL(shortName);
+			Logger.getAnonymousLogger().log(Level.WARNING, "No translation available, using URL als translation label!!!");
 			entities.add(entity);
 		}
 		return entities;
