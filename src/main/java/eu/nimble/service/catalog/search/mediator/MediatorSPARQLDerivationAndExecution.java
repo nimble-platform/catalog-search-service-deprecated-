@@ -1071,6 +1071,7 @@ public class MediatorSPARQLDerivationAndExecution {
 				PropertyType propertyType = reader.getPropertyType(urlOfProperty);
 				OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
 				outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+				outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
 				if (propertyType == PropertyType.DATATYPEPROPERTY) {
 					outputForPropertyFromConcept.setDatatypeProperty(true);
 					outputForPropertyFromConcept.setObjectProperty(false);
