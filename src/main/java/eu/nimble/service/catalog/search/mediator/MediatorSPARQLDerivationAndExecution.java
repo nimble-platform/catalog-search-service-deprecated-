@@ -552,9 +552,20 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 
 			shortName = extractNameOfURL(shortName);
-
+			if (fil.isHasMaxBeenSet() && fil.isHasMinBeenSet()){
 			filterText += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + fil.getMax() + ")).";
 			filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + fil.getMin() + ")).";
+			}
+			else{
+				//FILTER (?name="South"^^xsd:string)
+				if (fil.getExactValue().matches("[0-9]+\\.*[0-9]*")){
+					filterText += "FILTER(?" + shortName + "= "+fil.getExactValue() + ")";
+				}
+				else{
+					
+					filterText += "FILTER(str(?" + shortName + ")= \""+fil.getExactValue() + "\" ^^xsd:string)";
+				}
+			}
 			filter += filterText;
 		}
 
