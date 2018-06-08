@@ -718,7 +718,10 @@ public class SOLRReader implements IReader {
 		Object response = queryIntensionalProperties(query);
 		List<String> results = createResultList(response, fieldOfInterest);
 		if (results.size() > 0) {
-			return results.get(0);
+			if (results.get(0) != null && !results.get(0).equals("null")){
+				return  results.get(0);
+			}
+			
 		}
 
 		if (propertyURL.contains("#")) {
