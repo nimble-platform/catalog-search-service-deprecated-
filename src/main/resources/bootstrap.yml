@@ -19,6 +19,11 @@ spring:
 logstash:
   uri: ${LOGSTASH_URI:localhost:5000}
 
+management:
+  health:
+    solr:
+      enabled: false
+
 ---
 
 spring:
