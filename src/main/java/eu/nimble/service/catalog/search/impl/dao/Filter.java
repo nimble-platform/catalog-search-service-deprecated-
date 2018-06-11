@@ -2,12 +2,16 @@ package eu.nimble.service.catalog.search.impl.dao;
 
 public class Filter {
 
-	String property;
-	float min;
-	float max;
-	String exactValue;
-	boolean hasMinBeenSet = false;
-	boolean hasMaxBeenSet = false;
+	private String property;
+	private float min;
+	private float max;
+	private String exactValue ="0";
+	private boolean hasMinBeenSet = false;
+	private boolean hasMaxBeenSet = false;
+	
+	public Filter(){
+		
+	}
 	
 	
 	public String getExactValue() {
@@ -48,17 +52,26 @@ public class Filter {
 		this.property = property;
 	}
 	public boolean isHasMinBeenSet() {
+		checkWhetherValuesHasBeenSetPerreflection();
 		return hasMinBeenSet;
 	}
-	public void setHasMinBeenSet(boolean hasMinBeenSet) {
-		this.hasMinBeenSet = hasMinBeenSet;
-	}
+	
 	public boolean isHasMaxBeenSet() {
+		checkWhetherValuesHasBeenSetPerreflection();
+		
 		return hasMaxBeenSet;
 	}
-	public void setHasMaxBeenSet(boolean hasMaxBeenSet) {
-		this.hasMaxBeenSet = hasMaxBeenSet;
+	private void checkWhetherValuesHasBeenSetPerreflection() {
+		if (min != 0 || max != 0){
+			hasMaxBeenSet = true;
+			hasMinBeenSet = true;
+		}
+		
+		
 	}
+
+
+	
 	
 	@Override
 	public String toString() {
