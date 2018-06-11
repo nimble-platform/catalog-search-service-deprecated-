@@ -26,9 +26,7 @@ node('nimble-jenkins-slave') {
         stage('Build Docker') {
             sh 'mvn docker:build -P docker'
         }
-    }
 
-    if (env.BRANCH_NAME == 'master') {
         stage('Deploy') {
             sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single search-service"'
         }
