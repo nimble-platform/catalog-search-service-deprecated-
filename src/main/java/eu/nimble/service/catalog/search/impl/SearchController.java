@@ -98,7 +98,23 @@ public class SearchController {
 		if (ontologyFile == null ||ontologyFile.equals(NULL_ASSIGNED_VALUE) && (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
 			sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
 			if (useSOLRIndex){
+				
+				if (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE)){
 				this.solrReader = new SOLRReader();
+				}
+				else{
+					String prefix = "";
+					char lastCharacter = marmottaUri.charAt(marmottaUri.length()-1); 
+					if (lastCharacter!= '/'){
+						prefix = "/";
+					}
+					
+					String url = marmottaUri + prefix + "solr/" + "catalogue2";
+					String urlForIntensionalQueriesProperties =  marmottaUri + prefix + "solr/"+ "properties";
+					String urlForIntensionalQueriesConcepts =  marmottaUri + prefix + "solr/"+ "Concepts";
+					this.solrReader = new SOLRReader(url, urlForIntensionalQueriesProperties, urlForIntensionalQueriesConcepts);
+				}
+				
 			}
 		} else {
 
