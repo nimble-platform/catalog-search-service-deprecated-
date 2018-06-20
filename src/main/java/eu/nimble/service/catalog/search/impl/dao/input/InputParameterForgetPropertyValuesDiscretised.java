@@ -1,10 +1,14 @@
 package eu.nimble.service.catalog.search.impl.dao.input;
 
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+
 public class InputParameterForgetPropertyValuesDiscretised {
 
 	String concept = "";
 	String property = "";
 	String language ="";
+	PropertySource  propertySource = PropertySource.DIMENSION;
+	
 	int amountOfGroups = 0;
 
 	public String getConcept() {
@@ -39,10 +43,21 @@ public class InputParameterForgetPropertyValuesDiscretised {
 		this.amountOfGroups = amountOfGroups;
 	}
 
+	
+	
+	public PropertySource getPropertySource() {
+		return propertySource;
+	}
+
+	public void setPropertySource(PropertySource propertySource) {
+		this.propertySource = propertySource;
+	}
+
 	@Override
 	public String toString() {
 		return "InputParameterForgetPropertyValuesDiscretised [concept=" + concept + ", property=" + property
-				+ ", language=" + language + ", amountOfGroups=" + amountOfGroups + "]";
+				+ ", language=" + language + ", propertySource=" + propertySource + ", amountOfGroups=" + amountOfGroups
+				+ "]";
 	}
 
 }

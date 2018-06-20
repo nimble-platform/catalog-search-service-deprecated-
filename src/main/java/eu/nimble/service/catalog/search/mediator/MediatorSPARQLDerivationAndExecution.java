@@ -925,11 +925,11 @@ public class MediatorSPARQLDerivationAndExecution {
 	 * @param property
 	 * @return
 	 */
-	public Map<String, List<Group>> generateGroup(int amountOfGroups, String concept, String property) {
+	public Map<String, List<Group>> generateGroup(int amountOfGroups, String concept, String property, PropertySource propertySource) {
 		concept = getURIOfConcept(concept);
 		String shortPropertyName = property;
 		property = getURIOfProperty(property);
-		List<String> values = getAllValuesForAGivenProperty(concept, property, null);
+		List<String> values = getAllValuesForAGivenProperty(concept, property, propertySource);
 		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
 			int index = str.lastIndexOf("^");

@@ -900,7 +900,7 @@ public class SearchController {
 			if (!useSOLRIndex){
 			Map<String, List<Group>> mapOfPropertyGroups = sparqlDerivation.generateGroup(
 					paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
-					paramterForGetLogicalView.getProperty());
+					paramterForGetLogicalView.getProperty(), paramterForGetLogicalView.getPropertySource());
 			String result = "";
 			result = gson.toJson(mapOfPropertyGroups);
 			return new ResponseEntity<Object>(result, HttpStatus.OK);

@@ -1,1 +1,2 @@
 http://localhost:8090/getPropertyValuesFromGreenGroup?inputAsJson={%22conceptURL%22:%22http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23StackerRobot%22,%22propertyURL%22:%22Height%22,%22propertySource%22:%22DIMENSION%22}
+http://localhost:8090/getPropertyValuesFromGreenGroup?inputAsJson={%22conceptURL%22:%22http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23StackerRobot%22,%22propertyURL%22:%22http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23compliesWithLegislation%22,%22propertySource%22:%22DOMAIN_SPECIFIC_PROPERTY%22}

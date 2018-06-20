@@ -154,10 +154,13 @@ public class TestInputParamtersAndOutputParameterForUI {
 	public void doJson_InputParameterForgetPropertyValuesDiscretised(){
 		InputParameterForgetPropertyValuesDiscretised inputParameterForgetPropertyValuesDiscretised = new InputParameterForgetPropertyValuesDiscretised();
 		inputParameterForgetPropertyValuesDiscretised.setAmountOfGroups(3);
-		inputParameterForgetPropertyValuesDiscretised.setConcept("Bed");
-		inputParameterForgetPropertyValuesDiscretised.setProperty("price");
+		inputParameterForgetPropertyValuesDiscretised.setConcept("http://www.aidimme.es/FurnitureSectorOntology.owl#StackerRobot");
+		inputParameterForgetPropertyValuesDiscretised.setProperty("Height");
+		inputParameterForgetPropertyValuesDiscretised.setLanguage("en");
+		inputParameterForgetPropertyValuesDiscretised.setPropertySource(PropertySource.DIMENSION);
 		Gson gson = new Gson();
 		System.out.println(gson.toJson(inputParameterForgetPropertyValuesDiscretised));
+		System.out.println(URLEncoder.encode(gson.toJson(inputParameterForgetPropertyValuesDiscretised)));
 	}
 	
 	@Test

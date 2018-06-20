@@ -21,6 +21,7 @@ import de.biba.triple.store.access.marmotta.MarmottaReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
@@ -45,7 +46,7 @@ public class MediatorSPARQLDerivationTest extends MediatorSPARQLDerivationAndExe
 		String concept = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#Bed";
 		String property = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#price";
 
-		Map<String, List<Group>> results = mediatorSPARQLDerivation.generateGroup(3, concept, property);
+		Map<String, List<Group>> results = mediatorSPARQLDerivation.generateGroup(3, concept, property, PropertySource.DOMAIN_SPECIFIC_PROPERTY);
 		System.out.println(results);
 
 	}
