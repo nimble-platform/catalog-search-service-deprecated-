@@ -314,12 +314,12 @@ public class NimbleSpecificSPARQLFactory {
 	private String extendForDomainSpecificProperty(String propertyURL) {
 
 		String sparql ="";
-		String sparqlForValueQuanitity= "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance  ?property  where{ ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQuantity> ?hasValue. Filter  regex( ?property , \"" + propertyURL + "\").}";
+		String sparqlForValueQuanitity= "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance  ?property  ?hasValue where{ ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQualifier> ?hasValue. Filter  regex( ?property , \"" + propertyURL + "\").}";
 		Object result = reader.query(sparqlForValueQuanitity);
-		List<String> content = reader.createResultList(result, "instance");
+		List<String> content = reader.createResultList(result, "hasValue");
 		
 		//if the value is represented as DECIMAL
-		if (content.size() > 0){
+		if (((content.size() > 0)) && (!(content.get(0).toLowerCase().equals("string")))){
 			 sparql = " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQuantity> ?qt. ?qt <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueDecimal> ?hasValue.";
 			sparql += " Filter  regex( ?property , \"" + propertyURL + "\").";
 			
