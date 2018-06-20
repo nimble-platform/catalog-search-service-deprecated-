@@ -1,0 +1,1 @@
+http://localhost:8090/detectMeaningLanguageSpecific?inputAsJson={%22keyword%22:%22robot%22,%22language%22:%22en%22}
