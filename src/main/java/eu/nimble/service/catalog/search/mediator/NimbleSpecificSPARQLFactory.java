@@ -138,7 +138,7 @@ public class NimbleSpecificSPARQLFactory {
 		return "<" + uuidOfProperty + ">"
 				+ "<urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#AttributeID> ?property. " + "<"
 				+ uuidOfProperty + ">"
-				+ "<urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Measure> ?measure. ?measure <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueDecimal> ?hasValue";
+				+ "<urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Measure> ?measure. ?measure <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueDecimal> ?hasValue.";
 	}
 
 	private PropertySource detectSourceOnBasisOfName(String propertyname) {
