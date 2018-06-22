@@ -340,6 +340,9 @@ public class MediatorSPARQLDerivationAndExecution {
 
 				row.add(value);
 			}
+			else{
+				row.add(" ");
+			}
 
 		}
 
