@@ -136,7 +136,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 
 		NimbleSpecificSPARQLDeriviationAndExecution deriviation = new NimbleSpecificSPARQLDeriviationAndExecution(
 				reader, sqpDerivationService, mediatorSPARQLDerivationAndExecution);
-		List<Entity> result = deriviation.detectNimbleSpecificMeaningFromAKeywordReferringToInstances("MDF laminated", "http://www.w3.org/2004/02/skos/core#prefLabel", Language.ENGLISH);
+		List<Entity> result = deriviation.detectNimbleSpecificMeaningFromAKeywordReferringToInstances("MDF laminated", "http://www.w3.org/2004/02/skos/core#prefLabel", Language.ENGLISH,false);
 		System.out.println(result);
 	}
 	

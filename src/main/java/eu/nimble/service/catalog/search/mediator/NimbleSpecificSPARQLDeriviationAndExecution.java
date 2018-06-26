@@ -400,80 +400,140 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 	 * @param keyword
 	 * @param translationLabel
 	 * @param language
+	 * @param useSimplifiedSPARQL
 	 * @return
 	 */
 	public List<Entity> detectNimbleSpecificMeaningFromAKeywordReferringToInstances(String keyword,
-			String translationLabel, Language language) {
-//		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <"
-//				+ translationLabel
-//				+ "> ?value. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue.FILTER regex( str(?value),\""
-//				+ keyword + "\",\"i\"). FILTER regex(str(?subject), str(?codeValue))}";
-//		Object result = reader.query(sparql);
-//		String[] columns = new String[] { "subject", "value" };
-//		List<String[]> allConcepts = reader.createResultListArray(result, columns);
-//		
-//		List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
-//		String languagepostfix = language.toOntologyPostfix(language);
-//		for (String[] row : allConcepts) {
-//			String value = row[1];
-//			if (value != null && value.length() > 1 && value.contains(languagepostfix)) {
-//				value = value.substring(0, value.indexOf(languagepostfix));
-//
-//				Entity entity = new Entity();
-//				entity.setUrl(row[0]);
-//				entity.setTranslatedURL(value);
-//				entity.setConceptSource(ConceptSource.CUSTOM);
-//				entity.setLanguage(language);
-//				resultOfSerachTerm.add(entity);
-//			} else {
-//				if (!value.contains("@")) {
-//
-//					Entity entity = new Entity();
-//					entity.setUrl(row[0]);
-//					entity.setTranslatedURL(value);
-//					entity.setConceptSource(ConceptSource.CUSTOM);
-//					entity.setLanguage(Language.UNKNOWN);
-//					resultOfSerachTerm.add(entity);
-//				}
-//			}
-//		}
+			String translationLabel, Language language, boolean useSimplifiedSPARQL) {
+		// String sparql = "PREFIX rdf:
+		// <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl:
+		// <http://www.w3.org/2002/07/owl#>PREFIX rdfs:
+		// <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd:
+		// <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {
+		// ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+		// <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <"
+		// + translationLabel
+		// + "> ?value. ?instance
+		// <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+		// <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>.
+		// ?instance
+		// <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification>
+		// ?type. ?type
+		// <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode>
+		// ?code. ?code
+		// <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI>
+		// ?codeValue.FILTER regex( str(?value),\""
+		// + keyword + "\",\"i\"). FILTER regex(str(?subject),
+		// str(?codeValue))}";
+		// Object result = reader.query(sparql);
+		// String[] columns = new String[] { "subject", "value" };
+		// List<String[]> allConcepts = reader.createResultListArray(result,
+		// columns);
+		//
+		// List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
+		// String languagepostfix = language.toOntologyPostfix(language);
+		// for (String[] row : allConcepts) {
+		// String value = row[1];
+		// if (value != null && value.length() > 1 &&
+		// value.contains(languagepostfix)) {
+		// value = value.substring(0, value.indexOf(languagepostfix));
+		//
+		// Entity entity = new Entity();
+		// entity.setUrl(row[0]);
+		// entity.setTranslatedURL(value);
+		// entity.setConceptSource(ConceptSource.CUSTOM);
+		// entity.setLanguage(language);
+		// resultOfSerachTerm.add(entity);
+		// } else {
+		// if (!value.contains("@")) {
+		//
+		// Entity entity = new Entity();
+		// entity.setUrl(row[0]);
+		// entity.setTranslatedURL(value);
+		// entity.setConceptSource(ConceptSource.CUSTOM);
+		// entity.setLanguage(Language.UNKNOWN);
+		// resultOfSerachTerm.add(entity);
+		// }
+		// }
+		// }
 		List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
 		requestBasedOnConceptsURI(resultOfSerachTerm, keyword);
-		requestBasedOnTranslationLabel(resultOfSerachTerm, keyword,language);
+		if (!useSimplifiedSPARQL) {
+			requestBasedOnTranslationLabel(resultOfSerachTerm, keyword, language);
+		} else {
+			requestBasedOnTranslationLabelSimplfied(resultOfSerachTerm, keyword, language);
+		}
 		return resultOfSerachTerm;
 	}
+	
+	
+	private void requestBasedOnTranslationLabelSimplfied(List<Entity> allConcepts, String keyword, Language language) {
+		MarmottaReader readerMarmotta = (MarmottaReader) reader;
+		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
+		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT distinct ?subject  ?translation WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.nimble-project.org/onto/eclass#CodeConcept>. ?subject <http://www.w3.org/2004/02/skos/core#prefLabel> ?translation.  ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue. FILTER (regex( str(?translation),\""+keyword+ "\",\"i\") && regex (str(?codeValue),str(?subject))).}";
+		Logger.getAnonymousLogger().log(Level.INFO, query);
+				
+				Object result = readerMarmotta.query(query);
+		List<String[]> allProperties = readerMarmotta.createResultListArray(result, new String[]{"subject", "translation"});
+		List<Entity> resultOfSearchTerm = new ArrayList<Entity>();
+		for (String[] element : allProperties) {
+
+			Entity entity = new Entity();
+			entity.setUrl(element[0]);
+			String value = element[1];
+			entity.setTranslatedURL(value);
+			entity.setLanguage(Language.UNKNOWN);
+			resultOfSearchTerm.add(entity);
+		}		
+				
+		for (Entity entity : resultOfSearchTerm) {
+			boolean contained = false;
+			for (Entity e : allConcepts) {
+				if (e.getUrl().equals(entity.getUrl())) {
+					contained = true;
+					break;
+				}
+			}
+			if (!contained) {
+				allConcepts.add(entity);
+			}
+		}
+
+	}
+	
+	
 
 	private void requestBasedOnTranslationLabel(List<Entity> allConcepts, String keyword, Language language) {
 		MarmottaReader readerMarmotta = (MarmottaReader) reader;
 		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
 		List<Entity> entities = readerMarmotta.getAllConceptsLanguageSpecific(keyword, language);
 		for (Entity entity : entities) {
-			 boolean  contained = false;
-			for (Entity e: allConcepts){
-				if (e.getUrl().equals(entity.getUrl())){
+			boolean contained = false;
+			for (Entity e : allConcepts) {
+				if (e.getUrl().equals(entity.getUrl())) {
 					contained = true;
 					break;
 				}
 			}
-			if (!contained){
+			if (!contained) {
 				allConcepts.add(entity);
 			}
 		}
-		
+
 	}
 
 	private void requestBasedOnConceptsURI(List<Entity> allConcepts, String keyword) {
 		MarmottaReader readerMarmotta = (MarmottaReader) reader;
 		List<Entity> entities = readerMarmotta.getAllConceptsFocusOnlyOnURI(keyword);
 		for (Entity entity : entities) {
-			 boolean  contained = false;
-			for (Entity e: allConcepts){
-				if (e.getUrl().equals(entity.getUrl())){
+			boolean contained = false;
+			for (Entity e : allConcepts) {
+				if (e.getUrl().equals(entity.getUrl())) {
 					contained = true;
 					break;
 				}
 			}
-			if (!contained){
+			if (!contained) {
 				allConcepts.add(entity);
 			}
 		}

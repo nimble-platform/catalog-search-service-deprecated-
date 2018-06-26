@@ -77,6 +77,9 @@ public class SearchController {
 	
 	@Value("${nimble.shared.property.useSOLRIndex:false}")
 	private boolean useSOLRIndex;
+	
+	@Value("${nimble.shared.property.useSimplifiedSPARQL:true}")
+	private boolean useSimplifiedSPARQL;
 
 	@Value("${nimble.shared.property.languagelabel:http://www.aidimme.es/FurnitureSectorOntology.owl#translation}")
 	private String languageLabel;
@@ -238,7 +241,7 @@ public class SearchController {
 			if (!useSOLRIndex){
 			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
 					inputParameterdetectMeaningLanguageSpecific.getKeyword(),
-					inputParameterdetectMeaningLanguageSpecific.getLanguage(),languageLabel);
+					inputParameterdetectMeaningLanguageSpecific.getLanguage(),languageLabel,useSimplifiedSPARQL);
 			MeaningResult meaningResult = new MeaningResult();
 			meaningResult.setConceptOverview(concepts);
 			meaningResult.setSearchTyp("ExplorativeSearch");

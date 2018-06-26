@@ -700,7 +700,7 @@ public class MediatorSPARQLDerivationAndExecution {
 	}
 
 	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language,
-			String translationLabel) {
+			String translationLabel, boolean useSimplifiedSPARQL) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		Logger.getAnonymousLogger().log(Level.INFO, "Language specific serach for:  " + language.toString());
 		reader.setLanguageLabel(translationLabel);
@@ -710,22 +710,25 @@ public class MediatorSPARQLDerivationAndExecution {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init failed");
 		} else {
 
-			List<Entity> concepts = null;
-			if (langaues.contains(language)) {
-				Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
-				concepts = reader.getAllConceptsLanguageSpecific(regex, language);
-			} else {
-				Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + Language.UNKNOWN);
-				concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
-			}
+			List<Entity> concepts = new ArrayList<Entity>();
+			
 			if (needANimbleSpecificAdapation()) {
 
 				concepts.clear();
 				concepts.addAll(nimbleSpecificSPARQLDeriviation
 						.detectNimbleSpecificMeaningFromAKeywordReferringToInstances(regex,
 
-								translationLabel, language));
+								translationLabel, language,useSimplifiedSPARQL));
 				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
+			}
+			else{
+				if (langaues.contains(language)) {
+					Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
+					concepts = reader.getAllConceptsLanguageSpecific(regex, language);
+				} else {
+					Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + Language.UNKNOWN);
+					concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
+				}
 			}
 			return concepts;
 		}
