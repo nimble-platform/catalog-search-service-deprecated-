@@ -150,6 +150,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		}
 		if (sparql != null) {
 			Logger.getAnonymousLogger().log(Level.INFO, "Request: " + sparql + " by: " + reader.getClass().getName());
+			Logger.getAnonymousLogger().log(Level.INFO, sparql);
 			Object result = reader.query(sparql);
 			List<String> values = reader.createResultList(result, "value");
 			propertyValuesFromOrangeGroup.getAllValues().addAll(values);
@@ -184,6 +185,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			}
 			String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>SELECT  ?subject ?predicate ?object WHERE { "
 					+ value + " rdf:type ?object.}	";
+			Logger.getAnonymousLogger().log(Level.INFO, sparql);
 			Object result = reader.query(sparql);
 			List<String> allTypes = reader.createResultList(result, "object");
 			if (allTypes != null && allTypes.size() > 0) {
@@ -263,12 +265,13 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 	}
 
 	public List<String> getAdditionalPropertiesWhichAreDerivedFromAbox(String conceptURL) {
-		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ";
 		sparql += " ?property";
 		sparql += " where{";
 		sparql += "?instance ?property ?propertyValue. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue.";
 		sparql += "Filter  regex( ?codeValue , \"" + conceptURL + "\").";
 		sparql += "}";
+		Logger.getAnonymousLogger().log(Level.INFO, sparql);
 		Object result = reader.query(sparql);
 		List<String> resultAsList = reader.createResultList(result, "property");
 		removeNimbleSpecificInternalProperties(resultAsList);
@@ -278,7 +281,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 
 	public List<String> getAllAvailableDimensionsWhichAreDerivedFromAbox(String conceptURL) {
 		List<String> resultAsList = null;
-		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct  ";
 		sparql += " ?value";
 		sparql += " where{";
 
@@ -286,6 +289,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 
 		sparql += "Filter  regex( ?codeValue , \"" + conceptURL + "\").";
 		sparql += "}";
+		Logger.getAnonymousLogger().log(Level.INFO, sparql);
 		Object result = reader.query(sparql);
 		resultAsList = reader.createResultList(result, "value");
 
@@ -294,13 +298,14 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 
 	public List<CustomPropertyInformation> getAllAvailableCustomPropertiesWhichAreDerivedFromAbox(String conceptURL) {
 		List<String[]> resultAsList = null;
-		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+		String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ";
 		sparql += " ?value ?name ?typeDes";
 		sparql += " where{";
 
 		sparql += "?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?propertyValue. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQualifier> ?typeDes.?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name> ?name. ?propertyValue <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?codeOfProperty. ?codeOfProperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#listID> ?value. ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue.";
 		sparql += "Filter  (regex( ?codeValue , \"" + conceptURL + "\") && regex (?value, \"Custom\", \", i\")).";
 		sparql += "}";
+		Logger.getAnonymousLogger().log(Level.INFO, sparql);
 		Object result = reader.query(sparql);
 		resultAsList = reader.createResultListArray(result, new String[] { "name", "typeDes" });
 
@@ -337,12 +342,20 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		inputParamaterForExecuteSelect.getParameters().add(property);
 		inputParamaterForExecuteSelect.getParametersURL().add(propertyURL);
 		inputParamaterForExecuteSelect.getPropertySources().add(propertySource);
-		List<String> sparqls = factory.createSparql(inputParamaterForExecuteSelect, reader);
+		List<String> sparqls = factory.createSparql(inputParamaterForExecuteSelect, reader,false,false);
 		if (sparqls != null && sparqls.size() > 0) {
 			String sparql = sparqls.get(0);
+			Logger.getAnonymousLogger().log(Level.INFO, sparql);
 			Object result = reader.query(sparql);
 			List<String> values = reader.createResultList(result, "hasValue");
-			return values;
+			List<String> valuesCleanedUP = new ArrayList<String>();
+			for (String str: values){
+				if (!valuesCleanedUP.contains(str)){
+					valuesCleanedUP.add(str);
+				}
+			}
+			
+			return valuesCleanedUP;
 		} else {
 			Logger.getAnonymousLogger().log(Level.WARNING,
 					"Couldn't create sparql queries for: " + concept + " & " + propertyURL);
@@ -563,12 +576,17 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
 		outputForPropertyFromConcept.setDatatypeProperty(true);
 		outputForPropertyFromConcept.setObjectProperty(false);
+		if ((urlOfProperty.contains("http:") || (urlOfProperty.contains("https")))){
 		PropertyType propertyType = reader.getPropertyType(urlOfProperty);
 
 		if (propertyType == PropertyType.OBJECTPROPERTY) {
 
 			outputForPropertyFromConcept.setDatatypeProperty(false);
 			outputForPropertyFromConcept.setObjectProperty(true);
+		}
+		}
+		else{
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot determine type{datatype, object property} of property:  " + urlOfProperty);
 		}
 		result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
 
@@ -611,6 +629,8 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
 		});
 
+		
+		
 		return result;
 	}
 

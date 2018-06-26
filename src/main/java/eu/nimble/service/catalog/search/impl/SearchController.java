@@ -544,9 +544,16 @@ public class SearchController {
 			OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation.getAllTransitiveProperties(concept);
 			concept = sparqlDerivation.getURIOfConcept(concept);
 			for (OutputForPropertyFromConcept prop : propertiesFromConcept.getOutputForPropertiesFromConcept()) {
+				if (prop.getPropertySource()==PropertySource.DOMAIN_SPECIFIC_PROPERTY){
 				TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
 						Language.fromString(inputParamterForGetLogicalView.getLanguage()), languageLabel);
 				prop.setTranslatedProperty(name.getTranslation());
+				}
+				else{
+					String uri = prop.getPropertyURL();
+					String name = uri.substring(uri.indexOf("#") + 1);
+					prop.setTranslatedProperty(name);
+				}
 			}
 			String result = "";
 			result = gson.toJson(propertiesFromConcept);

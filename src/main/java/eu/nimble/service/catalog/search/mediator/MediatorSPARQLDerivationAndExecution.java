@@ -165,7 +165,7 @@ public class MediatorSPARQLDerivationAndExecution {
 		} else {
 			if (reader instanceof MarmottaReader) {
 				NimbleSpecificSPARQLFactory sparqlFactory = new NimbleSpecificSPARQLFactory(this, sqpDerivationService);
-				List<String> queries = sparqlFactory.createSparql(inputParamaterForExecuteSelect, reader);
+				List<String> queries = sparqlFactory.createSparql(inputParamaterForExecuteSelect, reader, true, true);
 				Map<String, List<DataPoint>> intermediateResult = new HashMap<String, List<DataPoint>>();
 				String[] params = new String[] { "instance", "property", "hasValue" };
 				List<String> columns = new ArrayList<String>();
@@ -339,8 +339,7 @@ public class MediatorSPARQLDerivationAndExecution {
 				}
 
 				row.add(value);
-			}
-			else{
+			} else {
 				row.add(" ");
 			}
 
@@ -468,13 +467,12 @@ public class MediatorSPARQLDerivationAndExecution {
 		String concept = getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
 
 		Map<String, String> resolvedProperties = new HashMap<String, String>();
-		int counter =0;
+		int counter = 0;
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
 			String parameter = "";
-			if (inputParamaterForExecuteSelect.getParametersURL().size() > counter){
+			if (inputParamaterForExecuteSelect.getParametersURL().size() > counter) {
 				parameter = inputParamaterForExecuteSelect.getParametersURL().get(counter);
-			}
-			else{
+			} else {
 				parameter = getURIOfProperty(param);
 			}
 
@@ -555,18 +553,16 @@ public class MediatorSPARQLDerivationAndExecution {
 			}
 
 			shortName = extractNameOfURL(shortName);
-			if (fil.isHasMaxBeenSet() && fil.isHasMinBeenSet()){
-			filterText += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + fil.getMax() + ")).";
-			filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + fil.getMin() + ")).";
-			}
-			else{
-				//FILTER (?name="South"^^xsd:string)
-				if (fil.getExactValue().matches("[0-9]+\\.*[0-9]*")){
-					filterText += "FILTER(?" + shortName + "= "+fil.getExactValue() + ")";
-				}
-				else{
-					
-					filterText += "FILTER(str(?" + shortName + ")= \""+fil.getExactValue() + "\" ^^xsd:string)";
+			if (fil.isHasMaxBeenSet() && fil.isHasMinBeenSet()) {
+				filterText += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + fil.getMax() + ")).";
+				filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + fil.getMin() + ")).";
+			} else {
+				// FILTER (?name="South"^^xsd:string)
+				if (fil.getExactValue().matches("[0-9]+\\.*[0-9]*")) {
+					filterText += "FILTER(?" + shortName + "= " + fil.getExactValue() + ")";
+				} else {
+
+					filterText += "FILTER(str(?" + shortName + ")= \"" + fil.getExactValue() + "\" ^^xsd:string)";
 				}
 			}
 			filter += filterText;
@@ -668,17 +664,21 @@ public class MediatorSPARQLDerivationAndExecution {
 		if (reader == null) {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Ontology Reader is null. The init fails");
 		} else {
-			Object result = reader.query(query);
-			List<String> translations = reader.createResultList(result, "object");
-			if (translations.size() > 0) {
-				String postfix = Language.toOntologyPostfix(language);
-				if (postfix != null) {
-					for (String lang : translations) {
-						if (lang.contains(postfix)) {
 
-							translationResult.setTranslation(lang.substring(0, lang.indexOf(postfix)));
-							translationResult.setSuccess(true);
-							return translationResult;
+			if (uri.contains("http") || (uri.contains("https"))) {
+
+				Object result = reader.query(query);
+				List<String> translations = reader.createResultList(result, "object");
+				if (translations.size() > 0) {
+					String postfix = Language.toOntologyPostfix(language);
+					if (postfix != null) {
+						for (String lang : translations) {
+							if (lang.contains(postfix)) {
+
+								translationResult.setTranslation(lang.substring(0, lang.indexOf(postfix)));
+								translationResult.setSuccess(true);
+								return translationResult;
+							}
 						}
 					}
 				}
@@ -699,8 +699,8 @@ public class MediatorSPARQLDerivationAndExecution {
 		return Collections.emptyList();
 	}
 
-	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language,
-			String translationLabel, boolean useSimplifiedSPARQL) {
+	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language, String translationLabel,
+			boolean useSimplifiedSPARQL) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Apply reader: " + reader.getClass().toString());
 		Logger.getAnonymousLogger().log(Level.INFO, "Language specific serach for:  " + language.toString());
 		reader.setLanguageLabel(translationLabel);
@@ -711,22 +711,22 @@ public class MediatorSPARQLDerivationAndExecution {
 		} else {
 
 			List<Entity> concepts = new ArrayList<Entity>();
-			
+
 			if (needANimbleSpecificAdapation()) {
 
 				concepts.clear();
 				concepts.addAll(nimbleSpecificSPARQLDeriviation
 						.detectNimbleSpecificMeaningFromAKeywordReferringToInstances(regex,
 
-								translationLabel, language,useSimplifiedSPARQL));
+								translationLabel, language, useSimplifiedSPARQL));
 				nimbleSpecificSPARQLDeriviation.removeInternalConceptsToHideItForTheUser(concepts);
-			}
-			else{
+			} else {
 				if (langaues.contains(language)) {
 					Logger.getAnonymousLogger().log(Level.INFO, "Apply language specific serach: " + language);
 					concepts = reader.getAllConceptsLanguageSpecific(regex, language);
 				} else {
-					Logger.getAnonymousLogger().log(Level.INFO, "Apply language UNspecific serach: " + Language.UNKNOWN);
+					Logger.getAnonymousLogger().log(Level.INFO,
+							"Apply language UNspecific serach: " + Language.UNKNOWN);
 					concepts = reader.getAllConceptsFocusOnlyOnURI(regex);
 				}
 			}
@@ -797,27 +797,26 @@ public class MediatorSPARQLDerivationAndExecution {
 			String conceptAsUri = getURIOfConcept(concept);
 			Logger.getAnonymousLogger().log(Level.INFO, "Request properties from: " + conceptAsUri);
 			List<String> properties = new ArrayList<>();
-			
+
 			if (needANimbleSpecificAdapation()) {
 				OutputForPropertiesFromConcept outputForPropertiesFromConcept = nimbleSpecificSPARQLDeriviation
 						.getAllPropertiesIncludingEverything(concept);
 				List<OutputForPropertyFromConcept> props = outputForPropertiesFromConcept
 						.getOutputForPropertiesFromConcept();
-				for (OutputForPropertyFromConcept property: props){
+				for (OutputForPropertyFromConcept property : props) {
 					PropertyType pType = reader.getPropertyType(property.getPropertyURL());
-					if (pType == PropertyType.DATATYPEPROPERTY || pType==PropertyType.UNKNOWN) {
+					if (pType == PropertyType.DATATYPEPROPERTY || pType == PropertyType.UNKNOWN) {
 						String translatedName = reduceURIJustToName(property.getPropertyURL(), language);
 						eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
 						entity.setUrl(property.getPropertyURL());
 						entity.setTranslatedURL(translatedName);
 						entity.setPropertySource(property.getPropertySource());
 						localOntologyView.addDataproperties(entity);
-					}
-					else{
-						addObjectPropertyToLogicalView(instance, language, localOntologyView, property.getPropertyURL());
+					} else {
+						addObjectPropertyToLogicalView(instance, language, localOntologyView,
+								property.getPropertyURL());
 					}
 				}
-				
 
 			} else {
 				properties = reader.getAllPropertiesIncludingEverything(conceptAsUri);
@@ -931,7 +930,8 @@ public class MediatorSPARQLDerivationAndExecution {
 	 * @param property
 	 * @return
 	 */
-	public Map<String, List<Group>> generateGroup(int amountOfGroups, String concept, String property, PropertySource propertySource) {
+	public Map<String, List<Group>> generateGroup(int amountOfGroups, String concept, String property,
+			PropertySource propertySource) {
 		concept = getURIOfConcept(concept);
 		String shortPropertyName = property;
 		property = getURIOfProperty(property);
@@ -949,27 +949,28 @@ public class MediatorSPARQLDerivationAndExecution {
 			try {
 				ValueGroupingFactory valueGroupingFactory = new ValueGroupingFactory();
 				return valueGroupingFactory.generateGrouping(amountOfGroups, values, shortPropertyName);
-//				Map<String, List<Group>> result = new HashMap<String, List<Group>>();
-//				float min = getMinOfData(values);
-//				float max = getMaxOfData(values);
-//				float stepRate = (max - min) / (float) amountOfGroups;
-//				List<Group> discreditedGroups = new ArrayList<Group>();
-//				for (int i = 0; i < amountOfGroups; i++) {
-//					Group group = new Group();
-//					float newMin = min + (stepRate * i);
-//					float newMax = min + (stepRate * (i + 1));
-//					if (newMin > 2) {
-//						newMin = round(newMin);
-//						newMax = round(newMax);
-//					}
-//					group.setDescription("From: " + newMin + " to " + newMax);
-//					group.setMin(newMin);
-//					group.setMax(newMax);
-//					group.setProperty(shortPropertyName);
-//					discreditedGroups.add(group);
-//				}
-//				result.put(shortPropertyName, discreditedGroups);
-//				return result;
+				// Map<String, List<Group>> result = new HashMap<String,
+				// List<Group>>();
+				// float min = getMinOfData(values);
+				// float max = getMaxOfData(values);
+				// float stepRate = (max - min) / (float) amountOfGroups;
+				// List<Group> discreditedGroups = new ArrayList<Group>();
+				// for (int i = 0; i < amountOfGroups; i++) {
+				// Group group = new Group();
+				// float newMin = min + (stepRate * i);
+				// float newMax = min + (stepRate * (i + 1));
+				// if (newMin > 2) {
+				// newMin = round(newMin);
+				// newMax = round(newMax);
+				// }
+				// group.setDescription("From: " + newMin + " to " + newMax);
+				// group.setMin(newMin);
+				// group.setMax(newMax);
+				// group.setProperty(shortPropertyName);
+				// discreditedGroups.add(group);
+				// }
+				// result.put(shortPropertyName, discreditedGroups);
+				// return result;
 			} catch (Exception e) {
 				Logger.getAnonymousLogger().log(Level.WARNING,
 						"Cannot transform data from " + property + " into floats");
@@ -980,10 +981,10 @@ public class MediatorSPARQLDerivationAndExecution {
 		return new HashMap<String, List<Group>>();
 	}
 
-//	private float round(float value) {
-//		int n = (int) value * 100;
-//		return n / 100f;
-//	}
+	// private float round(float value) {
+	// int n = (int) value * 100;
+	// return n / 100f;
+	// }
 
 	public List<String> getAllValuesForAGivenProperty(String concept, String property, PropertySource propertySource) {
 		List<String> values = null;
@@ -1006,29 +1007,29 @@ public class MediatorSPARQLDerivationAndExecution {
 		return (reader instanceof MarmottaReader) ? true : false;
 	}
 
-//	private float getMinOfData(List<String> values) {
-//		float min = 999999;
-//		for (String value : values) {
-//			float number = Float.valueOf(value);
-//			if (number < min) {
-//				min = number;
-//			}
-//		}
-//
-//		return min;
-//	}
+	// private float getMinOfData(List<String> values) {
+	// float min = 999999;
+	// for (String value : values) {
+	// float number = Float.valueOf(value);
+	// if (number < min) {
+	// min = number;
+	// }
+	// }
+	//
+	// return min;
+	// }
 
-//	private float getMaxOfData(List<String> values) {
-//		float max = -999999;
-//		for (String value : values) {
-//			float number = Float.valueOf(value);
-//			if (number > max) {
-//				max = number;
-//			}
-//		}
-//
-//		return max;
-//	}
+	// private float getMaxOfData(List<String> values) {
+	// float max = -999999;
+	// for (String value : values) {
+	// float number = Float.valueOf(value);
+	// if (number > max) {
+	// max = number;
+	// }
+	// }
+	//
+	// return max;
+	// }
 
 	public String getLanguagelabel() {
 		return languagelabel;

@@ -28,13 +28,13 @@ public class NimbleSpecificSPARQLFactory {
 
 	}
 
-	public List<String> createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect, IReader reader) {
+	public List<String> createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect, IReader reader, boolean instanceNeeded, boolean propertyNeeded) {
 		this.reader = reader;
 
 		if (!(reader instanceof MarmottaReader)) {
 			return createJenaSPARQLQuery(inputParamaterForExecuteSelect);
 		} else {
-			return createMarmottaSPARQLQuery(inputParamaterForExecuteSelect);
+			return createMarmottaSPARQLQuery(inputParamaterForExecuteSelect,instanceNeeded, propertyNeeded);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class NimbleSpecificSPARQLFactory {
 		return PropertySource.UNKNOWN;
 	}
 
-	private List<String> createMarmottaSPARQLQuery(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+	private List<String> createMarmottaSPARQLQuery(InputParamaterForExecuteSelect inputParamaterForExecuteSelect, boolean instanceNeeded, boolean propertyNeeded) {
 
 		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution((MarmottaReader) reader,
 				sqpDerivationService, sparqlDerivation);
@@ -162,9 +162,15 @@ public class NimbleSpecificSPARQLFactory {
 		List<String> result = new ArrayList<String>();
 		int counter = 0;
 		for (String param : inputParamaterForExecuteSelect.getParameters()) {
-			String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance ";
+			String sparql = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct  ";
 
-			sparql += " ?property";
+			if (instanceNeeded) {
+				sparql += " ?instance";
+			}
+			
+			if (propertyNeeded){
+				sparql += " ?property";
+			}
 			sparql += " ?hasValue";
 
 			// Define it is a ItemType
