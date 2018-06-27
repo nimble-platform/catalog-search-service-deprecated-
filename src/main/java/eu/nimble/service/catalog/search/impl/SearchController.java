@@ -1000,6 +1000,7 @@ public class SearchController {
 				
 				outputForExecuteSelect = sparqlDerivation
 						.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+				
 
 				String result = "";
 				result = gson.toJson(outputForExecuteSelect);

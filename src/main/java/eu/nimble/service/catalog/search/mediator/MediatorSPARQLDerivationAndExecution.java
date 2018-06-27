@@ -206,14 +206,46 @@ public class MediatorSPARQLDerivationAndExecution {
 					outputForExecuteSelect.getUuids().add(key);
 					List<DataPoint> dataPoints = intermediateResult.get(key);
 					ArrayList<String> data = new ArrayList<String>();
+					Map<String, String> propertyValues = new HashMap<String, String>();
 					for (DataPoint dataPoint : dataPoints) {
+						String type = dataPoint.getPropertyURL();
 						String value = dataPoint.getValue();
 						value = value.substring(value.lastIndexOf("^") + 1);
-						data.add(value);
-					}
-					outputForExecuteSelect.getRows().add(data);
-				}
+						if (propertyValues.containsKey(type)) {
+							String finalValue = propertyValues.get(type);
+							finalValue = finalValue + ";" + value;
+							propertyValues.put(type, finalValue);
+						} else {
+							propertyValues.put(type, value);
+						}
 
+					}
+					for (String keyMap : propertyValues.keySet()) {
+						data.add(propertyValues.get(keyMap));
+					}
+
+					outputForExecuteSelect.getRows().add(data);
+
+
+				}
+				// cleanUP
+				int index = 0;
+				List<Integer> rowsToBeDeleted = new ArrayList<Integer>();
+				for (List<String> oneRow : outputForExecuteSelect.getRows()){
+					if (oneRow.size() < outputForExecuteSelect.getColumns().size()){
+						rowsToBeDeleted.add(index);
+					}
+					index++;
+				}
+				int deletedCount =0;
+				for (int indexToBeDelted : rowsToBeDeleted){
+					int updatedIndexToBeDeleted = indexToBeDelted-deletedCount;
+					outputForExecuteSelect.getRows().remove(updatedIndexToBeDeleted);
+					outputForExecuteSelect.getUuids().remove(updatedIndexToBeDeleted);
+					deletedCount++;
+				}
+				
+				
 				return outputForExecuteSelect;
 			}
 			return new OutputForExecuteSelect();
