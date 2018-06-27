@@ -168,7 +168,7 @@ public class MediatorSPARQLDerivationAndExecution {
 				List<String> queries = sparqlFactory.createSparql(inputParamaterForExecuteSelect, reader, true, true);
 				Map<String, List<DataPoint>> intermediateResult = new HashMap<String, List<DataPoint>>();
 				String[] params = new String[] { "instance", "property", "hasValue" };
-				List<String> columns = new ArrayList<String>();
+				//List<String> columns = new ArrayList<String>();
 
 				for (String sparql : queries) {
 					Object ouObject = reader.query(sparql);
@@ -176,9 +176,9 @@ public class MediatorSPARQLDerivationAndExecution {
 					for (String[] instance : resultList) {
 						String uuid = instance[0];
 						String property = instance[1];
-						if (!columns.contains(property)) {
-							columns.add(property);
-						}
+//						if (!columns.contains(property)) {
+//							columns.add(property);
+//						}
 						String value = instance[2];
 						DataPoint dataPoint = new DataPoint();
 						dataPoint.setPropertyURL(property);
@@ -196,12 +196,12 @@ public class MediatorSPARQLDerivationAndExecution {
 				}
 				OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 				outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
-				for (int i = 0; i < columns.size(); i++) {
-					String c = columns.get(i);
-					c = c.substring(c.indexOf("#") + 1);
-					columns.set(i, c);
-				}
-				outputForExecuteSelect.setColumns(columns);
+//				for (int i = 0; i < columns.size(); i++) {
+//					String c = columns.get(i);
+//					c = c.substring(c.indexOf("#") + 1);
+//					columns.set(i, c);
+//				}
+				//outputForExecuteSelect.setColumns(columns);
 				for (String key : intermediateResult.keySet()) {
 					outputForExecuteSelect.getUuids().add(key);
 					List<DataPoint> dataPoints = intermediateResult.get(key);
@@ -220,10 +220,24 @@ public class MediatorSPARQLDerivationAndExecution {
 						}
 
 					}
+					
 					for (String keyMap : propertyValues.keySet()) {
 						data.add(propertyValues.get(keyMap));
 					}
 
+					if (propertyValues.keySet().size()== inputParamaterForExecuteSelect.getParametersURL().size()){
+						if (outputForExecuteSelect.getColumns().size()==0){
+						List<String> columns = new ArrayList<String>();
+						for (String keyMap : propertyValues.keySet()) {
+							String c = keyMap;
+							c = c.substring(c.indexOf("#") + 1);
+							columns.add(c);
+						}
+						outputForExecuteSelect.getColumns().addAll(columns);
+						}
+						
+						
+					}
 					outputForExecuteSelect.getRows().add(data);
 
 
