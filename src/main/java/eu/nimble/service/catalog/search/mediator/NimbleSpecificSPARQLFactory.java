@@ -2,6 +2,7 @@ package eu.nimble.service.catalog.search.mediator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -188,6 +189,7 @@ public class NimbleSpecificSPARQLFactory {
 
 
 			sparql += "Filter  regex( ?codeValue , \"" + urlOfconcept + "\").";
+			
 			sparql += addFilter (param, inputParamaterForExecuteSelect.getFilters());
 			sparql += "}";
 			result.add(sparql);
@@ -196,6 +198,40 @@ public class NimbleSpecificSPARQLFactory {
 		return result;
 	}
 
+	
+	
+	private String addFilters(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
+			Map<String, String> resolvedProperties, String sparql) {
+		String filter = "";
+		for (Filter fil : inputParamaterForExecuteSelect.getFilters()) {
+			String filterText = "";
+			String shortName = fil.getProperty();
+			if (shortName == null) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Filter cannot be applied without property name: " + fil);
+				continue;
+			}
+
+			shortName = extractNameOfURL(shortName);
+			if (fil.isHasMaxBeenSet() && fil.isHasMinBeenSet()) {
+				filterText += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + fil.getMax() + ")).";
+				filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + fil.getMin() + ")).";
+			} else {
+				// FILTER (?name="South"^^xsd:string)
+				if (fil.getExactValue().matches("[0-9]+\\.*[0-9]*")) {
+					filterText += "FILTER(?" + shortName + "= " + fil.getExactValue() + ")";
+				} else {
+
+					filterText += "FILTER(str(?" + shortName + ")= \"" + fil.getExactValue() + "\" ^^xsd:string)";
+				}
+			}
+			filter += filterText;
+		}
+
+		return sparql + filter;
+	}
+	
+	
 	private String addFilter(String param, List<Filter> filters) {
 		Filter chosen = null;
 		for (Filter filter : filters){
@@ -205,12 +241,31 @@ public class NimbleSpecificSPARQLFactory {
 			}
 		}
 		
-		if (chosen==null){
-			return "";
+		String shortName = "hasValue"; 
+
+		
+		String filterText ="";
+		if (chosen.isHasMaxBeenSet() && chosen.isHasMinBeenSet()) {
+			filterText  += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + chosen.getMax() + ")).";
+			filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + chosen.getMin() + ")).";
+		} else {
+			// FILTER (?name="South"^^xsd:string)
+			if (chosen.getExactValue().matches("[0-9]+\\.*[0-9]*")) {
+				filterText += "FILTER(xsd:decimal(?" + shortName + ")= xsd:decimal(" + chosen.getExactValue() + "))";
+			} else {
+
+				filterText += "FILTER(str(?" + shortName + ")= \"" + chosen.getExactValue() + "\" ^^xsd:string)";
+			}
 		}
-		else{
-			return "Filter  regex( ?hasValue , \"" + chosen.getExactValue() + "\").";
-		}
+		return filterText;
+
+		
+//		if (chosen==null){
+//			return "";
+//		}
+//		else{
+//			return "Filter  regex( ?hasValue , \"" + chosen.getExactValue() + "\").";
+//		}
 		
 	}
 

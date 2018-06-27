@@ -246,7 +246,7 @@ public class MediatorSPARQLDerivationAndExecution {
 				int index = 0;
 				List<Integer> rowsToBeDeleted = new ArrayList<Integer>();
 				for (List<String> oneRow : outputForExecuteSelect.getRows()){
-					if (oneRow.size() < outputForExecuteSelect.getColumns().size()){
+					if (oneRow.size() < inputParamaterForExecuteSelect.getParametersURL().size()){
 						rowsToBeDeleted.add(index);
 					}
 					index++;
