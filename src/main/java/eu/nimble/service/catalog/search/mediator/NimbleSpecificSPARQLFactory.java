@@ -29,13 +29,14 @@ public class NimbleSpecificSPARQLFactory {
 
 	}
 
-	public List<String> createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect, IReader reader, boolean instanceNeeded, boolean propertyNeeded) {
+	public List<String> createSparql(InputParamaterForExecuteSelect inputParamaterForExecuteSelect, IReader reader,
+			boolean instanceNeeded, boolean propertyNeeded) {
 		this.reader = reader;
 
 		if (!(reader instanceof MarmottaReader)) {
 			return createJenaSPARQLQuery(inputParamaterForExecuteSelect);
 		} else {
-			return createMarmottaSPARQLQuery(inputParamaterForExecuteSelect,instanceNeeded, propertyNeeded);
+			return createMarmottaSPARQLQuery(inputParamaterForExecuteSelect, instanceNeeded, propertyNeeded);
 		}
 	}
 
@@ -63,14 +64,14 @@ public class NimbleSpecificSPARQLFactory {
 		case MANUFACTURER_ITEMS_IDENTIFICATION:
 			sparql += extendSPARQLForManufacturersItemIdentificationToGiven(uuidOfProperty);
 			break;
-			
+
 		case CATALOGUE_DOCUMENT_REFERENCE:
-			sparql +=extendSPARQLForCatalogueDocumentReferenceToGiven(uuidOfProperty);
+			sparql += extendSPARQLForCatalogueDocumentReferenceToGiven(uuidOfProperty);
 			break;
-			
+
 		default:
 			Logger.getAnonymousLogger().log(Level.WARNING, "Found no specific property mapping. ");
-			
+
 			return null;
 		}
 
@@ -86,8 +87,7 @@ public class NimbleSpecificSPARQLFactory {
 
 	private String extendSPARQLForManufacturersItemIdentificationToGiven(String uuidOfProperty) {
 		String sparql = "<" + uuidOfProperty + ">"
-				+
-		"<urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ID> ?hasValue.";
+				+ "<urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ID> ?hasValue.";
 		return sparql;
 	}
 
@@ -155,7 +155,8 @@ public class NimbleSpecificSPARQLFactory {
 		return PropertySource.UNKNOWN;
 	}
 
-	private List<String> createMarmottaSPARQLQuery(InputParamaterForExecuteSelect inputParamaterForExecuteSelect, boolean instanceNeeded, boolean propertyNeeded) {
+	private List<String> createMarmottaSPARQLQuery(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
+			boolean instanceNeeded, boolean propertyNeeded) {
 
 		nimbleSpecificSPARQLDeriviation = new NimbleSpecificSPARQLDeriviationAndExecution((MarmottaReader) reader,
 				sqpDerivationService, sparqlDerivation);
@@ -168,8 +169,8 @@ public class NimbleSpecificSPARQLFactory {
 			if (instanceNeeded) {
 				sparql += " ?instance";
 			}
-			
-			if (propertyNeeded){
+
+			if (propertyNeeded) {
 				sparql += " ?property";
 			}
 			sparql += " ?hasValue";
@@ -183,14 +184,12 @@ public class NimbleSpecificSPARQLFactory {
 				urlOfconcept = sparqlDerivation.getURIOfConcept(inputParamaterForExecuteSelect.getConcept());
 			}
 
-
 			sparql += addPropertyForMarmotta(inputParamaterForExecuteSelect.getParametersURL().get(counter),
 					inputParamaterForExecuteSelect.getPropertySources().get(counter));
 
-
 			sparql += "Filter  regex( ?codeValue , \"" + urlOfconcept + "\").";
-			
-			sparql += addFilter (param, inputParamaterForExecuteSelect.getFilters());
+
+			sparql += addFilter(param, inputParamaterForExecuteSelect.getFilters());
 			sparql += "}";
 			result.add(sparql);
 			counter++;
@@ -198,8 +197,6 @@ public class NimbleSpecificSPARQLFactory {
 		return result;
 	}
 
-	
-	
 	private String addFilters(InputParamaterForExecuteSelect inputParamaterForExecuteSelect,
 			Map<String, String> resolvedProperties, String sparql) {
 		String filter = "";
@@ -230,43 +227,44 @@ public class NimbleSpecificSPARQLFactory {
 
 		return sparql + filter;
 	}
-	
-	
+
 	private String addFilter(String param, List<Filter> filters) {
 		Filter chosen = null;
-		for (Filter filter : filters){
-			if (filter.getProperty().substring(filter.getProperty().indexOf("#")+1).equals(param)){
+		for (Filter filter : filters) {
+			if (filter.getProperty().substring(filter.getProperty().indexOf("#") + 1).equals(param)) {
 				chosen = filter;
 				break;
 			}
 		}
-		
-		String shortName = "hasValue"; 
 
-		
-		String filterText ="";
-		if (chosen.isHasMaxBeenSet() && chosen.isHasMinBeenSet()) {
-			filterText  += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + chosen.getMax() + ")).";
-			filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + chosen.getMin() + ")).";
-		} else {
-			// FILTER (?name="South"^^xsd:string)
-			if (chosen.getExactValue().matches("[0-9]+\\.*[0-9]*")) {
-				filterText += "FILTER(xsd:decimal(?" + shortName + ")= xsd:decimal(" + chosen.getExactValue() + "))";
+		String shortName = "hasValue";
+
+		String filterText = "";
+		if (chosen != null) {
+			if (chosen.isHasMaxBeenSet() && chosen.isHasMinBeenSet()) {
+				filterText += "FILTER ( xsd:decimal(?" + shortName + ") <=  xsd:decimal(" + chosen.getMax() + ")).";
+				filterText += "FILTER ( xsd:decimal(?" + shortName + ") >=  xsd:decimal(" + chosen.getMin() + ")).";
 			} else {
+				// FILTER (?name="South"^^xsd:string)
+				if (chosen.getExactValue().matches("[0-9]+\\.*[0-9]*")) {
+					filterText += "FILTER(xsd:decimal(?" + shortName + ")= xsd:decimal(" + chosen.getExactValue()
+							+ "))";
+				} else {
 
-				filterText += "FILTER(str(?" + shortName + ")= \"" + chosen.getExactValue() + "\" ^^xsd:string)";
+					filterText += "FILTER(str(?" + shortName + ")= \"" + chosen.getExactValue() + "\" ^^xsd:string)";
+				}
 			}
 		}
 		return filterText;
 
-		
-//		if (chosen==null){
-//			return "";
-//		}
-//		else{
-//			return "Filter  regex( ?hasValue , \"" + chosen.getExactValue() + "\").";
-//		}
-		
+		// if (chosen==null){
+		// return "";
+		// }
+		// else{
+		// return "Filter regex( ?hasValue , \"" + chosen.getExactValue() +
+		// "\").";
+		// }
+
 	}
 
 	private String addPropertyForMarmotta(String propertyURL, PropertySource propertySource2) {
@@ -302,11 +300,10 @@ public class NimbleSpecificSPARQLFactory {
 			result += extendForManufacturerParty(propertyURL);
 			return result;
 
-
 		case CATALOGUE_DOCUMENT_REFERENCE:
 			result += extendForCatalogueDocuemntReference(propertyURL);
-			return result;	
-			
+			return result;
+
 		case CUSTOM_STRING:
 			result += extendForCustomString(propertyURL);
 			return result;
@@ -314,10 +311,9 @@ public class NimbleSpecificSPARQLFactory {
 			result += extendForCustomDecimal(propertyURL);
 			return result;
 		default:
-			Logger.getAnonymousLogger().log(Level.WARNING, "Found no specific property mapping, all properties will be requested");
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Found no specific property mapping, all properties will be requested");
 			break;
-
-
 
 		}
 
@@ -368,27 +364,26 @@ public class NimbleSpecificSPARQLFactory {
 
 		sparql += "Filter  (regex( ?property , \"" + propertyName + "\") && regex (?value, \"Custom\", \" i\")).";
 
-
 		return sparql;
 	}
 
 	private String extendForDomainSpecificProperty(String propertyURL) {
 
-		String sparql ="";
-		String sparqlForValueQuanitity= "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance  ?property  ?hasValue where{ ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQualifier> ?hasValue. Filter  regex( ?property , \"" + propertyURL + "\").}";
+		String sparql = "";
+		String sparqlForValueQuanitity = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> select distinct ?instance  ?property  ?hasValue where{ ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQualifier> ?hasValue. Filter  regex( ?property , \""
+				+ propertyURL + "\").}";
 		Object result = reader.query(sparqlForValueQuanitity);
 		List<String> content = reader.createResultList(result, "hasValue");
-		
-		//if the value is represented as DECIMAL
-		if (((content.size() > 0)) && (!(content.get(0).toLowerCase().equals("string")))){
-			 sparql = " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQuantity> ?qt. ?qt <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueDecimal> ?hasValue.";
+
+		// if the value is represented as DECIMAL
+		if (((content.size() > 0)) && (!(content.get(0).toLowerCase().equals("string")))) {
+			sparql = " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueQuantity> ?qt. ?qt <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ValueDecimal> ?hasValue.";
 			sparql += " Filter  regex( ?property , \"" + propertyURL + "\").";
-			
-		}
-		else{
-			//if the value is represented as Value
-		sparql = " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?hasValue.";
-		sparql += " Filter  regex( ?property , \"" + propertyURL + "\").";
+
+		} else {
+			// if the value is represented as Value
+			sparql = " ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty> ?aproperty. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?property. ?aproperty <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Value> ?hasValue.";
+			sparql += " Filter  regex( ?property , \"" + propertyURL + "\").";
 		}
 		return sparql;
 	}
@@ -419,7 +414,6 @@ public class NimbleSpecificSPARQLFactory {
 	}
 
 	private PropertySource detectPropertySource(String propertyURL, PropertySource propertySource2) {
-
 
 		switch (propertySource2) {
 		case DIMENSION:
@@ -465,7 +459,6 @@ public class NimbleSpecificSPARQLFactory {
 			return PropertySource.CERTIFICATE;
 		}
 
-
 		if (propertyName.contains("dimension")) {
 			return PropertySource.DIMENSION;
 		}
@@ -474,12 +467,12 @@ public class NimbleSpecificSPARQLFactory {
 			return PropertySource.MANUFACTURER_PARTY;
 
 		}
-		
+
 		if (propertyName.contains("manufacturerparty")) {
 			return PropertySource.MANUFACTURER_PARTY;
 		}
-		
-		if (propertyName.contains("manufacturersitemidentification" )){
+
+		if (propertyName.contains("manufacturersitemidentification")) {
 			return PropertySource.MANUFACTURER_ITEMS_IDENTIFICATION;
 		}
 
@@ -487,11 +480,10 @@ public class NimbleSpecificSPARQLFactory {
 			return PropertySource.MANUFACTURER_ITEMS_IDENTIFICATION;
 		}
 
-		if (propertyName.contains("cataloguedocumentreference")){
+		if (propertyName.contains("cataloguedocumentreference")) {
 			return PropertySource.CATALOGUE_DOCUMENT_REFERENCE;
 		}
 
-		
 		return PropertySource.UNKNOWN;
 	}
 
