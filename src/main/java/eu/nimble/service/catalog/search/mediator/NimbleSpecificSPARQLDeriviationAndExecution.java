@@ -656,7 +656,16 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 						value = value.substring(0, value.length() - 1);
 					}
 				}
-				resultFinal.put(name, value);
+				if (resultFinal.containsKey(name)) {
+					String finalValue = resultFinal.get(name);
+					if (finalValue != null && finalValue.length() > 0){
+						value = finalValue + ";" + value;
+					}
+					resultFinal.put(name, value);
+				} else {
+
+					resultFinal.put(name, value);
+				}
 			} else {
 				if (!key.contains("CommodityClassification")) {
 					resultFinal.put(key, result.get(key));
