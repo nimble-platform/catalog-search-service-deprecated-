@@ -342,19 +342,19 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		inputParamaterForExecuteSelect.getParameters().add(property);
 		inputParamaterForExecuteSelect.getParametersURL().add(propertyURL);
 		inputParamaterForExecuteSelect.getPropertySources().add(propertySource);
-		List<String> sparqls = factory.createSparql(inputParamaterForExecuteSelect, reader,false,false);
+		List<String> sparqls = factory.createSparql(inputParamaterForExecuteSelect, reader, false, false);
 		if (sparqls != null && sparqls.size() > 0) {
 			String sparql = sparqls.get(0);
 			Logger.getAnonymousLogger().log(Level.INFO, sparql);
 			Object result = reader.query(sparql);
 			List<String> values = reader.createResultList(result, "hasValue");
 			List<String> valuesCleanedUP = new ArrayList<String>();
-			for (String str: values){
-				if (!valuesCleanedUP.contains(str)){
+			for (String str : values) {
+				if (!valuesCleanedUP.contains(str)) {
 					valuesCleanedUP.add(str);
 				}
 			}
-			
+
 			return valuesCleanedUP;
 		} else {
 			Logger.getAnonymousLogger().log(Level.WARNING,
@@ -478,16 +478,17 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		}
 		return resultOfSerachTerm;
 	}
-	
-	
+
 	private void requestBasedOnTranslationLabelSimplfied(List<Entity> allConcepts, String keyword, Language language) {
 		MarmottaReader readerMarmotta = (MarmottaReader) reader;
 		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
-		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT distinct ?subject  ?translation WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.nimble-project.org/onto/eclass#CodeConcept>. ?subject <http://www.w3.org/2004/02/skos/core#prefLabel> ?translation.  ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue. FILTER (regex( str(?translation),\""+keyword+ "\",\"i\") && regex (str(?codeValue),str(?subject))).}";
+		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT distinct ?subject  ?translation WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.nimble-project.org/onto/eclass#CodeConcept>. ?subject <http://www.w3.org/2004/02/skos/core#prefLabel> ?translation.  ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue. FILTER (regex( str(?translation),\""
+				+ keyword + "\",\"i\") && regex (str(?codeValue),str(?subject))).}";
 		Logger.getAnonymousLogger().log(Level.INFO, query);
-				
-				Object result = readerMarmotta.query(query);
-		List<String[]> allProperties = readerMarmotta.createResultListArray(result, new String[]{"subject", "translation"});
+
+		Object result = readerMarmotta.query(query);
+		List<String[]> allProperties = readerMarmotta.createResultListArray(result,
+				new String[] { "subject", "translation" });
 		List<Entity> resultOfSearchTerm = new ArrayList<Entity>();
 		for (String[] element : allProperties) {
 
@@ -497,8 +498,8 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			entity.setTranslatedURL(value);
 			entity.setLanguage(Language.UNKNOWN);
 			resultOfSearchTerm.add(entity);
-		}		
-				
+		}
+
 		for (Entity entity : resultOfSearchTerm) {
 			boolean contained = false;
 			for (Entity e : allConcepts) {
@@ -513,8 +514,6 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		}
 
 	}
-	
-	
 
 	private void requestBasedOnTranslationLabel(List<Entity> allConcepts, String keyword, Language language) {
 		MarmottaReader readerMarmotta = (MarmottaReader) reader;
@@ -576,17 +575,17 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
 		outputForPropertyFromConcept.setDatatypeProperty(true);
 		outputForPropertyFromConcept.setObjectProperty(false);
-		if ((urlOfProperty.contains("http:") || (urlOfProperty.contains("https")))){
-		PropertyType propertyType = reader.getPropertyType(urlOfProperty);
+		if ((urlOfProperty.contains("http:") || (urlOfProperty.contains("https")))) {
+			PropertyType propertyType = reader.getPropertyType(urlOfProperty);
 
-		if (propertyType == PropertyType.OBJECTPROPERTY) {
+			if (propertyType == PropertyType.OBJECTPROPERTY) {
 
-			outputForPropertyFromConcept.setDatatypeProperty(false);
-			outputForPropertyFromConcept.setObjectProperty(true);
-		}
-		}
-		else{
-			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot determine type{datatype, object property} of property:  " + urlOfProperty);
+				outputForPropertyFromConcept.setDatatypeProperty(false);
+				outputForPropertyFromConcept.setObjectProperty(true);
+			}
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Cannot determine type{datatype, object property} of property:  " + urlOfProperty);
 		}
 		result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
 
@@ -629,8 +628,6 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
 		});
 
-		
-		
 		return result;
 	}
 
@@ -652,7 +649,12 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 					name = properties.get(0);
 				}
 				if (!values.isEmpty()) {
-					value = values.get(0);
+					for (String v : values) {
+						value += v + ";";
+					}
+					if (value.substring(value.length() - 1).equals(";")) {
+						value = value.substring(0, value.length() - 1);
+					}
 				}
 				resultFinal.put(name, value);
 			} else {
