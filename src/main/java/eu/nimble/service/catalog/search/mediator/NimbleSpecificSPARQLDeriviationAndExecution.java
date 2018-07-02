@@ -418,57 +418,6 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 	 */
 	public List<Entity> detectNimbleSpecificMeaningFromAKeywordReferringToInstances(String keyword,
 			String translationLabel, Language language, boolean useSimplifiedSPARQL) {
-		// String sparql = "PREFIX rdf:
-		// <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl:
-		// <http://www.w3.org/2002/07/owl#>PREFIX rdfs:
-		// <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd:
-		// <http://www.w3.org/2001/XMLSchema#> SELECT ?subject ?value WHERE {
-		// ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
-		// <http://www.w3.org/2004/02/skos/core#Concept>. ?subject <"
-		// + translationLabel
-		// + "> ?value. ?instance
-		// <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
-		// <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>.
-		// ?instance
-		// <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification>
-		// ?type. ?type
-		// <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode>
-		// ?code. ?code
-		// <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI>
-		// ?codeValue.FILTER regex( str(?value),\""
-		// + keyword + "\",\"i\"). FILTER regex(str(?subject),
-		// str(?codeValue))}";
-		// Object result = reader.query(sparql);
-		// String[] columns = new String[] { "subject", "value" };
-		// List<String[]> allConcepts = reader.createResultListArray(result,
-		// columns);
-		//
-		// List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
-		// String languagepostfix = language.toOntologyPostfix(language);
-		// for (String[] row : allConcepts) {
-		// String value = row[1];
-		// if (value != null && value.length() > 1 &&
-		// value.contains(languagepostfix)) {
-		// value = value.substring(0, value.indexOf(languagepostfix));
-		//
-		// Entity entity = new Entity();
-		// entity.setUrl(row[0]);
-		// entity.setTranslatedURL(value);
-		// entity.setConceptSource(ConceptSource.CUSTOM);
-		// entity.setLanguage(language);
-		// resultOfSerachTerm.add(entity);
-		// } else {
-		// if (!value.contains("@")) {
-		//
-		// Entity entity = new Entity();
-		// entity.setUrl(row[0]);
-		// entity.setTranslatedURL(value);
-		// entity.setConceptSource(ConceptSource.CUSTOM);
-		// entity.setLanguage(Language.UNKNOWN);
-		// resultOfSerachTerm.add(entity);
-		// }
-		// }
-		// }
 		List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
 		requestBasedOnConceptsURI(resultOfSerachTerm, keyword);
 		if (!useSimplifiedSPARQL) {
@@ -486,9 +435,12 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 				+ keyword + "\",\"i\") && regex (str(?codeValue),str(?subject))).}";
 		Logger.getAnonymousLogger().log(Level.INFO, query);
 
-		Object result = readerMarmotta.query(query);
+		
+		String query2 = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>	PREFIX owl: <http://www.w3.org/2002/07/owl#>			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>			PREFIX cbc: <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#>			PREFIX ecl: <http://www.nimble-project.org/onto/eclass#>			SELECT distinct ?uri ?translation			WHERE {	   ?uri a skos:Concept .			   ?uri a ecl:CodeConcept .			     ?uri skos:prefLabel ?translation .			    FILTER regex(?translation, \""+keyword+ "\", \"i\" ).			   bind (str(?uri) as ?strUri) .			     ?subject cbc:URI ?strUri .			}";
+		
+		Object result = readerMarmotta.query(query2);
 		List<String[]> allProperties = readerMarmotta.createResultListArray(result,
-				new String[] { "subject", "translation" });
+				new String[] { "uri", "translation" });
 		List<Entity> resultOfSearchTerm = new ArrayList<Entity>();
 		for (String[] element : allProperties) {
 
