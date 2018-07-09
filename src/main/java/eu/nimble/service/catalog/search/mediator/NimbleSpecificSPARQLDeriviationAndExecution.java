@@ -470,10 +470,6 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 	private void requestBasedOnTranslationLabelSimplfied(List<Entity> allConcepts, String keyword, Language language) {
 		MarmottaReader readerMarmotta = (MarmottaReader) reader;
 		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
-//		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT distinct ?subject  ?translation WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.nimble-project.org/onto/eclass#CodeConcept>. ?subject <http://www.w3.org/2004/02/skos/core#prefLabel> ?translation.  ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue. FILTER (regex( str(?translation),\""
-//				+ keyword + "\",\"i\") && regex (str(?codeValue),str(?subject))).}";
-
-		
 		String query2 = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>	PREFIX owl: <http://www.w3.org/2002/07/owl#>			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>			PREFIX cbc: <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#>			PREFIX ecl: <http://www.nimble-project.org/onto/eclass#>			SELECT distinct ?uri ?translation			WHERE {	   ?uri a skos:Concept .			   ?uri a ecl:CodeConcept .			     ?uri skos:prefLabel ?translation .			    FILTER regex(?translation, \""+keyword+ "\", \"i\" ).			   bind (str(?uri) as ?strUri) .			     ?subject cbc:URI ?strUri .			}";
 		Logger.getAnonymousLogger().log(Level.INFO, query2);
 		
