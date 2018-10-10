@@ -46,7 +46,7 @@ public class TestSearchController {
 	//
 	// }
 
-	// @Ignore
+	 @Ignore
 	@Test
 	public void testgetPropertyValuesFromOrangeGroup() {
 		serachController = new SearchController();

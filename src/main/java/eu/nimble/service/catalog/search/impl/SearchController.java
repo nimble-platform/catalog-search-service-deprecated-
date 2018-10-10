@@ -30,8 +30,10 @@ import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.HybridConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+import eu.nimble.service.catalog.search.impl.dao.enums.TypeOfDataSource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
@@ -86,11 +88,15 @@ public class SearchController {
 	
 	@Value("${nimble.shared.property.catalogue.search.configuration:./src/main/resources/sqpConfiguration.xml}")
 	private String sqpConfigurationPath;
+	
+	@Value("${nimble.shared.property.hybridConfiguration}")
+	private String hybridConfiguration;
 
 	private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
 	private SQPDerivationService sQPDerivationService = null;
 	private NimbleAdaptionServiceOfSearchResults nimbleAdaptionServiceOfSearchResults = null;
 	private 	SOLRReader solrReader = null;
+	private HybridConfiguration hConfiguration = null;
 
 	@PostConstruct
 	public void init() {
@@ -148,6 +154,71 @@ public class SearchController {
 		
 		if (useSOLRIndex){
 			this.solrReader = new SOLRReader();
+		}
+		
+		hConfiguration = createConfigurationBasedOnEnvVariable(hybridConfiguration);
+		
+
+	}
+
+	private HybridConfiguration createConfigurationBasedOnEnvVariable(String hybridConfiguration2) {
+		String[] allSOLRSources = hybridConfiguration2.split(",");
+		HybridConfiguration conf = new HybridConfiguration();
+		for (int i =0; i < allSOLRSources.length; i++){
+			allSOLRSources[i] = allSOLRSources[i].replaceAll(" ", "");
+			setSpecificMethodsToSOLR(allSOLRSources, conf, i);
+		}
+		return conf;
+		
+		
+	}
+/**
+ * Based on variables of HybridConfiguration
+		 * detectMeaningLanguageSpecific = "MARMOTTA";
+		executeSPARQLWithOptionalSelect  = "MARMOTTA";
+		executeSPARQLSelect  = "MARMOTTA";
+		getPropertyValuesDiscretised  = "MARMOTTA";
+		getReferencesFromAConcept  = "MARMOTTA";
+		getPropertyValuesFromGreenGroup  = "MARMOTTA";
+		getPropertyValuesFromOrangeGroup  = "MARMOTTA";
+		getLogicalView  = "MARMOTTA";
+		getPropertyFromConcept  = "MARMOTTA";
+		getInstantiatedPropertiesFromConcept  = "MARMOTTA";
+		 
+ * @param allSOLRSources
+ * @param conf
+ * @param i
+ */
+	private void setSpecificMethodsToSOLR(String[] allSOLRSources, HybridConfiguration conf, int i) {
+		if (allSOLRSources[i].equals("detectMeaningLanguageSpecific")){
+			conf.setDetectMeaningLanguageSpecific("SOLR");
+		}
+		if (allSOLRSources[i].equals("executeSPARQLWithOptionalSelect")){
+			conf.setExecuteSPARQLWithOptionalSelect("SOLR");
+		}
+		if (allSOLRSources[i].equals("executeSPARQLSelect")){
+			conf.setExecuteSPARQLSelect("SOLR");
+		}
+		if (allSOLRSources[i].equals("getPropertyValuesDiscretised")){
+			conf.setGetPropertyValuesDiscretised("SOLR");
+		}
+		if (allSOLRSources[i].equals("getReferencesFromAConcept")){
+			conf.setGetReferencesFromAConcept("SOLR");
+		}
+		if (allSOLRSources[i].equals("getPropertyValuesFromGreenGroup")){
+			conf.setGetPropertyValuesFromGreenGroup("SOLR");
+		}
+		if (allSOLRSources[i].equals("getPropertyValuesFromOrangeGroup")){
+			conf.setGetPropertyValuesFromOrangeGroup("SOLR");
+		}
+		if (allSOLRSources[i].equals("getLogicalView")){
+			conf.setGetLogicalView("SOLR");
+		}
+		if (allSOLRSources[i].equals("getPropertyFromConcept")){
+			conf.setGetPropertyFromConcept("SOLR");
+		}
+		if (allSOLRSources[i].equals("getInstantiatedPropertiesFromConcept")){
+			conf.setGetInstantiatedPropertiesFromConcept("SOLR");
 		}
 	}
 
@@ -238,13 +309,14 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
-			if (!useSOLRIndex){
+			if (!useSOLRIndex || hConfiguration.getDetectMeaningLanguageSpecific()!=TypeOfDataSource.SOLR){
 			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
 					inputParameterdetectMeaningLanguageSpecific.getKeyword(),
 					inputParameterdetectMeaningLanguageSpecific.getLanguage(),languageLabel,useSimplifiedSPARQL);
 			MeaningResult meaningResult = new MeaningResult();
 			meaningResult.setConceptOverview(concepts);
 			meaningResult.setSearchTyp("ExplorativeSearch");
+			meaningResult.setSource(TypeOfDataSource.MARMOTTA);
 
 			Gson output = new Gson();
 			String result = "";
@@ -255,6 +327,7 @@ public class SearchController {
 				MeaningResult meaningResult = new MeaningResult();
 				meaningResult.setConceptOverview(solrReader.getAllConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific.getKeyword(), inputParameterdetectMeaningLanguageSpecific.getLanguage()));
 				meaningResult.setSearchTyp("ExplorativeSearch");
+				meaningResult.setSource(TypeOfDataSource.SOLR);
 				String result = "";
 				Gson output = new Gson();
 				result = output.toJson(meaningResult);
