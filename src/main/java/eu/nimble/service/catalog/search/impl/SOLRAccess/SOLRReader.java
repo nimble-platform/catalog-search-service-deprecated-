@@ -30,7 +30,9 @@ import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 import org.apache.solr.client.solrj.SolrClient;
@@ -40,6 +42,8 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+
+import com.google.gson.JsonElement;
 
 public class SOLRReader implements IReader {
 
@@ -1025,5 +1029,11 @@ public class SOLRReader implements IReader {
 		translationResult.setTranslation(translation);
 		translationResult.setSuccess(true);
 		return translationResult;
+	}
+
+	public OutputForPropertyValuesFromOrangeGroup  getPropertyValuesFromOrangeGroup(
+			InputParameterForPropertyValuesFromOrangeGroup inputParameterForPropertyValuesFromOrangeGroup) {
+		// TODO Auto-generated method stub
+		return new OutputForPropertyValuesFromOrangeGroup () ;
 	}
 }
