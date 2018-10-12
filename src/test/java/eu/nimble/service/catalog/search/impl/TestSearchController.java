@@ -1,13 +1,18 @@
 package eu.nimble.service.catalog.search.impl;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +22,11 @@ import com.google.gson.Gson;
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
+import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 import eu.nimble.service.catalog.search.impl.dao.Filter;
+import eu.nimble.service.catalog.search.impl.dao.HybridConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+import eu.nimble.service.catalog.search.impl.dao.enums.TypeOfDataSource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromGreenGroup;
@@ -28,11 +36,18 @@ import eu.nimble.service.catalog.search.impl.dao.input.Parameter;
 import eu.nimble.service.catalog.search.impl.dao.input.Tuple;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.any;
+
 public class TestSearchController {
 
 	private static final String SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML = "./src/main/resources/sqpConfiguration.xml";
 
 	SearchController serachController;
+	
+	 @Mock
+	    SOLRReader readerMock;
 
 	private static final String C_ONTOLOGY_FURNITURE_TAXONOMY_V1_4_BIBA_OWL = "C:/ontology/FurnitureSectorTaxonomy-v1.8_BIBA.owl";
 
@@ -46,7 +61,7 @@ public class TestSearchController {
 	//
 	// }
 
-	// @Ignore
+	 @Ignore
 	@Test
 	public void testgetPropertyValuesFromOrangeGroup() {
 		serachController = new SearchController();
@@ -91,6 +106,28 @@ public class TestSearchController {
 		System.out.println(r);
 
 	}
+	
+	@Test
+	public void testgetLogicalView_Marmotta2() {
+
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("http://nimble-staging.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+
+		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		inputParamterForGetLogicalView.setConcept("http://www.nimble-project.org/resource/eclass/29160508");
+		inputParamterForGetLogicalView.setStepRange(1);
+		inputParamterForGetLogicalView.setLanguage("en");
+
+		HttpEntity<Object> result = serachController.getLogicalView(inputParamterForGetLogicalView);
+		String r = result.getBody().toString();
+		System.out.println(r);
+
+	}
+	
 
 	@Test
 	public void testgetPropertyFromConcept() {
@@ -136,6 +173,7 @@ public class TestSearchController {
 
 	}
 
+	@Ignore
 	@Test
 	public void testgetPropertyValuesFromGreenGroup_BUG_NIMBLE93() {
 		SearchController serachController = new SearchController();
@@ -162,7 +200,7 @@ public class TestSearchController {
 		assertTrue(r.contains("20"));
 		
 	}
-	
+	@Ignore
 	@Test
 	public void testgetPropertyValuesFromGreenGroup_BUG_DomainSpecificProperties() {
 		SearchController serachController = new SearchController();
@@ -368,6 +406,7 @@ public class TestSearchController {
 
 	}
 
+	@Ignore
 	@Test
 	public void testdetectMeaningLanguageSpecific() {
 
@@ -388,6 +427,7 @@ public class TestSearchController {
 		System.out.println(r);
 	}
 
+	@Ignore
 	@Test
 	public void testdetectMeaningLanguageSpecificII() {
 
@@ -419,6 +459,7 @@ public class TestSearchController {
 		System.out.println(r);
 	}
 
+	@Ignore
 	@Test
 	public void testExecuteSPARQLSelectAgainstEClass() {
 
@@ -489,7 +530,7 @@ public class TestSearchController {
 		String r = result.getBody().toString();
 		System.out.println(r);
 	}
-
+	@Ignore
 	@Test
 	public void testExecuteOptionalSPARQLSelectAgainstEClass() {
 
@@ -653,6 +694,7 @@ public class TestSearchController {
 	
 	}
 	
+	@Ignore
 	@Test
 	public void testgetInstantiatedPropertiesFromConceptForSOLR(){
 		
@@ -705,6 +747,68 @@ public class TestSearchController {
 		
 		
 	}	
+	
+	
+	@Test
+	public void testHybridModus_DetectMeaningLanguageSpecific_SOL_NotInvoked(){
+		
+		SearchController serachController = new SearchController();
+		serachController.setUseSOLRIndex(true);
+		//serachController.init();
+		
+		readerMock =  mock(SOLRReader.class); 
+		serachController.setSolrReader(readerMock);
+	
+		
+		
+		when(readerMock.getAllConceptsLanguageSpecific(anyString(), any(Language.class))).thenReturn( new ArrayList<Entity>());
+		
+		InputParameterdetectMeaningLanguageSpecific input = new InputParameterdetectMeaningLanguageSpecific();
+		input.setLanguage("en");
+		input.setKeyword("Varnish");
+
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(input);
+		
+		
+		HttpEntity<Object> result = serachController.detectMeaningLanguageSpecific(inputAsJson);
+		
+		
+		assertEquals(serachController.gethConfiguration().getDetectMeaningLanguageSpecific(), TypeOfDataSource.MARMOTTA);
+		verify(readerMock, times(0)).getAllConceptsLanguageSpecific(anyString(), any(Language.class));
+		
+	}
+	
+	@Test
+	public void testHybridModus_DetectMeaningLanguageSpecific_SOL_Invoked(){
+		
+		SearchController serachController = new SearchController();
+		serachController.setUseSOLRIndex(true);
+		
+		readerMock =  mock(SOLRReader.class); 
+		serachController.setSolrReader(readerMock);
+	
+		serachController.gethConfiguration().setDetectMeaningLanguageSpecific("SOLR");
+		
+		when(readerMock.getAllConceptsLanguageSpecific(anyString(), any(Language.class))).thenReturn( new ArrayList<Entity>());
+		
+		InputParameterdetectMeaningLanguageSpecific input = new InputParameterdetectMeaningLanguageSpecific();
+		input.setLanguage("en");
+		input.setKeyword("Varnish");
+
+		Gson gson = new Gson();
+		String inputAsJson = gson.toJson(input);
+		
+		
+		HttpEntity<Object> result = serachController.detectMeaningLanguageSpecific(inputAsJson);
+		
+		
+		assertEquals(serachController.gethConfiguration().getDetectMeaningLanguageSpecific(), TypeOfDataSource.SOLR);
+		verify(readerMock, times(1)).getAllConceptsLanguageSpecific(anyString(), any(Language.class));
+		
+
+		
+	}
 	
 	
 	
