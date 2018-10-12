@@ -106,6 +106,28 @@ public class TestSearchController {
 		System.out.println(r);
 
 	}
+	
+	@Test
+	public void testgetLogicalView_Marmotta2() {
+
+		SearchController serachController = new SearchController();
+		serachController.setMarmottaUri("http://nimble-staging.salzburgresearch.at/marmotta");
+		serachController.setOntologyFile("null");
+		serachController.setSqpConfigurationPath(SRC_MAIN_RESOURCES_SQP_CONFIGURATION_XML);
+		serachController.setLanguageLabel("http://www.w3.org/2004/02/skos/core#prefLabel");
+		serachController.init();
+
+		InputParamterForGetLogicalView inputParamterForGetLogicalView = new InputParamterForGetLogicalView();
+		inputParamterForGetLogicalView.setConcept("http://www.nimble-project.org/resource/eclass/29160508");
+		inputParamterForGetLogicalView.setStepRange(1);
+		inputParamterForGetLogicalView.setLanguage("en");
+
+		HttpEntity<Object> result = serachController.getLogicalView(inputParamterForGetLogicalView);
+		String r = result.getBody().toString();
+		System.out.println(r);
+
+	}
+	
 
 	@Test
 	public void testgetPropertyFromConcept() {
