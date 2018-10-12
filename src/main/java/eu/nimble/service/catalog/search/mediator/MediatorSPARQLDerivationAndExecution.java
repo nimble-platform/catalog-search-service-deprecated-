@@ -746,6 +746,8 @@ public class MediatorSPARQLDerivationAndExecution {
 		}
 		return Collections.emptyList();
 	}
+	
+	
 
 	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language, String translationLabel,
 			boolean useSimplifiedSPARQL) {

@@ -424,7 +424,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 			requestBasedOnTranslationLabel(resultOfSerachTerm, keyword, language);
 		} else {
 			requestBasedOnURISimplified(resultOfSerachTerm,keyword);
-			requestBasedOnTranslationLabelSimplfied(resultOfSerachTerm, keyword, language);
+			requestBasedOnItemTypeAndNameAttributWithoutTranslation(resultOfSerachTerm, keyword);
 		}
 		return resultOfSerachTerm;
 	}
@@ -467,6 +467,38 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		
 	}
 
+	private void requestBasedOnItemTypeAndNameAttributWithoutTranslation(List<Entity> allConcepts, String keyword){
+		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT distinct  ?name ?codeValue WHERE {   ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#name> ?name. FILTER regex(?name, \""+ keyword+"\", \"i\" ).}";
+		MarmottaReader readerMarmotta = (MarmottaReader) reader;
+		Object result = readerMarmotta.query(query);
+		List<String[]> allConcepts2 = readerMarmotta.createResultListArray(result,
+				new String[] { "codeValue", "name" });
+		List<Entity> resultOfSearchTerm = new ArrayList<Entity>();
+		for (String[] element : allConcepts2) {
+
+			Entity entity = new Entity();
+			entity.setUrl(element[0]);
+			String value = element[1];
+			entity.setTranslatedURL(value);
+			entity.setLanguage(Language.UNKNOWN);
+			resultOfSearchTerm.add(entity);
+		}
+
+		for (Entity entity : resultOfSearchTerm) {
+			boolean contained = false;
+			for (Entity e : allConcepts) {
+				if (e.getUrl().equals(entity.getUrl())) {
+					contained = true;
+					break;
+				}
+			}
+			if (!contained) {
+				allConcepts.add(entity);
+			}
+		}
+
+	}
+	
 	private void requestBasedOnTranslationLabelSimplfied(List<Entity> allConcepts, String keyword, Language language) {
 		MarmottaReader readerMarmotta = (MarmottaReader) reader;
 		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
