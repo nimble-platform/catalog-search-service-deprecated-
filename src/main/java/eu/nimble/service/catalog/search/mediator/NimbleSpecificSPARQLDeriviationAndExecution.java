@@ -29,6 +29,7 @@ import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class NimbleSpecificSPARQLDeriviationAndExecution {
 
+	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_BASIC_COMPONENTS_2_PRODUCT_IMAGE = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ProductImage";
 	private static final String HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL = "http://www.w3.org/2004/02/skos/core#prefLabel";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_DIMENSION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#Dimension";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty";
@@ -274,7 +275,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		Logger.getAnonymousLogger().log(Level.INFO, sparql);
 		Object result = reader.query(sparql);
 		List<String> resultAsList = reader.createResultList(result, "property");
-		removeNimbleSpecificInternalProperties(resultAsList);
+		removeNimbleSpecificInternalAndImageRelatedProperties(resultAsList);
 		return resultAsList;
 
 	}
@@ -322,7 +323,8 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		return customPropertyInformations;
 	}
 
-	public void removeNimbleSpecificInternalProperties(List<String> resultAsList) {
+	public void removeNimbleSpecificInternalAndImageRelatedProperties(List<String> resultAsList) {
+		resultAsList.remove(URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_BASIC_COMPONENTS_2_PRODUCT_IMAGE);
 		resultAsList.remove(HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE);
 		resultAsList.remove(
 				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION);
