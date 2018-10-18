@@ -688,7 +688,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 					resultFinal.put(name, value);
 				}
 			} else {
-				if (!key.contains("CommodityClassification")) {
+				if ((!key.contains("CommodityClassification")) && (!key.contains("Dimension"))&& (!key.contains("ProductImage"))) {
 					resultFinal.put(key, result.get(key));
 				}
 			}

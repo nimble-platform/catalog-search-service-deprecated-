@@ -1083,7 +1083,8 @@ public class SearchController {
 				outputForExecuteSelect = sparqlDerivation
 						.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 				
-
+				deleteIncompleteResponse(outputForExecuteSelect);
+				
 				String result = "";
 				result = gson.toJson(outputForExecuteSelect);
 
@@ -1104,6 +1105,32 @@ public class SearchController {
 				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
+	}
+
+	
+
+	private void deleteIncompleteResponse(OutputForExecuteSelect outputForExecuteSelect) {
+		List<Integer> indexesToBeDeleted = new ArrayList<Integer>(); 
+		for (int i =0; i < outputForExecuteSelect.getColumns().size(); i++){
+			String column = outputForExecuteSelect.getColumns().get(i);
+			if (column.contains("Dimension")){
+				indexesToBeDeleted.add(i);
+			}
+			if (column.contains("ProductImage")){
+				indexesToBeDeleted.add(i);
+			}
+			if (column.contains("AdditionalItemProperty")){
+				indexesToBeDeleted.add(i);
+			}
+		}
+		
+		for (int i =0; i < indexesToBeDeleted.size(); i++){
+			outputForExecuteSelect.getColumns().remove(indexesToBeDeleted.get(i)-i);
+			for (int a =0; a < outputForExecuteSelect.getRows().size(); a++){
+				outputForExecuteSelect.getRows().get(a).remove(indexesToBeDeleted.get(i)-i);
+			}
+		}
+		
 	}
 
 	@CrossOrigin
