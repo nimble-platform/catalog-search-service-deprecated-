@@ -110,7 +110,7 @@ public class SearchController {
 		logger.info("Initializing with marmottaUri: {}, languageLabel: {}, sqpConfigurationPath: {}",
 				marmottaUri, languageLabel, sqpConfigurationPath);
 
-		if (ontologyFile == null ||ontologyFile.equals(NULL_ASSIGNED_VALUE) && (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
+		if ((ontologyFile == null ||ontologyFile.equals(NULL_ASSIGNED_VALUE)) && (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
 			sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
 			if (useSOLRIndex){
 				
@@ -126,7 +126,7 @@ public class SearchController {
 					
 					String url = marmottaUri + prefix + "solr/" + "catalogue2";
 					String urlForIntensionalQueriesProperties =  marmottaUri + prefix + "solr/"+ "properties";
-					String urlForIntensionalQueriesConcepts =  marmottaUri + prefix + "solr/"+ "Concepts";
+					String urlForIntensionalQueriesConcepts =  marmottaUri + prefix + "solr/"+ "catalogue2";
 					this.solrReader = new SOLRReader(url, urlForIntensionalQueriesProperties, urlForIntensionalQueriesConcepts);
 				}
 				
@@ -158,8 +158,23 @@ public class SearchController {
 //				languageLabel);
 		}
 		
-		if (useSOLRIndex){
-			this.solrReader = new SOLRReader();
+		if (useSOLRIndex && this.solrReader==null){
+			
+			if (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE)){
+				this.solrReader = new SOLRReader();
+				}
+				else{
+					String prefix = "";
+					char lastCharacter = marmottaUri.charAt(marmottaUri.length()-1); 
+					if (lastCharacter!= '/'){
+						prefix = "/";
+					}
+					
+					String url = marmottaUri + prefix + "solr/" + "catalogue2";
+					String urlForIntensionalQueriesProperties =  marmottaUri + prefix + "solr/"+ "properties";
+					String urlForIntensionalQueriesConcepts =  marmottaUri + prefix + "solr/"+ "catalogue2";
+					this.solrReader = new SOLRReader(url, urlForIntensionalQueriesProperties, urlForIntensionalQueriesConcepts);
+				}
 		}
 		
 		hConfiguration = createConfigurationBasedOnEnvVariable(hybridConfiguration);

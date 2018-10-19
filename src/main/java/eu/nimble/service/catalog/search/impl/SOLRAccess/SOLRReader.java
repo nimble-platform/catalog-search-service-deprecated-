@@ -66,25 +66,13 @@ public class SOLRReader implements IReader {
 		init();
 	}
 
-	public void init() {
-		SystemDefaultHttpClient httpClient = new SystemDefaultHttpClient();
-		// client = new HttpSolrClient.Builder(url).build();
-		// clientForIntensionalQueries = new
-		// HttpSolrClient.Builder(urlForIntensionalQueries).build();
-		client = new HttpSolrClient(url, httpClient);
-		clientForIntensionalQueriesProperties = new HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
-		clientForIntensionalQueriesConcepts = new HttpSolrClient(urlForIntensionalQueriesConcepts, httpClient);
-
-		entityMappingService = new EntityMappingService();
-	}
-
 	public SOLRReader(String url) {
 		if (url.charAt(url.length() - 1) == '/') {
 			url = url.substring(0, url.length() - 1);
 		}
 
 		urlForIntensionalQueriesProperties = url + "/" + "properties";
-		urlForIntensionalQueriesConcepts = url + "/" + "Concepts";
+		urlForIntensionalQueriesConcepts = url + "/" + "catalogue2";
 		this.url = url + "/" + "catalogue2";
 
 		this.url = url;
@@ -100,6 +88,20 @@ public class SOLRReader implements IReader {
 		init();
 	}
 
+	
+	public void init() {
+		SystemDefaultHttpClient httpClient = new SystemDefaultHttpClient();
+		// client = new HttpSolrClient.Builder(url).build();
+		// clientForIntensionalQueries = new
+		// HttpSolrClient.Builder(urlForIntensionalQueries).build();
+		client = new HttpSolrClient(url, httpClient);
+		clientForIntensionalQueriesProperties = new HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
+		clientForIntensionalQueriesConcepts = new HttpSolrClient(urlForIntensionalQueriesConcepts, httpClient);
+
+		entityMappingService = new EntityMappingService();
+	}
+
+	
 	public Map<String, String> createKeyValueOfAllPropertiesFromResultList(Object resultSet, Language language) {
 		QueryResponse response = (QueryResponse) resultSet;
 		SolrDocumentList results = response.getResults();
@@ -258,6 +260,7 @@ public class SOLRReader implements IReader {
 			QueryResponse response = clientForIntensionalQueriesConcepts.query(query);
 			return response;
 		} catch (Exception e) {
+			e.printStackTrace();
 			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
 		}
 		return null;
@@ -349,9 +352,9 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public List<String> getAllConcepts(String arg0) {
-		String query = "class: *\"" + arg0 + "\"*";
-		Object response = queryIntensionalProperties(query);
-		List<String> result = createResultList(response, "class");
+		String query = "item_commodity_classification_mix: *\"" + arg0 + "\"*";
+		Object response = queryIntensionalConcepts(query);
+		List<String> result = createResultList(response, "item_commodity_classification_mix");
 		List<String> finalResult = new ArrayList<String>();
 		String searchTermLowerCase = arg0.toLowerCase();
 		result.forEach(str -> {
@@ -383,6 +386,16 @@ public class SOLRReader implements IReader {
 			Entity entity = new Entity();
 			entity.setConceptSource(ConceptSource.ONTOLOGICAL);
 			entity.setLanguage(Language.UNKNOWN);
+			
+			String[] tokens = new String[2];
+			int index = cocnept.lastIndexOf(":");
+			tokens[0] = cocnept.substring(0, index);
+			tokens[1] = cocnept.substring(index+1);
+			if (tokens.length==2){
+			entity.setUrl(tokens[0]);
+			entity.setTranslatedURL(tokens[1]);
+			}
+			else{
 			entity.setUrl(cocnept);
 			
 			String shortName = "";
@@ -393,6 +406,7 @@ public class SOLRReader implements IReader {
 				shortName  = cocnept.substring(cocnept.lastIndexOf("/") + 1);
 			}
 			entity.setTranslatedURL(shortName);
+			}
 			Logger.getAnonymousLogger().log(Level.WARNING, "No translation available, using URL als translation label!!!");
 			entities.add(entity);
 		}
