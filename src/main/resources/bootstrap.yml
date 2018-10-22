@@ -34,6 +34,8 @@ nimble:
     property:
       marmottauri: ${MARMOTTA_URL:}
       languagelabel: ${LANGUAGE_LABEL:}
+      useSOLRIndex: ${USE_SOLR_INDEX:true}
+      hybridConfiguration: ${HYBRID_CONFIG:detectMeaningLanguageSpecific}
       catalogue:
         search:
           configuration: ${CATALOG_SEARCH_CONFIG:/resources/sqpConfiguration-default.xml}
