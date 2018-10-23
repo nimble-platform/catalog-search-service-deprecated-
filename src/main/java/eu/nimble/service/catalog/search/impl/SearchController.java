@@ -150,13 +150,9 @@ public class SearchController {
 				sparqlDerivation = new MediatorSPARQLDerivationAndExecution(marmottaUri, true,sQPDerivationService);
 			}
 		}
-		if (!useSOLRIndex){
 		sparqlDerivation.setLanguagelabel(languageLabel);
 		sQPDerivationService = new SQPDerivationService(sparqlDerivation, sqpConfigurationPath);
 		sparqlDerivation.updatesqpDerivationService(sQPDerivationService);
-//		nimbleAdaptionServiceOfSearchResults = new NimbleAdaptionServiceOfSearchResults(sparqlDerivation,
-//				languageLabel);
-		}
 		
 		if (useSOLRIndex && this.solrReader==null){
 			
