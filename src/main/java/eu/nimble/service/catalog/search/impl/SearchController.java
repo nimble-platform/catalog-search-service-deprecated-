@@ -533,7 +533,7 @@ public class SearchController {
 		for (int i = 0; i < paramterForGetLogicalView.getStepRange(); i++) {
 			for (LocalOntologyView concept2 : allAdressedConcepts.keySet()) {
 				LocalOntologyView view = null;
-				if (!useSOLRIndex){
+				if (!useSOLRIndex || hConfiguration.getGetLogicalView()!=TypeOfDataSource.SOLR){
 				view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(),
 						concept2, allAdressedConcepts.get(concept2),
 						Language.fromString(paramterForGetLogicalView.getLanguage()));
