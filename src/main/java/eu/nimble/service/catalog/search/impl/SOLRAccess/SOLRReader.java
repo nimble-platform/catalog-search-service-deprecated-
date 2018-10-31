@@ -30,7 +30,9 @@ import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 import org.apache.solr.client.solrj.SolrClient;
@@ -40,6 +42,8 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+
+import com.google.gson.JsonElement;
 
 public class SOLRReader implements IReader {
 
@@ -62,25 +66,13 @@ public class SOLRReader implements IReader {
 		init();
 	}
 
-	public void init() {
-		SystemDefaultHttpClient httpClient = new SystemDefaultHttpClient();
-		// client = new HttpSolrClient.Builder(url).build();
-		// clientForIntensionalQueries = new
-		// HttpSolrClient.Builder(urlForIntensionalQueries).build();
-		client = new HttpSolrClient(url, httpClient);
-		clientForIntensionalQueriesProperties = new HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
-		clientForIntensionalQueriesConcepts = new HttpSolrClient(urlForIntensionalQueriesConcepts, httpClient);
-
-		entityMappingService = new EntityMappingService();
-	}
-
 	public SOLRReader(String url) {
 		if (url.charAt(url.length() - 1) == '/') {
 			url = url.substring(0, url.length() - 1);
 		}
 
 		urlForIntensionalQueriesProperties = url + "/" + "properties";
-		urlForIntensionalQueriesConcepts = url + "/" + "Concepts";
+		urlForIntensionalQueriesConcepts = url + "/" + "catalogue2";
 		this.url = url + "/" + "catalogue2";
 
 		this.url = url;
@@ -94,6 +86,18 @@ public class SOLRReader implements IReader {
 		this.urlForIntensionalQueriesProperties = urlForIntensionalQueriesProperties;
 		this.urlForIntensionalQueriesConcepts = urlForIntensionalQueriesConcepts;
 		init();
+	}
+
+	public void init() {
+		SystemDefaultHttpClient httpClient = new SystemDefaultHttpClient();
+		// client = new HttpSolrClient.Builder(url).build();
+		// clientForIntensionalQueries = new
+		// HttpSolrClient.Builder(urlForIntensionalQueries).build();
+		client = new HttpSolrClient(url, httpClient);
+		clientForIntensionalQueriesProperties = new HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
+		clientForIntensionalQueriesConcepts = new HttpSolrClient(urlForIntensionalQueriesConcepts, httpClient);
+
+		entityMappingService = new EntityMappingService();
 	}
 
 	public Map<String, String> createKeyValueOfAllPropertiesFromResultList(Object resultSet, Language language) {
@@ -254,6 +258,7 @@ public class SOLRReader implements IReader {
 			QueryResponse response = clientForIntensionalQueriesConcepts.query(query);
 			return response;
 		} catch (Exception e) {
+			e.printStackTrace();
 			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
 		}
 		return null;
@@ -345,9 +350,9 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public List<String> getAllConcepts(String arg0) {
-		String query = "class: *\"" + arg0 + "\"*";
-		Object response = queryIntensionalProperties(query);
-		List<String> result = createResultList(response, "class");
+		String query = "item_commodity_classification_mix: *\"" + arg0 + "\"*";
+		Object response = queryIntensionalConcepts(query);
+		List<String> result = createResultList(response, "item_commodity_classification_mix");
 		List<String> finalResult = new ArrayList<String>();
 		String searchTermLowerCase = arg0.toLowerCase();
 		result.forEach(str -> {
@@ -375,22 +380,37 @@ public class SOLRReader implements IReader {
 
 		List<String> concepts = getAllConcepts(arg0);
 		List<Entity> entities = new ArrayList<Entity>();
-		for (String cocnept : concepts) {
+		for (String concept : concepts) {
 			Entity entity = new Entity();
 			entity.setConceptSource(ConceptSource.ONTOLOGICAL);
 			entity.setLanguage(Language.UNKNOWN);
-			entity.setUrl(cocnept);
-			
-			String shortName = "";
-			if (cocnept.contains("#")){
-				shortName  = cocnept.substring(cocnept.lastIndexOf("#") + 1);	
+
+			String[] tokens = new String[2];
+			int index = concept.lastIndexOf(":");
+			tokens[0] = concept.substring(0, index);
+			tokens[1] = concept.substring(index + 1);
+			if (tokens.length == 2 && tokens[0].length() > 0) {
+				entity.setUrl(tokens[0]);
+				entity.setTranslatedURL(tokens[1]);
+				entities.add(entity);
+			} else {
+				if (concept.contains("http")) {
+					{
+						entity.setUrl(concept);
+
+						String shortName = "";
+						if (concept.contains("#")) {
+							shortName = concept.substring(concept.lastIndexOf("#") + 1);
+						} else {
+							shortName = concept.substring(concept.lastIndexOf("/") + 1);
+						}
+						entity.setTranslatedURL(shortName);
+					}
+					Logger.getAnonymousLogger().log(Level.WARNING,
+							"No translation available, using URL als translation label!!!");
+					entities.add(entity);
+				}
 			}
-			else{
-				shortName  = cocnept.substring(cocnept.lastIndexOf("/") + 1);
-			}
-			entity.setTranslatedURL(shortName);
-			Logger.getAnonymousLogger().log(Level.WARNING, "No translation available, using URL als translation label!!!");
-			entities.add(entity);
 		}
 		return entities;
 	}
@@ -435,9 +455,10 @@ public class SOLRReader implements IReader {
 
 	@Override
 	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(String conceptURL) {
-		String query = "class: " + "\"" + conceptURL + "\""+ " And lmf.type : \"http://www.w3.org/2002/07/owl#ObjectProperty\"";
+		String query = "class: " + "\"" + conceptURL + "\""
+				+ " And lmf.type : \"http://www.w3.org/2002/07/owl#ObjectProperty\"";
 		Object response = queryIntensionalProperties(query);
-		
+
 		List<String[]> allProperties = createResultListArray(response, new String[] { "lmf.uri", "class" });
 		return allProperties;
 	}
@@ -616,11 +637,10 @@ public class SOLRReader implements IReader {
 		Object resposne = query(query);
 		return createKeyValueOfAllPropertiesFromResultList(resposne, Language.ENGLISH);
 	}
-	
-	
+
 	public Map<String, String> getPropertyValuesOfAIndividium(String uuid, Language language) {
 		// TODO Auto-generated method stub
-		String query = LMF_URI + ":" + "\""+ uuid+ "\"";
+		String query = LMF_URI + ":" + "\"" + uuid + "\"";
 		Object resposne = query(query);
 		return createKeyValueOfAllPropertiesFromResultList(resposne, language);
 	}
@@ -670,8 +690,7 @@ public class SOLRReader implements IReader {
 		String query = LMF_URI + ": " + "\"" + propertyURL + "\"";
 		Object response = queryIntensionalProperties(query);
 		List<String> result = createResultList(response, "range");
-		
-		
+
 		return result;
 	}
 
@@ -718,10 +737,10 @@ public class SOLRReader implements IReader {
 		Object response = queryIntensionalProperties(query);
 		List<String> results = createResultList(response, fieldOfInterest);
 		if (results.size() > 0) {
-			if (results.get(0) != null && !results.get(0).equals("null")){
-				return  results.get(0);
+			if (results.get(0) != null && !results.get(0).equals("null")) {
+				return results.get(0);
 			}
-			
+
 		}
 
 		if (propertyURL.contains("#")) {
@@ -737,16 +756,15 @@ public class SOLRReader implements IReader {
 		String query = LMF_URI + ":\"" + conceptURL + "\"";
 		String fieldOfInterest = deriveFieldFromLanguage(language);
 		Object response = queryIntensionalConcepts(query);
-		if (response == null){
+		if (response == null) {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot translate the concept...." + conceptURL);
-			if (conceptURL.contains("#")){
-				return conceptURL.substring(conceptURL.indexOf("#")+1);
-			}
-			else{
-				return conceptURL.substring(conceptURL.indexOf("/")+1);
+			if (conceptURL.contains("#")) {
+				return conceptURL.substring(conceptURL.indexOf("#") + 1);
+			} else {
+				return conceptURL.substring(conceptURL.indexOf("/") + 1);
 			}
 		}
-		
+
 		List<String> results = createResultList(response, fieldOfInterest);
 		if (results.size() > 0) {
 			return results.get(0);
@@ -787,9 +805,10 @@ public class SOLRReader implements IReader {
 	public List<String> getAllValuesForAGivenProperty(String concept, String property, PropertySource propertySource) {
 		String query = "item_commodity_classification_uri:" + "\"" + concept + "\"";
 		Object response = query(query);
-		if (response == null || ((QueryResponse)response).getResults().size()==0){
-			Logger.getAnonymousLogger().log(Level.WARNING, "No connection or item_commodity_classification_uri doesn't exists. Try without concept binding");
-		response = query ("*:*");
+		if (response == null || ((QueryResponse) response).getResults().size() == 0) {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"No connection or item_commodity_classification_uri doesn't exists. Try without concept binding");
+			response = query("*:*");
 		}
 		property = entityMappingService.mapPropertyURIToFieldName(property);
 		List<String> values = createResultList(response, property);
@@ -901,30 +920,30 @@ public class SOLRReader implements IReader {
 	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
 			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteSelect) {
 		// This is/ necessary to get the uuid for each instance
-		Map<String, String> result = getPropertyValuesOfAIndividium(inputParamaterForExecuteSelect.getUuid(), inputParamaterForExecuteSelect.getLanguage());
+		Map<String, String> result = getPropertyValuesOfAIndividium(inputParamaterForExecuteSelect.getUuid(),
+				inputParamaterForExecuteSelect.getLanguage());
 
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
-		
+
 		outputForExecuteSelect.getColumns().addAll(result.keySet());
 		ArrayList<String> row = new ArrayList<String>();
 		row.addAll(result.values());
 		outputForExecuteSelect.getRows().add(row);
-		
 
 		return outputForExecuteSelect;
 	}
 
 	public LocalOntologyView getViewForOneStepRange(String conceptAsUri, LocalOntologyView instance,
 			LocalOntologyView parentInstance, Language language) {
-		
+
 		LocalOntologyView localOntologyView = null;
-		
+
 		if (instance == null) {
 			localOntologyView = new LocalOntologyView();
 		} else {
 			localOntologyView = instance;
 		}
-		
+
 		List<String> properties = getAllPropertiesIncludingEverything(conceptAsUri);
 		for (String proeprty : properties) {
 			PropertyType pType = getPropertyType(proeprty);
@@ -944,10 +963,10 @@ public class SOLRReader implements IReader {
 			}
 
 		}
-		
+
 		return localOntologyView;
 	}
-	
+
 	public void addObjectPropertyToLogicalView(LocalOntologyView instance, Language language,
 			LocalOntologyView localOntologyView, String proeprty) {
 		List<String> ranges = getRangeOfProperty(proeprty);
@@ -973,19 +992,17 @@ public class SOLRReader implements IReader {
 		}
 	}
 
-	
 	public Map<String, List<Group>> generateGroup(int amountOfGroups, String conceptURL, String propertyURL) {
-		
+
 		String shortPropertyName = "";
-		if (propertyURL.contains("#")){
-			shortPropertyName = propertyURL.substring(propertyURL.indexOf("#")+1);
+		if (propertyURL.contains("#")) {
+			shortPropertyName = propertyURL.substring(propertyURL.indexOf("#") + 1);
+		} else {
+			if (propertyURL.contains("/")) {
+				shortPropertyName = propertyURL.substring(propertyURL.lastIndexOf("/") + 1);
+			}
 		}
-		else{
-			if (propertyURL.contains("/")){
-				shortPropertyName = propertyURL.substring(propertyURL.lastIndexOf("/")+1);
-			}	
-		}
-		
+
 		List<String> values = getAllValuesForAGivenProperty(conceptURL, propertyURL, null);
 		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
@@ -1009,12 +1026,13 @@ public class SOLRReader implements IReader {
 			return new HashMap<String, List<Group>>();
 		}
 		return new HashMap<String, List<Group>>();
-	
+
 	}
 
 	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
 			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept) {
-		return getAllObjectPropertiesIncludingEverythingAndReturnItsRange(inputParameterForGetReferencesFromAConcept.getConceptURL());
+		return getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+				inputParameterForGetReferencesFromAConcept.getConceptURL());
 	}
 
 	public TranslationResult translateProperty(String value, Language language, String languageLabel) {
@@ -1025,5 +1043,11 @@ public class SOLRReader implements IReader {
 		translationResult.setTranslation(translation);
 		translationResult.setSuccess(true);
 		return translationResult;
+	}
+
+	public OutputForPropertyValuesFromOrangeGroup getPropertyValuesFromOrangeGroup(
+			InputParameterForPropertyValuesFromOrangeGroup inputParameterForPropertyValuesFromOrangeGroup) {
+		// TODO Auto-generated method stub
+		return new OutputForPropertyValuesFromOrangeGroup();
 	}
 }

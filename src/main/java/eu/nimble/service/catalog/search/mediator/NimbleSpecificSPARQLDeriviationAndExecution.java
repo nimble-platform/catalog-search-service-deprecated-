@@ -29,6 +29,7 @@ import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
 public class NimbleSpecificSPARQLDeriviationAndExecution {
 
+	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_BASIC_COMPONENTS_2_PRODUCT_IMAGE = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ProductImage";
 	private static final String HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL = "http://www.w3.org/2004/02/skos/core#prefLabel";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_DIMENSION = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#Dimension";
 	private static final String URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_ADDITIONAL_ITEM_PROPERTY = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#AdditionalItemProperty";
@@ -274,7 +275,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		Logger.getAnonymousLogger().log(Level.INFO, sparql);
 		Object result = reader.query(sparql);
 		List<String> resultAsList = reader.createResultList(result, "property");
-		removeNimbleSpecificInternalProperties(resultAsList);
+		removeNimbleSpecificInternalAndImageRelatedProperties(resultAsList);
 		return resultAsList;
 
 	}
@@ -322,7 +323,8 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 		return customPropertyInformations;
 	}
 
-	public void removeNimbleSpecificInternalProperties(List<String> resultAsList) {
+	public void removeNimbleSpecificInternalAndImageRelatedProperties(List<String> resultAsList) {
+		resultAsList.remove(URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_BASIC_COMPONENTS_2_PRODUCT_IMAGE);
 		resultAsList.remove(HTTP_WWW_W3_ORG_1999_02_22_RDF_SYNTAX_NS_TYPE);
 		resultAsList.remove(
 				URN_OASIS_NAMES_SPECIFICATION_UBL_SCHEMA_XSD_COMMON_AGGREGATE_COMPONENTS_2_COMMODITY_CLASSIFICATION);
@@ -419,24 +421,91 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 	public List<Entity> detectNimbleSpecificMeaningFromAKeywordReferringToInstances(String keyword,
 			String translationLabel, Language language, boolean useSimplifiedSPARQL) {
 		List<Entity> resultOfSerachTerm = new ArrayList<Entity>();
-		requestBasedOnConceptsURI(resultOfSerachTerm, keyword);
 		if (!useSimplifiedSPARQL) {
+			requestBasedOnConceptsURI(resultOfSerachTerm, keyword);
 			requestBasedOnTranslationLabel(resultOfSerachTerm, keyword, language);
 		} else {
-			requestBasedOnTranslationLabelSimplfied(resultOfSerachTerm, keyword, language);
+			requestBasedOnURISimplified(resultOfSerachTerm,keyword);
+			requestBasedOnItemTypeAndNameAttributWithoutTranslation(resultOfSerachTerm, keyword);
 		}
 		return resultOfSerachTerm;
 	}
 
+	private void requestBasedOnURISimplified(List<Entity> resultOfSerachTerm, String keyword) {
+
+		
+		MarmottaReader readerMarmotta = (MarmottaReader) reader;
+		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
+
+		String query2 = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>								SELECT distinct ?uri		WHERE {	   ?instance  <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?uri.			    		    FILTER regex(str(?uri), \""+keyword+"\", \"i\" ).		}";
+		Logger.getAnonymousLogger().log(Level.INFO, query2);
+		
+		Object result = readerMarmotta.query(query2);
+		List<String[]> allProperties = readerMarmotta.createResultListArray(result,
+				new String[] { "uri" });
+		List<Entity> resultOfSearchTerm = new ArrayList<Entity>();
+		for (String[] element : allProperties) {
+
+			Entity entity = new Entity();
+			entity.setUrl(element[0]);
+			String value = element[0].substring(element[0].indexOf("#")+1);
+			entity.setTranslatedURL(value);
+			entity.setLanguage(Language.UNKNOWN);
+			resultOfSearchTerm.add(entity);
+		}
+
+		for (Entity entity : resultOfSearchTerm) {
+			boolean contained = false;
+			for (Entity e : resultOfSerachTerm) {
+				if (e.getUrl().equals(entity.getUrl())) {
+					contained = true;
+					break;
+				}
+			}
+			if (!contained) {
+				resultOfSerachTerm.add(entity);
+			}
+		}
+		
+	}
+
+	private void requestBasedOnItemTypeAndNameAttributWithoutTranslation(List<Entity> allConcepts, String keyword){
+		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT distinct  ?name ?codeValue WHERE {   ?instance <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#ItemType>. ?instance <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#CommodityClassification> ?type. ?type <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#ItemClassificationCode> ?code. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue. ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#name> ?name. FILTER regex(?name, \""+ keyword+"\", \"i\" ).}";
+		MarmottaReader readerMarmotta = (MarmottaReader) reader;
+		Object result = readerMarmotta.query(query);
+		List<String[]> allConcepts2 = readerMarmotta.createResultListArray(result,
+				new String[] { "codeValue", "name" });
+		List<Entity> resultOfSearchTerm = new ArrayList<Entity>();
+		for (String[] element : allConcepts2) {
+
+			Entity entity = new Entity();
+			entity.setUrl(element[0]);
+			String value = element[1];
+			entity.setTranslatedURL(value);
+			entity.setLanguage(Language.UNKNOWN);
+			resultOfSearchTerm.add(entity);
+		}
+
+		for (Entity entity : resultOfSearchTerm) {
+			boolean contained = false;
+			for (Entity e : allConcepts) {
+				if (e.getUrl().equals(entity.getUrl())) {
+					contained = true;
+					break;
+				}
+			}
+			if (!contained) {
+				allConcepts.add(entity);
+			}
+		}
+
+	}
+	
 	private void requestBasedOnTranslationLabelSimplfied(List<Entity> allConcepts, String keyword, Language language) {
 		MarmottaReader readerMarmotta = (MarmottaReader) reader;
 		readerMarmotta.setLanguageLabel(HTTP_WWW_W3_ORG_2004_02_SKOS_CORE_PREF_LABEL);
-		String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT distinct ?subject  ?translation WHERE {  ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type><http://www.nimble-project.org/onto/eclass#CodeConcept>. ?subject <http://www.w3.org/2004/02/skos/core#prefLabel> ?translation.  ?code <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#URI> ?codeValue. FILTER (regex( str(?translation),\""
-				+ keyword + "\",\"i\") && regex (str(?codeValue),str(?subject))).}";
-		Logger.getAnonymousLogger().log(Level.INFO, query);
-
-		
 		String query2 = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>	PREFIX owl: <http://www.w3.org/2002/07/owl#>			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>			PREFIX cbc: <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#>			PREFIX ecl: <http://www.nimble-project.org/onto/eclass#>			SELECT distinct ?uri ?translation			WHERE {	   ?uri a skos:Concept .			   ?uri a ecl:CodeConcept .			     ?uri skos:prefLabel ?translation .			    FILTER regex(?translation, \""+keyword+ "\", \"i\" ).			   bind (str(?uri) as ?strUri) .			     ?subject cbc:URI ?strUri .			}";
+		Logger.getAnonymousLogger().log(Level.INFO, query2);
 		
 		Object result = readerMarmotta.query(query2);
 		List<String[]> allProperties = readerMarmotta.createResultListArray(result,
@@ -619,7 +688,7 @@ public class NimbleSpecificSPARQLDeriviationAndExecution {
 					resultFinal.put(name, value);
 				}
 			} else {
-				if (!key.contains("CommodityClassification")) {
+				if ((!key.contains("CommodityClassification")) && (!key.contains("Dimension"))&& (!key.contains("ProductImage"))) {
 					resultFinal.put(key, result.get(key));
 				}
 			}

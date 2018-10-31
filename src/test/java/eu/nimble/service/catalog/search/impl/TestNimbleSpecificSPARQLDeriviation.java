@@ -124,7 +124,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		System.out.println(result);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testdetectNimbleSpecificMeaningFromAKeywordRefrringInstance() {
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -140,7 +140,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		System.out.println(result);
 	}
 	
-	//@Ignore
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAProperty_Dimension() {
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -157,7 +157,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 				"custom_dimension", PropertySource.DIMENSION);
 		System.out.println(result);
 	}
-	//@Ignore
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAProperty_Custom() {
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -193,7 +193,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 				"drying time", PropertySource.CUSTOM_DECIMAL);
 		System.out.println(result);
 	}
-	//@Ignore
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAProperty_MANUFACTURERPARTY() {
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -303,7 +303,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 	
 	}
 	
-
+	@Ignore
 	@Test
 	public void testgetAllAvailableEClassOrDomainProperties(){
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");
@@ -334,7 +334,7 @@ public class TestNimbleSpecificSPARQLDeriviation {
 		System.out.println(result.getOutputForPropertiesFromConcept());
 	}
 
-	
+	@Ignore
 	@Test
 	public void testgetAllPropertiesIncludingEverythingEClass(){
 		MarmottaReader reader = new MarmottaReader("https://nimble-platform.salzburgresearch.at/marmotta");

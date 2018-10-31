@@ -180,6 +180,7 @@ public class MediatorSPARQLDerivationAndExecution {
 //							columns.add(property);
 //						}
 						String value = instance[2];
+						if (inputParamaterForExecuteSelect.getParametersURL().contains(property)){
 						DataPoint dataPoint = new DataPoint();
 						dataPoint.setPropertyURL(property);
 						dataPoint.setValue(value);
@@ -189,6 +190,7 @@ public class MediatorSPARQLDerivationAndExecution {
 							List<DataPoint> datapoints = new ArrayList<DataPoint>();
 							datapoints.add(dataPoint);
 							intermediateResult.put(uuid, datapoints);
+						}
 						}
 
 					}
@@ -744,6 +746,8 @@ public class MediatorSPARQLDerivationAndExecution {
 		}
 		return Collections.emptyList();
 	}
+	
+	
 
 	public List<Entity> detectPossibleConceptsLanguageSpecific(String regex, Language language, String translationLabel,
 			boolean useSimplifiedSPARQL) {
