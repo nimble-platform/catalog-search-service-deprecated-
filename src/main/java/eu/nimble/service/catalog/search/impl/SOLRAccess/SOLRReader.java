@@ -47,6 +47,7 @@ import com.google.gson.JsonElement;
 
 public class SOLRReader implements IReader {
 
+	private static final String FIELD_FOR_IDX_FIELD = "idxField";
 	private static final String LMF_URI = "lmf.uri";
 	private static final String FIELD_FOR_PROPERTY_URI = LMF_URI;
 	private HttpSolrClient client = null;
@@ -59,6 +60,7 @@ public class SOLRReader implements IReader {
 	private final String labelFieldForSpanish = "label_es";
 	private final String labelFieldForEnglish = "label_en";
 	private final String labelFieldForGerman = "label_de";
+	private final String labelFieldForDefaultCase = "label";
 
 	private EntityMappingService entityMappingService;
 
@@ -97,10 +99,11 @@ public class SOLRReader implements IReader {
 		clientForIntensionalQueriesProperties = new HttpSolrClient(urlForIntensionalQueriesProperties, httpClient);
 		clientForIntensionalQueriesConcepts = new HttpSolrClient(urlForIntensionalQueriesConcepts, httpClient);
 
-		entityMappingService = new EntityMappingService();
+		entityMappingService = new EntityMappingService(this);
 	}
 
-	public Map<String, String> createKeyValueOfAllPropertiesFromResultList(Object resultSet, Language language) {
+	public Map<String, String> createKeyValueOfAllPropertiesFromResultList(String conceptURL, Object resultSet,
+			Language language) {
 		QueryResponse response = (QueryResponse) resultSet;
 		SolrDocumentList results = response.getResults();
 		Map<String, String> valueMap = new HashMap<String, String>();
@@ -109,7 +112,7 @@ public class SOLRReader implements IReader {
 			Collection<String> columns = solrDocument.getFieldNames();
 			for (String column : columns) {
 				if (entityMappingService.isAPropertySpecificField(column)) {
-					String propertyURI = entityMappingService.mapFieldNameToProperty(column);
+					String propertyURI = entityMappingService.mapFieldNameToProperty(column, conceptURL);
 					String propertyTranslated = translateProperty(propertyURI, language);
 					valueMap.put(propertyURI, String.valueOf(solrDocument.getFieldValue(column)));
 				}
@@ -234,10 +237,23 @@ public class SOLRReader implements IReader {
 	public Object queryIntensionalProperties(String arg0) {
 		SolrQuery query = new SolrQuery();
 		query.setQuery(arg0);
-		// query.addFilterQuery("cat:electronics","store:amazon.com");
 		query.setFields("*");
 		query.setStart(0);
-		// query.set("defType", "edismax");
+		try {
+			QueryResponse response = clientForIntensionalQueriesProperties.query(query);
+			return response;
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage());
+		}
+		return null;
+	}
+
+	public Object queryIntensionalProperties(String arg0, int maxResultAmount) {
+		SolrQuery query = new SolrQuery();
+		query.setQuery(arg0);
+		query.setFields("*");
+		query.setStart(0);
+		query.setRows(maxResultAmount);
 		try {
 			QueryResponse response = clientForIntensionalQueriesProperties.query(query);
 			return response;
@@ -486,6 +502,20 @@ public class SOLRReader implements IReader {
 		return propertyURLS;
 	}
 
+	public String getNameForIdxField(String propertyUrl, String conceptURL) {
+		String query = "";
+		if (conceptURL != null) {
+			query = "class: " + "\"" + conceptURL + "\"" + " And " + FIELD_FOR_PROPERTY_URI + " : \"" + propertyUrl
+					+ "\"";
+		} else {
+			query = FIELD_FOR_PROPERTY_URI + " : \"" + propertyUrl + "\"";
+		}
+		Object response = queryIntensionalProperties(query);
+		List<String> indexFields = createResultList(response, FIELD_FOR_IDX_FIELD);
+
+		return indexFields.size() > 0 ? indexFields.get(0) : null;
+	}
+
 	@Override
 	public List<String> getAllPropertiesIncludingEverythingWhichHasValues(String arg0) {
 		// TODO Auto-generated method stub
@@ -555,21 +585,21 @@ public class SOLRReader implements IReader {
 	public List<Language> getNativeSupportedLangauges() {
 		List<Language> languges = new ArrayList<Language>();
 		String query = labelFieldForEnglish + ":*";
-		Object response = queryIntensionalProperties(query);
+		Object response = queryIntensionalProperties(query, 1);
 		List<String> result = createResultList(response, "id");
 		if (result.size() > 0) {
 			languges.add(Language.ENGLISH);
 		}
 
 		query = labelFieldForGerman + ":*";
-		response = queryIntensionalProperties(query);
+		response = queryIntensionalProperties(query, 1);
 		result = createResultList(response, "id");
 		if (result.size() > 0) {
 			languges.add(Language.GERMAN);
 		}
 
 		query = labelFieldForSpanish + ":*";
-		response = queryIntensionalProperties(query);
+		response = queryIntensionalProperties(query, 1);
 		result = createResultList(response, "id");
 		if (result.size() > 0) {
 			languges.add(Language.SPANISH);
@@ -635,14 +665,14 @@ public class SOLRReader implements IReader {
 		// TODO Auto-generated method stub
 		String query = LMF_URI + ":" + uuid;
 		Object resposne = query(query);
-		return createKeyValueOfAllPropertiesFromResultList(resposne, Language.ENGLISH);
+		return createKeyValueOfAllPropertiesFromResultList(null, resposne, Language.ENGLISH);
 	}
 
 	public Map<String, String> getPropertyValuesOfAIndividium(String uuid, Language language) {
 		// TODO Auto-generated method stub
 		String query = LMF_URI + ":" + "\"" + uuid + "\"";
 		Object resposne = query(query);
-		return createKeyValueOfAllPropertiesFromResultList(resposne, language);
+		return createKeyValueOfAllPropertiesFromResultList(null, resposne, language);
 	}
 
 	@Override
@@ -795,7 +825,7 @@ public class SOLRReader implements IReader {
 		default:
 			Logger.getAnonymousLogger().log(Level.WARNING,
 					"Received no language information. Use the English translation");
-			queryPrefix = labelFieldForEnglish;
+			queryPrefix = labelFieldForDefaultCase;
 			break;
 		}
 
@@ -810,14 +840,14 @@ public class SOLRReader implements IReader {
 					"No connection or item_commodity_classification_uri doesn't exists. Try without concept binding");
 			response = query("*:*");
 		}
-		property = entityMappingService.mapPropertyURIToFieldName(property);
+		property = entityMappingService.mapPropertyURIToFieldName(property, concept);
 		List<String> values = createResultList(response, property);
 		return values;
 	}
 
 	public OutputForExecuteSelect createSPARQLAndExecuteIT(
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
-		EntityMappingService entityMappingService = new EntityMappingService();
+		EntityMappingService entityMappingService = new EntityMappingService(this);
 		String concept = inputParamaterForExecuteSelect.getConcept();
 		String query = "item_commodity_classification_uri:" + "\"" + concept + "\"";
 		if (concept.equals("*")) {
@@ -828,7 +858,7 @@ public class SOLRReader implements IReader {
 		for (eu.nimble.service.catalog.search.impl.dao.Filter filter : inputParamaterForExecuteSelect.getFilters()) {
 			if ((filter.getExactValue() != null) && (filter.getExactValue().length() > 0)) {
 				String proeprtyUI = filter.getProperty();
-				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI, concept);
 				fq += " : ";
 				fq += filter.getExactValue();
 			}
@@ -836,20 +866,20 @@ public class SOLRReader implements IReader {
 			if (filter.isHasMaxBeenSet() && filter.isHasMinBeenSet()) {
 
 				String proeprtyUI = filter.getProperty();
-				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI, concept);
 				fq += " : ";
 
 				// min max
 
 				proeprtyUI = filter.getProperty();
-				fq += " +" + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " +" + entityMappingService.mapPropertyURIToFieldName(proeprtyUI, concept);
 				fq += " : ";
 				fq += "[" + filter.getMinAsInt() + " TO " + filter.getMaxAsInt() + "]";
 
 			} else {
 
 				String proeprtyUI = filter.getProperty();
-				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI);
+				fq += " " + entityMappingService.mapPropertyURIToFieldName(proeprtyUI, concept);
 				fq += " : ";
 
 				if (filter.isHasMaxBeenSet()) {
@@ -868,7 +898,7 @@ public class SOLRReader implements IReader {
 
 		String fl = "";
 		for (String uri : inputParamaterForExecuteSelect.getParametersURL()) {
-			fl += entityMappingService.mapPropertyURIToFieldName(uri) + " , ";
+			fl += entityMappingService.mapPropertyURIToFieldName(uri, concept) + " , ";
 		}
 		;
 		if (fl.length() > 2) {
@@ -878,7 +908,7 @@ public class SOLRReader implements IReader {
 		String[] columns = new String[inputParamaterForExecuteSelect.getParametersURL().size() + 1];
 		int index = 0;
 		for (String uri : inputParamaterForExecuteSelect.getParametersURL()) {
-			String field = entityMappingService.mapPropertyURIToFieldName(uri);
+			String field = entityMappingService.mapPropertyURIToFieldName(uri, concept);
 			columns[index] = field;
 			index++;
 		}
@@ -1049,5 +1079,20 @@ public class SOLRReader implements IReader {
 			InputParameterForPropertyValuesFromOrangeGroup inputParameterForPropertyValuesFromOrangeGroup) {
 		// TODO Auto-generated method stub
 		return new OutputForPropertyValuesFromOrangeGroup();
+	}
+
+	public String getPropertyURLBasedOnIdxField(String fieldName, String conceptURL) {
+		String query = "";
+
+		if (conceptURL != null) {
+			query = "class: " + "\"" + conceptURL + "\"" + " And " + FIELD_FOR_IDX_FIELD + " : \"" + fieldName + "\"";
+		} else {
+			query = FIELD_FOR_IDX_FIELD + " : \"" + fieldName + "\"";
+		}
+		Object response = queryIntensionalProperties(query);
+		List<String> indexFields = createResultList(response, FIELD_FOR_PROPERTY_URI);
+
+		return indexFields.size() > 0 ? indexFields.get(0) : null;
+
 	}
 }

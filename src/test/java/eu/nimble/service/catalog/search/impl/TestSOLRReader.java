@@ -1,7 +1,12 @@
 package eu.nimble.service.catalog.search.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.constraints.AssertTrue;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -59,9 +64,10 @@ public class TestSOLRReader {
 	@Test
 	@Ignore
 	public void testgetNativeSupportedLangauges() {
-		SOLRReader reader = new SOLRReader();
+		SOLRReader reader = new SOLRReader("http://nimble-staging.salzburgresearch.at/marmotta/solr/");
 		List<Language> result = reader.getNativeSupportedLangauges();
 		System.out.println(result);
+		assertTrue(result.size() > 0);
 	}
 
 	@Test
@@ -160,4 +166,59 @@ public class TestSOLRReader {
 		
 	}
 	
+	@Test
+	@Ignore
+	public void testgetNameOfidxField(){
+		SOLRReader reader = new SOLRReader("http://nimble-staging.salzburgresearch.at/marmotta/solr/");
+		String concept ="http://www.aidimme.es/FurnitureSectorOntology.owl#Bed";
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasMaximumRecommendedWeight";
+		String result = reader.getNameForIdxField( property,concept);
+		assertEquals("hasMaximumRecommendedWeight_f", result);
+	}
+	
+	@Test
+	@Ignore
+	public void testgetNameOfidxFieldWithoutConcept(){
+		SOLRReader reader = new SOLRReader("http://nimble-staging.salzburgresearch.at/marmotta/solr/");
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasMaximumRecommendedWeight";
+		String result = reader.getNameForIdxField( property,null);
+		assertEquals("hasMaximumRecommendedWeight_f", result);
+	}
+	
+	@Test
+	@Ignore
+	public void testgetPropertyURLBasedOnIdxField(){
+		SOLRReader reader = new SOLRReader("http://nimble-staging.salzburgresearch.at/marmotta/solr/");
+		String concept ="http://www.aidimme.es/FurnitureSectorOntology.owl#Bed";
+		String filedName = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasMaximumRecommendedWeight";
+		String result = reader.getPropertyURLBasedOnIdxField("hasMaximumRecommendedWeight_f",concept);
+		
+		assertEquals(filedName, result);
+	}
+	
+		
+	@Test
+	@Ignore
+	public void testgetPropertyURLBasedOnIdxFieldWithoutConcept(){
+		SOLRReader reader = new SOLRReader("http://nimble-staging.salzburgresearch.at/marmotta/solr/");
+		String filedName = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasMaximumRecommendedWeight";
+		String result = reader.getPropertyURLBasedOnIdxField("hasMaximumRecommendedWeight_f",null);
+		
+		assertEquals(filedName, result);
+	}
+	
+	
+	@Test
+	@Ignore
+	public void testcreateSPARQLAndExecuteITUsingPropertyURL() {
+		InputParamaterForExecuteSelect inputParamaterForExecuteSelect = new InputParamaterForExecuteSelect();
+		inputParamaterForExecuteSelect.setConcept("*");
+		inputParamaterForExecuteSelect.setLanguage("en");
+		inputParamaterForExecuteSelect.getParametersURL().add("item_name");
+		inputParamaterForExecuteSelect.getParametersURL().add("item_price");
+
+		SOLRReader reader = new SOLRReader();
+		OutputForExecuteSelect executeSelect = reader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+		System.out.println(executeSelect);
+	}
 }
