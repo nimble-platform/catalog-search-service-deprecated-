@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -28,10 +29,12 @@ import com.google.gson.Gson;
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
+import eu.nimble.service.catalog.search.clients.IdentityClient;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.HybridConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.PartType;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.enums.TypeOfDataSource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
@@ -95,6 +98,9 @@ public class SearchController {
 	//private NimbleAdaptionServiceOfSearchResults nimbleAdaptionServiceOfSearchResults = null;
 	private 	SOLRReader solrReader = null;
 	private HybridConfiguration hConfiguration = new HybridConfiguration();
+	
+	@Autowired
+    private IdentityClient identityClient;
 
 	public HybridConfiguration gethConfiguration() {
 		return hConfiguration;
@@ -339,6 +345,20 @@ public class SearchController {
 			Gson gson = new Gson();
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
+			
+			Object contextInfos = identityClient.getPerson(1217l);
+			PartType partype = null;
+			if (contextInfos instanceof PartType){
+				partype = (PartType) contextInfos;
+			}
+			if (contextInfos instanceof String){
+				String content = (String) contextInfos;
+				if (((String) content).charAt(0)== '['){
+					content = content.substring(1, content.length()-1);
+				}
+				 partype = gson.fromJson(content, PartType.class);
+			}
+			
 			if (!useSOLRIndex || hConfiguration.getDetectMeaningLanguageSpecific()!=TypeOfDataSource.SOLR){
 			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
 					inputParameterdetectMeaningLanguageSpecific.getKeyword(),
