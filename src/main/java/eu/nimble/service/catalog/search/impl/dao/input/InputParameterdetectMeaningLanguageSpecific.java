@@ -6,6 +6,7 @@ public class InputParameterdetectMeaningLanguageSpecific {
 
 	String keyword;
 	String language;
+	long userID =0;
 	
 	public Language getLanguage(){
 		return Language.fromString(language);
@@ -22,5 +23,20 @@ public class InputParameterdetectMeaningLanguageSpecific {
 	public void setLanguage(String language) {
 		this.language = language;
 	}
+
+	public long getUserID() {
+		return userID;
+	}
+
+	public void setUserID(long userID) {
+		this.userID = userID;
+	}
+
+	@Override
+	public String toString() {
+		return "InputParameterdetectMeaningLanguageSpecific [keyword=" + keyword + ", language=" + language
+				+ ", userID=" + userID + "]";
+	}
+	
 	
 }

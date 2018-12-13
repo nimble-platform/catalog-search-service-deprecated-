@@ -11,17 +11,32 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.hibernate.validator.internal.util.privilegedactions.GetMethod;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 
 @Component
 	public class IdentityClientFallback implements IdentityClient {
-	   
+
+	
+	
+	private static final String PARTY_BY_PERSON = "party_by_person/";
+	@Value("${nimble.identity.url}")
+	private String url;
 
 		@Override
 		public Object getPerson(Long personId) {
 			// Create an instance of HttpClient.
 		    HttpClient client = new  DefaultHttpClient();
-		    String url = "http://nimble-staging.salzburgresearch.at/identity/party_by_person/" + personId;
+		    String url = "";
+		    if (this.url.charAt(this.url.length()-1) == '/'){
+		    	url = this.url + PARTY_BY_PERSON;
+		    }
+		    else{
+		    	url = this.url +"/" +PARTY_BY_PERSON;
+		    }
+		    
+		    
 
 		    // Create a method instance.
 		    HttpGet request = new HttpGet(url);

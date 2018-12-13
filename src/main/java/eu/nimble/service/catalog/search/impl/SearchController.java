@@ -346,7 +346,11 @@ public class SearchController {
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
 			
-			Object contextInfos = identityClient.getPerson(1217l);
+			long userID = inputParameterdetectMeaningLanguageSpecific.getUserID();
+			if (userID==0){
+				userID = 1217l; //TODO Remove if UI send usually a userId
+			}
+			Object contextInfos = identityClient.getPerson(userID);
 			PartType partype = null;
 			if (contextInfos instanceof PartType){
 				partype = (PartType) contextInfos;

@@ -30,6 +30,8 @@ spring:
   profiles: productive
 
 nimble:
+  identity:
+    url: ${IDENTITY_SERVICE_URL:http://nimble-staging.salzburgresearch.at/identity}
   shared:
     property:
       marmottauri: ${MARMOTTA_URL:}
