@@ -30,6 +30,7 @@ import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.clients.IdentityClient;
+import eu.nimble.service.catalog.search.impl.Indexing.IndexingServiceReader;
 import eu.nimble.service.catalog.search.impl.SOLRAccess.SOLRReader;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.HybridConfiguration;
@@ -78,8 +79,14 @@ public class SearchController {
 	@Value("${nimble.shared.property.marmottauri:null}")
 	private String marmottaUri;
 	
+	@Value("${nimble.shared.property.indexingserviceuri:http://nimble-staging.salzburgresearch.at/index/}")
+	private String indexingserviceuri;
+	
 	@Value("${nimble.shared.property.useSOLRIndex:false}")
 	private boolean useSOLRIndex;
+	
+	@Value("${nimble.shared.property.useIndexingService:true}")
+	private boolean useIndexingService;
 	
 	@Value("${nimble.shared.property.useSimplifiedSPARQL:true}")
 	private boolean useSimplifiedSPARQL;
@@ -98,6 +105,7 @@ public class SearchController {
 	//private NimbleAdaptionServiceOfSearchResults nimbleAdaptionServiceOfSearchResults = null;
 	private 	SOLRReader solrReader = null;
 	private HybridConfiguration hConfiguration = new HybridConfiguration();
+	private IndexingServiceReader indexingServiceReader = null;
 	
 	@Autowired
     private IdentityClient identityClient;
@@ -112,7 +120,12 @@ public class SearchController {
 
 	@PostConstruct
 	public void init() {
-
+		
+		if (useIndexingService){
+			logger.info("Initializing with indexingServiceUri:" + indexingserviceuri);
+			indexingServiceReader = new IndexingServiceReader(indexingserviceuri);
+		}
+		else{
 		logger.info("Initializing with marmottaUri: {}, languageLabel: {}, sqpConfigurationPath: {}",
 				marmottaUri, languageLabel, sqpConfigurationPath);
 
@@ -179,8 +192,9 @@ public class SearchController {
 				}
 		}
 		
-		hConfiguration = createConfigurationBasedOnEnvVariable(hybridConfiguration);
 		
+		hConfiguration = createConfigurationBasedOnEnvVariable(hybridConfiguration);
+		}
 
 	}
 
