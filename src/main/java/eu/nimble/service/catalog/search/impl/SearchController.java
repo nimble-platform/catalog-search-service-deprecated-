@@ -377,6 +377,22 @@ public class SearchController {
 				 partype = gson.fromJson(content, PartType.class);
 			}
 			
+			if (useIndexingService){
+				List<Entity> concepts = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+				Gson output = new Gson();
+				String result = "";
+				
+				MeaningResult meaningResult = new MeaningResult();
+				meaningResult.setConceptOverview(concepts);
+				meaningResult.setSearchTyp("ExplorativeSearch");
+				meaningResult.setSource(TypeOfDataSource.INDEXING_SERVICE);
+				
+				result = output.toJson(meaningResult);
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+			
+			}
+			else{
+			
 			if (!useSOLRIndex || hConfiguration.getDetectMeaningLanguageSpecific()!=TypeOfDataSource.SOLR){
 			List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
 					inputParameterdetectMeaningLanguageSpecific.getKeyword(),
@@ -400,6 +416,7 @@ public class SearchController {
 				Gson output = new Gson();
 				result = output.toJson(meaningResult);
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
+			}
 			}
 
 		} catch (Exception e) {
@@ -489,7 +506,15 @@ public class SearchController {
 	@RequestMapping(value = "/getLogicalView", method = RequestMethod.POST)
 	HttpEntity<Object> getLogicalView(@RequestBody InputParamterForGetLogicalView paramterForGetLogicalView) {
 		try {
-			String result = helperForLogicalView(paramterForGetLogicalView);
+			
+			String result = "";
+			if (useIndexingService){
+			result = indexingServiceReader.getLogicalView(paramterForGetLogicalView);
+			}
+			else{
+			result = helperForLogicalView(paramterForGetLogicalView);
+			}
+			
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 		} catch (Exception e) {

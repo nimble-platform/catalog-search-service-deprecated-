@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -25,12 +27,20 @@ import de.biba.triple.store.access.dmo.IndividualInformation;
 import de.biba.triple.store.access.dmo.ObjectPropertyToDatatypePropertyMapping;
 import de.biba.triple.store.access.dmo.PropertyConceptAssignment;
 import de.biba.triple.store.access.dmo.PropertyInformation;
+import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.ClassType;
+import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
+import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 
-public class IndexingServiceReader implements IReader {
+public class IndexingServiceReader {
 
 	private String url = "";
 	private String urlForClassInformation = "";
@@ -62,7 +72,7 @@ public class IndexingServiceReader implements IReader {
 				stringBuffer.append(line);
 			}
 			rd.close();
-			
+
 			return stringBuffer.toString();
 
 		} catch (ClientProtocolException e) {
@@ -75,347 +85,8 @@ public class IndexingServiceReader implements IReader {
 		return null;
 	}
 
-	@Override
-	public String getUrlForQueries() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
-	@Override
-	public void setModeToRemote() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public String getDataSetURL() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> createResultList(Object result, String propertyName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setModeToLocal() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean loadOntologyModel(String ontoFile) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public Object query(String sparqlStr) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object queryRemote(String sparqlStr) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ResultSet queryLocal(String sparqlStr) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void removeTypeDescriptionInValues(List<String> allValuesForProperty) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public String removeTypeDescriptionInValues(String value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Model getBaseModel() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getSupportedLangauges() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setLanguageLabel(String languageLabel) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<String> getAllDirectSubConcepts(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllTransitiveSubConcepts(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllConcepts() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllConcepts(String searchTerm) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllTransitiveInstances(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, List<PropertyInformation>> getAllTransitiveInstances(String urlOfClass,
-			List<String> properties) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String[]> getAllTransitiveInstancesAndClasses(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllDirectInstances(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getDomainOfProperty(String urlOfProperty) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getRangeOfProperty(String urlOfProperty) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllProperties() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllProperties(String searchTerm) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllDirectProperties(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllTransitiveProperties(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Model describeAllProperties(String urlOfClass, Model model) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, String> getPropertyValuesOfAIndividium(String urlOfIndividuum) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, List<String>> getPropertyValuesOfAIndividiumForMultipleValues(String urlOfIndividuum) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, Map<String, PropertyInformation>> getPropertyValuesOfAllIndividiumsFastButWithoutObjectPropertyTranslation(
-			String urlOfConcept, List<String[]> objectproperties) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<IndividualInformation, Map<String, PropertyInformation>> getPropertyValuesOfAllIndividiums(
-			String urlOfConcept, List<String[]> objectproperties) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<IndividualInformation, Map<String, PropertyInformation>> getPropertyValuesAndDatatypePropertyTypeOfAllIndividiums(
-			String urlOfConcept, List<ObjectPropertyToDatatypePropertyMapping> objectproperties, List<Filter> filter) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<IndividualInformation, Map<String, PropertyInformation>> getPropertyValuesAndDatatypePropertyTypeOfAllIndividiums(
-			String urlOfConcept, List<ObjectPropertyToDatatypePropertyMapping> objectproperties) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<IndividualInformation, Map<String, PropertyInformation>> getPropertyValuesAndDatatypePropertyTypeOfAllIndividiumsAndApplyFilter(
-			String urlOfConcept, List<ObjectPropertyToDatatypePropertyMapping> objectproperties, List<Filter> filter) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, PropertyInformation> getPropertyValuesOfAIndividium(String urlOfIndividuum,
-			List<String[]> objectproperties) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, PropertyInformation> getPropertyValuesOfAIndividiumIncludingType(String urlOfIndividuum,
-			List<ObjectPropertyToDatatypePropertyMapping> objectproperties, List<Filter> filters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String[]> createResultListArray(Object result, String[] propertyNames) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Model getTheOverallOntology() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void clearCache() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Model describe(String describeStr) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public PropertyType getPropertyType(String urlOfProperty) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getPropertyTypeRange(String urlOfProperty) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getTransitiveParentConceptsToAGivenConcept(String urlConcept) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<PropertyConceptAssignment> getTransitivePropertiesInDirectionOfParent(String urlConcept) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<PropertyConceptAssignment> getTransitivePropertiesIncludingTypeInDirectionOfParent(String urlConcept) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isPropertyFunctional(String uuidOfProperty) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public List<String> getAllFunctionalProperties() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getLabelFromAElement(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getHandleFromAElement(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllIndividualsWhichHasAreferenceToASpeciifcOne(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, Map<String, PropertyInformation>> getPropertyValuesOfAllIndividiumsFastButWithoutObjectPropertyTranslation(
-			String urlOfConcept, List<String[]> objectproperties, List<Filter> filters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, Map<String, PropertyInformation>> getSpecificPropertyValuesOfAllIndividiumsFastButWithoutObjectPropertyTranslation(
-			String urlOfConcept, List<String> properties, List<Filter> filters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllTransitivePropertiesDirectionParents(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public List<String> getAllPropertiesIncludingEverything(String urlOfClass) {
 
 		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
@@ -425,38 +96,133 @@ public class IndexingServiceReader implements IReader {
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
 		r.getProperties().forEach(x -> allProperties.add(x));
-		allProperties.add(result); 
-									
+		allProperties.add(result);
+
 		return allProperties;
 	}
 
-	@Override
-	public List<Entity> getAllConceptsLanguageSpecific(String searchTerm, Language language) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public List<Entity> detectPossibleConceptsLanguageSpecific(
+			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific) {
+		List<Entity> result = new ArrayList<Entity>();
+		String field = "_txt";
+		Language language = inputParameterdetectMeaningLanguageSpecific.getLanguage();
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
+		field = prefixLanguage + field;
+
+		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"
+				+ inputParameterdetectMeaningLanguageSpecific.getKeyword();
+
+		String resultString = invokeHTTPMethod(url);
+
+		Gson gson = new Gson();
+		ClassTypes r = gson.fromJson(resultString, ClassTypes.class);
+		for (ClassType concept : r.getResult()) {
+			Entity entity = new Entity();
+			entity.setConceptSource(ConceptSource.ONTOLOGICAL);
+			entity.setLanguage(inputParameterdetectMeaningLanguageSpecific.getLanguage());
+			entity.setUrl(concept.getUri());
+			entity.setTranslatedURL(concept.getLabel().get(prefixLanguage));
+			entity.setHidden(false);
+			result.add(entity);
+		}
+
+		//
+
+		return result;
 	}
 
-	@Override
-	public List<Entity> getAllConceptsFocusOnlyOnURI(String searchTerm) {
+	public String getLogicalView(InputParamterForGetLogicalView paramterForGetLogicalView) {
 		// TODO Auto-generated method stub
-		return null;
+		
+		OutputForGetLogicalView outputStructure = new OutputForGetLogicalView();
+		LocalOntologyView completeStructure = new LocalOntologyView();
+		eu.nimble.service.catalog.search.impl.dao.Entity concept = new eu.nimble.service.catalog.search.impl.dao.Entity();
+		concept.setUrl(paramterForGetLogicalView.getConcept());
+		
+		
+		String url = urlForClassInformation + "?uri="+ URLEncoder.encode(paramterForGetLogicalView.getConcept());
+		String resultString= invokeHTTPMethod(url);
+		
+		Gson gson = new Gson();
+		ClassType r = gson.fromJson(resultString, ClassType.class);
+		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage()).replaceAll("@", ""); 
+	
+		
+		
+		concept.setUrl(paramterForGetLogicalView.getConcept());
+		concept.setTranslatedURL(r.getLabel().get(prefixLanguage));
+		concept.setLanguage(paramterForGetLogicalView.getLanguageAsLanguage());
+		completeStructure.setConcept(concept);
+		
+		List<String> uriPath = new ArrayList<String>();
+		uriPath.add(concept.getUrl());
+		completeStructure.setConceptURIPath(uriPath);
+		
+		for (String propertyURL : r.getProperties()){
+			
+			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
+					propertyURL);
+			eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
+			entity.setUrl(propertyURL);
+			entity.setTranslatedURL(propertyType.getLabel().get(prefixLanguage));
+			if (isItADatatypeProperty(propertyType)){
+				completeStructure.addDataproperties(entity);
+			}
+			else{
+				LocalOntologyView localOntologyView2 = new LocalOntologyView();
+
+				eu.nimble.service.catalog.search.impl.dao.Entity conceptRange = new eu.nimble.service.catalog.search.impl.dao.Entity();
+				conceptRange.setUrl(propertyType.getRange());
+				conceptRange.setTranslatedURL(entity.getTranslatedURL());
+				// conceptRan
+
+				localOntologyView2.setConcept(conceptRange);
+				localOntologyView2.setObjectPropertySource(entity.getUrl());
+				localOntologyView2.setFrozenConcept(concept.getUrl());
+				localOntologyView2.setDistanceToFrozenConcept( 1);
+				List<String> newPaht = new ArrayList<String>(completeStructure.getConceptURIPath());
+				newPaht.add(propertyType.getRange());
+				localOntologyView2.setConceptURIPath(newPaht);
+				completeStructure.getObjectproperties().put(propertyType.getRange(), localOntologyView2);
+			}
+			
+		}
+		
+		
+		outputStructure.setCompleteStructure(completeStructure);
+		LocalOntologyView structureForView = completeStructure.getVisibleLocalOntologyViewStructure();
+		outputStructure.setViewStructure(structureForView);
+		outputStructure.setCurrentSelections(paramterForGetLogicalView.getCurrentSelections());
+
+
+		String result = gson.toJson(outputStructure);
+		return result;
+
 	}
 
-	@Override
-	public List<Language> getNativeSupportedLangauges() {
-		// TODO Auto-generated method stub
-		return null;
+	private eu.nimble.service.catalog.search.impl.dao.PropertyType requestPropertyInfos(Gson gson, String propertyURL) {
+		String url;
+		url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
+		String propertyInfo = invokeHTTPMethod(url);
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = gson.fromJson(propertyInfo, eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
+		return propertyType;
 	}
 
-	@Override
-	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
+	private boolean isItADatatypeProperty(eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType) {
+		if (propertyType.getRange().contains("http://www.w3.org/2001/XMLSchema#")){
+			return true;
+		}
+		return false;
 	}
 
-	@Override
-	public List<String> getAllPropertiesIncludingEverythingWhichHasValues(String urlOfClass) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL){
+		Gson gson = new Gson();
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
+				propertyURL);
+		//propertyType.getItemFieldNames()?
+		return Collections.EMPTY_LIST;
+		
 	}
+
 }

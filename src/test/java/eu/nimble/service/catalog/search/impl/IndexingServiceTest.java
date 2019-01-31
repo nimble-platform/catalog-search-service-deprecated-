@@ -1,10 +1,18 @@
 package eu.nimble.service.catalog.search.impl;
 
+import static org.junit.Assert.*;
+
 import  java.util.List;
+
+import javax.validation.constraints.AssertTrue;
 
 import org.junit.Test;
 
 import eu.nimble.service.catalog.search.impl.Indexing.IndexingServiceReader;
+import eu.nimble.service.catalog.search.impl.dao.Entity;
+import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 
 public class IndexingServiceTest {
 
@@ -18,6 +26,45 @@ public class IndexingServiceTest {
 		System.out.println(r.get(0));
 		
 	}
+	
+	@Test
+	public void testgetLogicalView(){
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Shelf";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParamterForGetLogicalView input = new InputParamterForGetLogicalView();
+		input.setConcept(urlForClas);
+		input.setLanguage("en");
+		input.setDistanceToFrozenConcept(0);
+		input.setStepRange(2);
+		//input.setOldJsonLogicalView(new LocalOntologyView());
+		String r = indexingServiceReader.getLogicalView(input);
+		System.out.println(r);
+		
+	}
+	
+	
+	/**
+	 * The test just serach for any valid result
+	 */
+	@Test
+	public void testdetectPossibleConceptsLanguageSpecific(){
+		String serach = "Shelf";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		inputParameterdetectMeaningLanguageSpecific.setKeyword(serach);
+		
+		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		assertTrue(r.size() > 0);
+		System.out.println(r.get(0));
+		
+	}
+	
 	
 	
 }
