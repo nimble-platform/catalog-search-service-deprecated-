@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -17,8 +19,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.dmo.Entity;
@@ -55,6 +60,7 @@ public class IndexingServiceReader {
 		}
 		urlForClassInformation = url + "class";
 		urlForPropertyInformation = url + "property";
+		urlForItemInformation = url + "item";
 	}
 
 	private String invokeHTTPMethod(String url) {
@@ -85,8 +91,6 @@ public class IndexingServiceReader {
 		return null;
 	}
 
-	
-
 	public List<String> getAllPropertiesIncludingEverything(String urlOfClass) {
 
 		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
@@ -101,7 +105,6 @@ public class IndexingServiceReader {
 		return allProperties;
 	}
 
-	
 	public List<Entity> detectPossibleConceptsLanguageSpecific(
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific) {
 		List<Entity> result = new ArrayList<Entity>();
@@ -134,42 +137,39 @@ public class IndexingServiceReader {
 
 	public String getLogicalView(InputParamterForGetLogicalView paramterForGetLogicalView) {
 		// TODO Auto-generated method stub
-		
+
 		OutputForGetLogicalView outputStructure = new OutputForGetLogicalView();
 		LocalOntologyView completeStructure = new LocalOntologyView();
 		eu.nimble.service.catalog.search.impl.dao.Entity concept = new eu.nimble.service.catalog.search.impl.dao.Entity();
 		concept.setUrl(paramterForGetLogicalView.getConcept());
-		
-		
-		String url = urlForClassInformation + "?uri="+ URLEncoder.encode(paramterForGetLogicalView.getConcept());
-		String resultString= invokeHTTPMethod(url);
-		
+
+		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
+		String resultString = invokeHTTPMethod(url);
+
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(resultString, ClassType.class);
-		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage()).replaceAll("@", ""); 
-	
-		
-		
+		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage())
+				.replaceAll("@", "");
+
 		concept.setUrl(paramterForGetLogicalView.getConcept());
 		concept.setTranslatedURL(r.getLabel().get(prefixLanguage));
 		concept.setLanguage(paramterForGetLogicalView.getLanguageAsLanguage());
 		completeStructure.setConcept(concept);
-		
+
 		List<String> uriPath = new ArrayList<String>();
 		uriPath.add(concept.getUrl());
 		completeStructure.setConceptURIPath(uriPath);
-		
-		for (String propertyURL : r.getProperties()){
-			
+
+		for (String propertyURL : r.getProperties()) {
+
 			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
 					propertyURL);
 			eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
 			entity.setUrl(propertyURL);
 			entity.setTranslatedURL(propertyType.getLabel().get(prefixLanguage));
-			if (isItADatatypeProperty(propertyType)){
+			if (isItADatatypeProperty(propertyType)) {
 				completeStructure.addDataproperties(entity);
-			}
-			else{
+			} else {
 				LocalOntologyView localOntologyView2 = new LocalOntologyView();
 
 				eu.nimble.service.catalog.search.impl.dao.Entity conceptRange = new eu.nimble.service.catalog.search.impl.dao.Entity();
@@ -180,21 +180,19 @@ public class IndexingServiceReader {
 				localOntologyView2.setConcept(conceptRange);
 				localOntologyView2.setObjectPropertySource(entity.getUrl());
 				localOntologyView2.setFrozenConcept(concept.getUrl());
-				localOntologyView2.setDistanceToFrozenConcept( 1);
+				localOntologyView2.setDistanceToFrozenConcept(1);
 				List<String> newPaht = new ArrayList<String>(completeStructure.getConceptURIPath());
 				newPaht.add(propertyType.getRange());
 				localOntologyView2.setConceptURIPath(newPaht);
 				completeStructure.getObjectproperties().put(propertyType.getRange(), localOntologyView2);
 			}
-			
+
 		}
-		
-		
+
 		outputStructure.setCompleteStructure(completeStructure);
 		LocalOntologyView structureForView = completeStructure.getVisibleLocalOntologyViewStructure();
 		outputStructure.setViewStructure(structureForView);
 		outputStructure.setCurrentSelections(paramterForGetLogicalView.getCurrentSelections());
-
 
 		String result = gson.toJson(outputStructure);
 		return result;
@@ -205,24 +203,84 @@ public class IndexingServiceReader {
 		String url;
 		url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
 		String propertyInfo = invokeHTTPMethod(url);
-		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = gson.fromJson(propertyInfo, eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = gson.fromJson(propertyInfo,
+				eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
 		return propertyType;
 	}
 
 	private boolean isItADatatypeProperty(eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType) {
-		if (propertyType.getRange().contains("http://www.w3.org/2001/XMLSchema#")){
+		if (propertyType.getRange().contains("http://www.w3.org/2001/XMLSchema#")) {
 			return true;
 		}
 		return false;
 	}
 
-	public List<String> getAllDifferentValuesForAProperty(String concept, String propertyURL){
+	public List<String> getAllDifferentValuesForAProperty(String conceptURL, String propertyURL) {
 		Gson gson = new Gson();
-		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
-				propertyURL);
-		//propertyType.getItemFieldNames()?
-		return Collections.EMPTY_LIST;
-		
+		List<String> allValues = new ArrayList<String>();
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson, propertyURL);
+
+		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:" + URLEncoder.encode(conceptURL);
+		String items = invokeHTTPMethod(url);
+		JSONObject jsonObject = new JSONObject(items);
+		JSONArray results = jsonObject.getJSONArray("result");
+		if (results != null) {
+			for (String fieldName : propertyType.getItemFieldNames()) {
+				for (int i = 0; i < results.length(); i++) {
+					JSONObject ob = (JSONObject) results.get(0);
+					if (ob.has(fieldName)) {
+						Object targetValue = ob.get(fieldName);
+						if (targetValue instanceof JSONObject) {
+							JSONObject elment = (JSONObject) targetValue;
+							if (elment.keySet().size() == 1) {
+								elment.keys().forEachRemaining(x -> {
+									String v = elment.get(x).toString();
+									if (!allValues.contains(v)){
+										allValues.add(v);
+									}});
+								
+							} else {
+								Logger.getAnonymousLogger().log(Level.WARNING,
+										"More than one key. what is the default key fpr the value:" + fieldName);
+							}
+						}
+						if (targetValue instanceof String) {
+							String v = String.valueOf(targetValue);
+							if (!allValues.contains(v)){
+								allValues.add(v);
+							}
+						}
+
+						if (targetValue instanceof Integer) {
+							String v = String.valueOf(targetValue);
+							if (!allValues.contains(v)){
+								allValues.add(v);
+							}
+						}
+
+						if (targetValue instanceof Float) {
+							String v = String.valueOf(targetValue);
+							if (!allValues.contains(v)){
+								allValues.add(v);
+							}
+						}
+						if (targetValue instanceof Double) {
+							String v = String.valueOf(targetValue);
+							if (!allValues.contains(v)){
+								allValues.add(v);
+							}
+						}
+						
+					}
+				}
+			}
+			// propertyType.getItemFieldNames()?
+			return allValues;
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + propertyURL);
+			return Collections.EMPTY_LIST;
+		}
+
 	}
 
 }
