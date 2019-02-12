@@ -25,24 +25,17 @@ import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import de.biba.triple.store.access.IReader;
 import de.biba.triple.store.access.dmo.Entity;
-import de.biba.triple.store.access.dmo.Filter;
-import de.biba.triple.store.access.dmo.IndividualInformation;
-import de.biba.triple.store.access.dmo.ObjectPropertyToDatatypePropertyMapping;
-import de.biba.triple.store.access.dmo.PropertyConceptAssignment;
-import de.biba.triple.store.access.dmo.PropertyInformation;
 import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
-import de.biba.triple.store.access.enums.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.ClassType;
 import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
-import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
-import eu.nimble.service.catalog.search.impl.dao.input.InputParameter;
-import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForgetPropertyValuesDiscretised;
+import eu.nimble.service.catalog.search.impl.dao.PropertyType;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 
 public class IndexingServiceReader {
@@ -51,6 +44,7 @@ public class IndexingServiceReader {
 	private String urlForClassInformation = "";
 	private String urlForPropertyInformation = "";
 	private String urlForItemInformation = "";
+	private PropertyInformationCache propertyInformationCache = new PropertyInformationCache();
 
 	public IndexingServiceReader(String url) {
 		super();
@@ -101,6 +95,19 @@ public class IndexingServiceReader {
 		ClassType r = gson.fromJson(result, ClassType.class);
 		r.getProperties().forEach(x -> allProperties.add(x));
 		allProperties.add(result);
+
+		if (!propertyInformationCache.isConceptAlreadyContained(urlOfClass)) {
+			List<PropertyType> propInfos = new ArrayList<PropertyType>();
+			for (String propertyURL : allProperties) {
+				propInfos.add(requestPropertyInfos(gson, propertyURL));
+			}
+			if (propInfos.size() > 0) {
+				propertyInformationCache.addConcept(urlOfClass, propInfos);
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot request property infos of class " + urlOfClass);
+			}
+
+		}
 
 		return allProperties;
 	}
@@ -201,10 +208,16 @@ public class IndexingServiceReader {
 
 	private eu.nimble.service.catalog.search.impl.dao.PropertyType requestPropertyInfos(Gson gson, String propertyURL) {
 		String url;
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = null;
 		url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
 		String propertyInfo = invokeHTTPMethod(url);
-		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = gson.fromJson(propertyInfo,
+		try{
+		 propertyType = gson.fromJson(propertyInfo,
 				eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
+		}
+		catch(Exception e){
+			Logger.getAnonymousLogger().log(Level.WARNING, "There is no propertyInfos available for: " + propertyURL + "URL: " + url);
+		}
 		return propertyType;
 	}
 
@@ -227,51 +240,8 @@ public class IndexingServiceReader {
 		if (results != null) {
 			for (String fieldName : propertyType.getItemFieldNames()) {
 				for (int i = 0; i < results.length(); i++) {
-					JSONObject ob = (JSONObject) results.get(0);
-					if (ob.has(fieldName)) {
-						Object targetValue = ob.get(fieldName);
-						if (targetValue instanceof JSONObject) {
-							JSONObject elment = (JSONObject) targetValue;
-							if (elment.keySet().size() == 1) {
-								elment.keys().forEachRemaining(x -> {
-									String v = elment.get(x).toString();
-									if (!allValues.contains(v)){
-										allValues.add(v);
-									}});
-								
-							} else {
-								Logger.getAnonymousLogger().log(Level.WARNING,
-										"More than one key. what is the default key fpr the value:" + fieldName);
-							}
-						}
-						if (targetValue instanceof String) {
-							String v = String.valueOf(targetValue);
-							if (!allValues.contains(v)){
-								allValues.add(v);
-							}
-						}
-
-						if (targetValue instanceof Integer) {
-							String v = String.valueOf(targetValue);
-							if (!allValues.contains(v)){
-								allValues.add(v);
-							}
-						}
-
-						if (targetValue instanceof Float) {
-							String v = String.valueOf(targetValue);
-							if (!allValues.contains(v)){
-								allValues.add(v);
-							}
-						}
-						if (targetValue instanceof Double) {
-							String v = String.valueOf(targetValue);
-							if (!allValues.contains(v)){
-								allValues.add(v);
-							}
-						}
-						
-					}
+					JSONObject ob = (JSONObject) results.get(i);
+					extractValuesOfAFieldName(allValues, fieldName, ob);
 				}
 			}
 			// propertyType.getItemFieldNames()?
@@ -281,6 +251,114 @@ public class IndexingServiceReader {
 			return Collections.EMPTY_LIST;
 		}
 
+	}
+
+	private void extractValuesOfAFieldName(List<String> allValues, String fieldName, JSONObject ob) {
+		if (ob.has(fieldName)) {
+			Object targetValue = ob.get(fieldName);
+			if (targetValue instanceof JSONObject) {
+				JSONObject elment = (JSONObject) targetValue;
+				if (elment.keySet().size() == 1) {
+					elment.keys().forEachRemaining(x -> {
+						String v = elment.get(x).toString();
+						if (!allValues.contains(v)) {
+							allValues.add(v);
+						}
+					});
+
+				} else {
+					Logger.getAnonymousLogger().log(Level.WARNING,
+							"More than one key. what is the default key fpr the value:" + fieldName);
+				}
+			}
+			if (targetValue instanceof String) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+
+			if (targetValue instanceof Integer) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+
+			if (targetValue instanceof Float) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+			if (targetValue instanceof Double) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+
+		}
+	}
+
+	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
+			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect) {
+		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
+		String url = urlForItemInformation + "/select?fq=uri:" + uri;
+		OutputForExecuteSelect result = new OutputForExecuteSelect();
+		
+
+		String response = invokeHTTPMethod(url);
+
+		JSONObject jsonObject = new JSONObject(response);
+		JSONArray results = jsonObject.getJSONArray("result");
+		if (results != null) {
+
+			for (int i = 0; i < results.length(); i++) {
+				JSONObject ob = (JSONObject) results.get(i);
+				updateCacheForFieldNames(ob);
+				
+				for (String fieldName: ob.keySet()){
+					if (propertyInformationCache.isNameFieldAlreadyContained(fieldName)){
+						PropertyType propertyType = propertyInformationCache.getPropertyTypeForANameField(fieldName);
+						String currentLabel = getLanguageLabel(propertyType, inputParamaterForExecuteOptionalSelect.getLanguage());
+						List<String> allValues = new ArrayList<String>();
+						extractValuesOfAFieldName(allValues, fieldName, ob);
+						result.getColumns().add(currentLabel);
+						result.getRows().add((ArrayList<String>) allValues);
+					}
+				}
+			}
+			
+			
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + uri);
+		}
+
+		return result;
+	}
+
+	private void updateCacheForFieldNames(JSONObject ob) {
+		JSONArray conceptURIArray = ob.getJSONArray("classificationUri");
+		conceptURIArray.forEach( x -> {
+			String conceptURL =  (String) x;
+			if (!propertyInformationCache.isConceptAlreadyContained(conceptURL)){
+				getAllPropertiesIncludingEverything(conceptURL);
+			}
+		});
+	}
+	
+	private String getLanguageLabel (PropertyType propertyType, Language language){
+		String prefixLanguage = Language.toOntologyPostfix(language)
+				.replaceAll("@", "");
+		String label = propertyType.getLabel().get(prefixLanguage);
+		if (label!= null){
+			return label;
+		}
+		else{
+			Logger.getAnonymousLogger().log(Level.WARNING, "Found no language label for: " + propertyType.getUri() + " for language: " + language );
+			return propertyType.getLocalName();
+		}
 	}
 
 }

@@ -11,8 +11,10 @@ import org.junit.Test;
 import eu.nimble.service.catalog.search.impl.Indexing.IndexingServiceReader;
 import eu.nimble.service.catalog.search.impl.dao.Entity;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 
 public class IndexingServiceTest {
 
@@ -78,4 +80,23 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 
+	@Test
+	public void testcreateOPtionalSPARQLAndExecuteIT(){
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		String uuid = "5407";
+		
+		InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect = new InputParamaterForExecuteOptionalSelect();
+		inputParamaterForExecuteOptionalSelect.setLanguage("en");
+		inputParamaterForExecuteOptionalSelect.setUuid(uuid);
+		
+		
+		
+		OutputForExecuteSelect r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect);
+		System.out.println(r);
+		System.out.println("##########################");
+		r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect);
+		System.out.println(r);
+	}
+	
 }
