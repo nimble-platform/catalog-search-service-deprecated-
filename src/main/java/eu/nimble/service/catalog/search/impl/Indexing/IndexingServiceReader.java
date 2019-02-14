@@ -30,6 +30,7 @@ import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.ClassType;
 import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
+import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
@@ -359,6 +360,24 @@ public class IndexingServiceReader {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Found no language label for: " + propertyType.getUri() + " for language: " + language );
 			return propertyType.getLocalName();
 		}
+	}
+	
+/**
+ * This method returns all mappable fieldNames which can be used to filter a product with specific property values
+ * @return
+ */
+	public List<ItemMappingFieldInformation> getAllMappableFields(){
+		List<ItemMappingFieldInformation> result = new ArrayList<ItemMappingFieldInformation>();
+		String url = urlForItemInformation + "/fields";
+		String respoonse = invokeHTTPMethod(url);
+		Gson gson = new Gson();
+		List<ItemMappingFieldInformation> r = gson.fromJson(respoonse, List.class);
+		System.out.println(r);
+		if (r != null){
+			result.addAll(r);
+		}
+		return result;
+		
 	}
 
 }
