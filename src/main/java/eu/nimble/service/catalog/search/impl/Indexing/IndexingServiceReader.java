@@ -34,8 +34,10 @@ import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.item.SOLRResult;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 
@@ -379,5 +381,19 @@ public class IndexingServiceReader {
 		return result;
 		
 	}
+
+public OutputForExecuteSelect createSPARQLAndExecuteIT(InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+	// TODO Auto-generated method stub
+	/**
+	 * http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=localName:540*&fq=price:* e
+	 */
+	 String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"+ URLEncoder.encode("\""+ inputParamaterForExecuteSelect.getConcept()+ "\"") ;
+	 String response = invokeHTTPMethod(url);
+	 System.out.println(response);
+	 Gson gson = new Gson();
+	 SOLRResult result = gson.fromJson(response, SOLRResult.class);
+	 System.out.println(result);
+	return null;
+}
 
 }

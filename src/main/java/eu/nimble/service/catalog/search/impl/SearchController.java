@@ -1101,15 +1101,18 @@ public class SearchController {
 			InputParamaterForExecuteSelect inputParamaterForExecuteSelect = gson.fromJson(inputAsJson,
 					InputParamaterForExecuteSelect.class);
 
-			// checkVariableValuesForJSONONput(inputParamaterForExecuteSelect);
-
-			if (!useSOLRIndex || hConfiguration.getExecuteSPARQLSelect() != TypeOfDataSource.SOLR) {
-				outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-
+			if (useIndexingService) {
+				outputForExecuteSelect = indexingServiceReader
+						.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 			} else {
-				outputForExecuteSelect = solrReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-			}
 
+				if (!useSOLRIndex || hConfiguration.getExecuteSPARQLSelect() != TypeOfDataSource.SOLR) {
+					outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+
+				} else {
+					outputForExecuteSelect = solrReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+				}
+			}
 			String result = "";
 			result = gson.toJson(outputForExecuteSelect);
 
