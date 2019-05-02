@@ -15,6 +15,7 @@ import eu.nimble.service.catalog.search.impl.dao.Entity;
 import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
@@ -34,9 +35,9 @@ public class IndexingServiceTest {
 
 	@Test
 	public void testgetLogicalView() {
-		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Shelf";
+		//String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Shelf";
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
-
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		InputParamterForGetLogicalView input = new InputParamterForGetLogicalView();
 		input.setConcept(urlForClas);
@@ -47,6 +48,20 @@ public class IndexingServiceTest {
 		String r = indexingServiceReader.getLogicalView(input);
 		System.out.println(r);
 
+	}
+	
+	@Test
+	public void testcreateSPARQLAndExecuteIT(){
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		//urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#TableTop";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParamaterForExecuteSelect executeSelect = new InputParamaterForExecuteSelect();
+		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs");
+		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasName");
+		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice");
+		executeSelect.setConcept(urlForClas);
+		indexingServiceReader.createSPARQLAndExecuteIT(executeSelect);
 	}
 
 	/**

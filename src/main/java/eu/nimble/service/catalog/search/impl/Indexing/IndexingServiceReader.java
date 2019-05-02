@@ -34,8 +34,11 @@ import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.item.ItemType;
+import eu.nimble.service.catalog.search.impl.dao.item.SOLRResult;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 
@@ -90,7 +93,7 @@ public class IndexingServiceReader {
 
 		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
 		String result = invokeHTTPMethod(httpGetURL);
-
+		System.out.println(result);
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
@@ -153,7 +156,7 @@ public class IndexingServiceReader {
 
 		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
 		String resultString = invokeHTTPMethod(url);
-
+		System.out.println(resultString);
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(resultString, ClassType.class);
 		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage())
@@ -212,12 +215,11 @@ public class IndexingServiceReader {
 		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = null;
 		url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
 		String propertyInfo = invokeHTTPMethod(url);
-		try{
-		 propertyType = gson.fromJson(propertyInfo,
-				eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
-		}
-		catch(Exception e){
-			Logger.getAnonymousLogger().log(Level.WARNING, "There is no propertyInfos available for: " + propertyURL + "URL: " + url);
+		try {
+			propertyType = gson.fromJson(propertyInfo, eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"There is no propertyInfos available for: " + propertyURL + "URL: " + url);
 		}
 		return propertyType;
 	}
@@ -307,7 +309,6 @@ public class IndexingServiceReader {
 		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
 		String url = urlForItemInformation + "/select?fq=uri:" + uri;
 		OutputForExecuteSelect result = new OutputForExecuteSelect();
-		
 
 		String response = invokeHTTPMethod(url);
 
@@ -318,11 +319,12 @@ public class IndexingServiceReader {
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject ob = (JSONObject) results.get(i);
 				updateCacheForFieldNames(ob);
-				
-				for (String fieldName: ob.keySet()){
-					if (propertyInformationCache.isNameFieldAlreadyContained(fieldName)){
+
+				for (String fieldName : ob.keySet()) {
+					if (propertyInformationCache.isNameFieldAlreadyContained(fieldName)) {
 						PropertyType propertyType = propertyInformationCache.getPropertyTypeForANameField(fieldName);
-						String currentLabel = getLanguageLabel(propertyType, inputParamaterForExecuteOptionalSelect.getLanguage());
+						String currentLabel = getLanguageLabel(propertyType,
+								inputParamaterForExecuteOptionalSelect.getLanguage());
 						List<String> allValues = new ArrayList<String>();
 						extractValuesOfAFieldName(allValues, fieldName, ob);
 						result.getColumns().add(currentLabel);
@@ -330,8 +332,7 @@ public class IndexingServiceReader {
 					}
 				}
 			}
-			
-			
+
 		} else {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + uri);
 		}
@@ -341,43 +342,111 @@ public class IndexingServiceReader {
 
 	private void updateCacheForFieldNames(JSONObject ob) {
 		JSONArray conceptURIArray = ob.getJSONArray("classificationUri");
-		conceptURIArray.forEach( x -> {
-			String conceptURL =  (String) x;
-			if (!propertyInformationCache.isConceptAlreadyContained(conceptURL)){
+		conceptURIArray.forEach(x -> {
+			String conceptURL = (String) x;
+			if (!propertyInformationCache.isConceptAlreadyContained(conceptURL)) {
 				getAllPropertiesIncludingEverything(conceptURL);
 			}
 		});
 	}
-	
-	private String getLanguageLabel (PropertyType propertyType, Language language){
-		String prefixLanguage = Language.toOntologyPostfix(language)
-				.replaceAll("@", "");
+
+	private String getLanguageLabel(PropertyType propertyType, Language language) {
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
 		String label = propertyType.getLabel().get(prefixLanguage);
-		if (label!= null){
+		if (label != null) {
 			return label;
-		}
-		else{
-			Logger.getAnonymousLogger().log(Level.WARNING, "Found no language label for: " + propertyType.getUri() + " for language: " + language );
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Found no language label for: " + propertyType.getUri() + " for language: " + language);
 			return propertyType.getLocalName();
 		}
 	}
-	
-/**
- * This method returns all mappable fieldNames which can be used to filter a product with specific property values
- * @return
- */
-	public List<ItemMappingFieldInformation> getAllMappableFields(){
+
+	/**
+	 * This method returns all mappable fieldNames which can be used to filter a
+	 * product with specific property values
+	 * 
+	 * @return
+	 */
+	public List<ItemMappingFieldInformation> getAllMappableFields() {
 		List<ItemMappingFieldInformation> result = new ArrayList<ItemMappingFieldInformation>();
 		String url = urlForItemInformation + "/fields";
 		String respoonse = invokeHTTPMethod(url);
 		Gson gson = new Gson();
 		List<ItemMappingFieldInformation> r = gson.fromJson(respoonse, List.class);
 		System.out.println(r);
-		if (r != null){
+		if (r != null) {
 			result.addAll(r);
 		}
 		return result;
+
+	}
+
+	public OutputForExecuteSelect createSPARQLAndExecuteIT(
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+		// TODO Auto-generated method stub
+		/**
+		 * http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=localName:540*&fq=price:*
+		 * e
+		 */
+		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
+				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
+		String response = invokeHTTPMethod(url);
+		System.out.println(response);
+		Gson gson = new Gson();
+		SOLRResult result = gson.fromJson(response, SOLRResult.class);
+		List<String> columns = new ArrayList<String>();
+		columns.addAll(inputParamaterForExecuteSelect.getParameters());
+		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+
+		outputForExecuteSelect.setColumns(columns);
+		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
+		List<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
+		outputForExecuteSelect.setRows(rows);
 		
+
+		for (ItemType itemType : result.getResult()) {
+			outputForExecuteSelect.getUuids().add(itemType.getUri());
+			ArrayList<String> row = new ArrayList<String>();
+			rows.add(row);
+			for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
+				
+				boolean contained = false;
+				String value = "";
+				if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)){
+					contained = true;
+					value = String.valueOf(itemType.getBooleanValue().get(propertyURL));
+				}
+				
+				if (itemType.getDoubleValue()!= null && itemType.getDoubleValue().containsKey(propertyURL)){
+					contained = true;
+					value = String.valueOf(itemType.getDoubleValue().get(propertyURL));
+				}
+				
+				if (itemType.getStringValue() != null &&itemType.getStringValue().containsKey(propertyURL)){
+					contained = true;
+					value = String.valueOf(itemType.getStringValue().get(propertyURL));
+				}
+				
+				if (itemType.getCustomProperties()!= null && itemType.getCustomProperties().containsKey(propertyURL)){
+					contained = true;
+					value = String.valueOf(itemType.getCustomProperties().get(propertyURL));
+				}
+				
+				if (contained){
+					row.add(value);
+				}
+				else{
+					Logger.getAnonymousLogger().log(Level.SEVERE, "found no value for requested property: " + propertyURL);
+					row.add("NUll");
+				}
+			}
+
+		}
+
+
+		System.out.println(result);
+		return outputForExecuteSelect;
 	}
 
 }
