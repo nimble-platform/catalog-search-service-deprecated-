@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -45,6 +46,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 
 public class IndexingServiceReader extends IndexingServiceConstant {
 
+	private static final String N_ULL = "NUll";
 	private String url = "";
 	private String urlForClassInformation = "";
 	private String urlForPropertyInformation = "";
@@ -120,12 +122,16 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
 		propInfosUBL.forEach(x -> {
 			if (x.isVisible()) {
+				x.setConceptSource(ConceptSource.CUSTOM);
 				allProperties.add(x.getUri());
 			}
 		});
 
 		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
-		propInfosStandard.forEach(x -> allProperties.add(x.getUri()));
+		propInfosStandard.forEach(x -> {
+			x.setConceptSource(ConceptSource.CUSTOM);
+			allProperties.add(x.getUri());
+		});
 
 		if (!propertyInformationCache.isConceptAlreadyContained(urlOfClass)) {
 
@@ -136,10 +142,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			for (String propertyURL : allProperties) {
 				PropertyType p = requestPropertyInfos(gson, propertyURL);
 				if (p != null && p.isVisible()) {
+					p.setConceptSource(ConceptSource.ONTOLOGICAL);
 					propInfos.add(p);
-				}
-				else{
-					Logger.getAnonymousLogger().log(Level.WARNING, "Ignore property, because it is set to be invisible: " +propertyURL);
+				} else {
+					Logger.getAnonymousLogger().log(Level.WARNING,
+							"Ignore property, because it is set to be invisible: " + propertyURL);
 				}
 				// propInfos.add(requestPropertyInfos(gson, propertyURL));
 			}
@@ -171,6 +178,26 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		Gson gson = new Gson();
 		UBLResult r = gson.fromJson(result, UBLResult.class);
+		for (PropertyType pType : r.getResult()) {
+			if (pType.getUri().equals("http://www.nimble-project.org/resource/ubl#certificateType")) {
+
+				if (!pType.getItemFieldNames().contains("certificateType")) {
+					pType.getItemFieldNames().add("certificateType");
+				}
+			}
+			if (pType.getUri().equals("http://www.nimble-project.org/resource/ubl#freeOfCharge")) {
+
+				if (!pType.getItemFieldNames().contains("freeOfCharge")) {
+					pType.getItemFieldNames().add("freeOfCharge");
+				}
+			}
+			if (pType.getUri().equals("http://www.nimble-project.org/resource/ubl#manufacturerId")) {
+
+				if (!pType.getItemFieldNames().contains("manufacturerId")) {
+					pType.getItemFieldNames().add("manufacturerId");
+				}
+			}
+		}
 		return r.getResult();
 	}
 
@@ -358,40 +385,42 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	public List<String> getAllDifferentValuesForAProperty(String conceptURL, String propertyURL) {
 		Gson gson = new Gson();
 		List<String> allValues = new ArrayList<String>();
-		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfosFromCache(conceptURL, propertyURL);
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfosFromCache(conceptURL,
+				propertyURL);
 
-		if (propertyType != null){
-		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:" + URLEncoder.encode(conceptURL);
-		String items = invokeHTTPMethod(url);
-		JSONObject jsonObject = new JSONObject(items);
-		JSONArray results = jsonObject.getJSONArray("result");
-		if (results != null) {
-			for (String fieldName : propertyType.getItemFieldNames()) {
-				for (int i = 0; i < results.length(); i++) {
-					JSONObject ob = (JSONObject) results.get(i);
-					extractValuesOfAFieldName(allValues, fieldName, ob);
+		if (propertyType != null) {
+			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
+					+ URLEncoder.encode(conceptURL);
+			String items = invokeHTTPMethod(url);
+			JSONObject jsonObject = new JSONObject(items);
+			JSONArray results = jsonObject.getJSONArray("result");
+			if (results != null) {
+				for (String fieldName : propertyType.getItemFieldNames()) {
+					for (int i = 0; i < results.length(); i++) {
+						JSONObject ob = (JSONObject) results.get(i);
+						extractValuesOfAFieldName(allValues, fieldName, ob);
+					}
 				}
+				// propertyType.getItemFieldNames()?
+				return allValues;
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + propertyURL);
+				return Collections.EMPTY_LIST;
 			}
-			// propertyType.getItemFieldNames()?
-			return allValues;
 		} else {
-			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + propertyURL);
-			return Collections.EMPTY_LIST;
-		}
-		}else{
 			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property type from: " + propertyURL);
 			return Collections.EMPTY_LIST;
-			
+
 		}
 
 	}
 
 	private PropertyType requestPropertyInfosFromCache(String conceptURL, String propertyURL) {
-		if (propertyInformationCache.isConceptAlreadyContained(conceptURL)){
+		if (propertyInformationCache.isConceptAlreadyContained(conceptURL)) {
 			return propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, propertyURL);
-		}
-		else{
-			Logger.getAnonymousLogger().log(Level.WARNING, "getDifferentValues has been executed before getLogicalView/getProperties. Is not valid");
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"getDifferentValues has been executed before getLogicalView/getProperties. Is not valid");
 		}
 		return null;
 	}
@@ -435,6 +464,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				}
 			}
 			if (targetValue instanceof Double) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+			if (targetValue instanceof Boolean) {
 				String v = String.valueOf(targetValue);
 				if (!allValues.contains(v)) {
 					allValues.add(v);
@@ -543,46 +578,78 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
 		List<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
 		outputForExecuteSelect.setRows(rows);
-
+		int index = 0;
 		for (ItemType itemType : result.getResult()) {
 			outputForExecuteSelect.getUuids().add(itemType.getUri());
 			ArrayList<String> row = new ArrayList<String>();
 			rows.add(row);
 			for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
 
-				boolean contained = false;
-				String value = "";
-				if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)) {
-					contained = true;
-					value = String.valueOf(itemType.getBooleanValue().get(propertyURL));
-				}
+				// I have to decide which kind of proepty it is. Each kind needs
+				// an one extraction process
+				PropertyType pType = propertyInformationCache
+						.getPropertyTypeForASingleProperty(inputParamaterForExecuteSelect.getConcept(), propertyURL);
 
-				if (itemType.getDoubleValue() != null && itemType.getDoubleValue().containsKey(propertyURL)) {
-					contained = true;
-					value = String.valueOf(itemType.getDoubleValue().get(propertyURL));
-				}
+				if (pType.getConceptSource().equals(ConceptSource.ONTOLOGICAL)) {
+					boolean contained = false;
+					String value = "";
+					if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)) {
+						contained = true;
+						value = String.valueOf(itemType.getBooleanValue().get(propertyURL));
+					}
 
-				if (itemType.getStringValue() != null && itemType.getStringValue().containsKey(propertyURL)) {
-					contained = true;
-					value = String.valueOf(itemType.getStringValue().get(propertyURL));
-				}
+					if (itemType.getDoubleValue() != null && itemType.getDoubleValue().containsKey(propertyURL)) {
+						contained = true;
+						value = String.valueOf(itemType.getDoubleValue().get(propertyURL));
+					}
 
-				if (itemType.getCustomProperties() != null && itemType.getCustomProperties().containsKey(propertyURL)) {
-					contained = true;
-					value = String.valueOf(itemType.getCustomProperties().get(propertyURL));
-				}
+					if (itemType.getStringValue() != null && itemType.getStringValue().containsKey(propertyURL)) {
+						contained = true;
+						value = String.valueOf(itemType.getStringValue().get(propertyURL));
+					}
 
-				if (contained) {
-					row.add(value);
+					if (itemType.getCustomProperties() != null
+							&& itemType.getCustomProperties().containsKey(propertyURL)) {
+						contained = true;
+						value = String.valueOf(itemType.getCustomProperties().get(propertyURL));
+					}
+
+					if (contained) {
+						row.add(value);
+					} else {
+						Logger.getAnonymousLogger().log(Level.SEVERE,
+								"found no value for requested property: " + propertyURL);
+						row.add(N_ULL);
+					}
 				} else {
-					Logger.getAnonymousLogger().log(Level.SEVERE,
-							"found no value for requested property: " + propertyURL);
-					row.add("NUll");
+					// Custom Properties using extractionMethod
+					List<String> allValues = new ArrayList<String>();
+					Iterator iterator = pType.getItemFieldNames().iterator();
+					while (iterator.hasNext()) {
+						String fieldName = (String) iterator.next();
+
+						JSONObject jsonObject = new JSONObject(response);
+						JSONArray results = jsonObject.getJSONArray("result");
+						if (results != null) {
+
+							JSONObject ob = (JSONObject) results.get(index);
+							extractValuesOfAFieldName(allValues, fieldName, ob);
+
+						}
+
+					}
+					if (allValues.size() > 0) {
+						row.add(allValues.get(0));
+					} else {
+						Logger.getAnonymousLogger().log(Level.WARNING, "Found no value for: " + pType.getUri());
+						row.add(N_ULL);
+					}
 				}
+
 			}
+			index++;
 
 		}
-
 		System.out.println(result);
 		return outputForExecuteSelect;
 	}
