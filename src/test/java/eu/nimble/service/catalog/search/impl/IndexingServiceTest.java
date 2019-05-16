@@ -47,6 +47,10 @@ public class IndexingServiceTest {
 		// input.setOldJsonLogicalView(new LocalOntologyView());
 		String r = indexingServiceReader.getLogicalView(input);
 		System.out.println(r);
+		
+		String r2 = indexingServiceReader.getLogicalView(input);
+		
+		assertEquals(r, r2);
 
 	}
 	
@@ -134,7 +138,7 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		String urlForPropertyInformationUBL = "https://nimble-platform.salzburgresearch.at/nimble/indexing-service/";
 		indexingServiceReader.setUrlForPropertyInformationUBL(urlForPropertyInformationUBL );
-		System.out.println(indexingServiceReader.requestStandradPropertiesFromUBL());
+		System.out.println(indexingServiceReader.requestStandardPropertiesFromUBL());
 	}
 	
 }

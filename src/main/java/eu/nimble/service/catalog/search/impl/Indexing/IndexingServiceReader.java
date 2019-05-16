@@ -135,10 +135,10 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 			for (String propertyURL : allProperties) {
 				PropertyType p = requestPropertyInfos(gson, propertyURL);
-				if (p!= null && p.isVisible()){
+				if (p != null && p.isVisible()) {
 					propInfos.add(p);
 				}
-				//propInfos.add(requestPropertyInfos(gson, propertyURL));
+				// propInfos.add(requestPropertyInfos(gson, propertyURL));
 			}
 			if (propInfos.size() > 0) {
 				propertyInformationCache.addConcept(urlOfClass, propInfos);
@@ -209,6 +209,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		eu.nimble.service.catalog.search.impl.dao.Entity concept = new eu.nimble.service.catalog.search.impl.dao.Entity();
 		concept.setUrl(paramterForGetLogicalView.getConcept());
 
+		boolean shallThePropertyCacheUodated = !propertyInformationCache
+				.isConceptAlreadyContained(paramterForGetLogicalView.getConcept());
+
 		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
 		String resultString = invokeHTTPMethod(url);
 		System.out.println(resultString);
@@ -226,30 +229,20 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		uriPath.add(concept.getUrl());
 		completeStructure.setConceptURIPath(uriPath);
 
-		for (String propertyURL : r.getProperties()) {
+		List<PropertyType> allPropertyTypes = new ArrayList<PropertyType>();
 
-			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
-					propertyURL);
-			if (propertyType.isVisible()) {
+		if (shallThePropertyCacheUodated) {
 
-				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
-						ConceptSource.ONTOLOGICAL);
-			}
-		}
+			requestAllPropertiesFromDifferentSources(paramterForGetLogicalView, completeStructure, concept, gson, r,
+					prefixLanguage, allPropertyTypes);
 
-		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
-		for (PropertyType propertyType : propInfosUBL) {
-			if (propertyType.isVisible()) {
-				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
-						ConceptSource.CUSTOM);
-			}
-
-		}
-
-		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
-		for (PropertyType propertyType : propInfosStandard) {
-			addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
-					ConceptSource.CUSTOM);
+		} else {
+			Logger.getAnonymousLogger().log(Level.INFO, "Use the cached proeprties instead of asking them again: "
+					+ paramterForGetLogicalView.getConcept());
+			List<PropertyType> allProps = propertyInformationCache
+					.getAllCachedPropertiesForAConcept(paramterForGetLogicalView.getConcept());
+			allProps.forEach(pType -> addDetailsToProperty(completeStructure, concept, prefixLanguage, pType.getUri(),
+					pType, pType.getConceptSource()));
 		}
 
 		outputStructure.setCompleteStructure(completeStructure);
@@ -260,6 +253,48 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String result = gson.toJson(outputStructure);
 		return result;
 
+	}
+
+	private void requestAllPropertiesFromDifferentSources(InputParamterForGetLogicalView paramterForGetLogicalView,
+			LocalOntologyView completeStructure, eu.nimble.service.catalog.search.impl.dao.Entity concept, Gson gson,
+			ClassType r, String prefixLanguage, List<PropertyType> allPropertyTypes) {
+		for (String propertyURL : r.getProperties()) {
+
+			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
+					propertyURL);
+			if (propertyType.isVisible()) {
+				allPropertyTypes.add(propertyType);
+				propertyType.setConceptSource(ConceptSource.ONTOLOGICAL);
+				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
+						ConceptSource.ONTOLOGICAL);
+			}
+		}
+
+		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
+		for (PropertyType propertyType : propInfosUBL) {
+			if (propertyType.isVisible()) {
+				allPropertyTypes.add(propertyType);
+				propertyType.setConceptSource(ConceptSource.CUSTOM);
+				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
+						ConceptSource.CUSTOM);
+			}
+
+		}
+
+		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
+		for (PropertyType propertyType : propInfosStandard) {
+			if (propertyType.isVisible()) {
+				allPropertyTypes.add(propertyType);
+				propertyType.setConceptSource(ConceptSource.CUSTOM);
+				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
+						ConceptSource.CUSTOM);
+			}
+		}
+
+		// store The Property Types in the cache.
+		if (!propertyInformationCache.isConceptAlreadyContained(paramterForGetLogicalView.getConcept())) {
+			propertyInformationCache.addConcept(paramterForGetLogicalView.getConcept(), allPropertyTypes);
+		}
 	}
 
 	private void addDetailsToProperty(LocalOntologyView completeStructure,
@@ -320,7 +355,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	public List<String> getAllDifferentValuesForAProperty(String conceptURL, String propertyURL) {
 		Gson gson = new Gson();
 		List<String> allValues = new ArrayList<String>();
-		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson, propertyURL);
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfosFromCache(conceptURL, propertyURL);
 
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:" + URLEncoder.encode(conceptURL);
 		String items = invokeHTTPMethod(url);
@@ -340,6 +375,16 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			return Collections.EMPTY_LIST;
 		}
 
+	}
+
+	private PropertyType requestPropertyInfosFromCache(String conceptURL, String propertyURL) {
+		if (propertyInformationCache.isConceptAlreadyContained(conceptURL)){
+			return propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, propertyURL);
+		}
+		else{
+			Logger.getAnonymousLogger().log(Level.WARNING, "getDifferentValues has been executed before getLogicalView/getProperties. Is not valid");
+		}
+		return null;
 	}
 
 	private void extractValuesOfAFieldName(List<String> allValues, String fieldName, JSONObject ob) {

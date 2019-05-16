@@ -5,6 +5,8 @@ import java.util.HashSet;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import de.biba.triple.store.access.enums.ConceptSource;
 /**
  * SOLR Document holding the properties out of 
  * any ontologies including label, range and 
@@ -32,6 +34,8 @@ public class PropertyType extends Named implements IPropertyType {
 	private Double boost;
 
 	private boolean visible;
+	
+	private ConceptSource conceptSource;
 	
 	public String getRange() {
 		return range;
@@ -104,11 +108,21 @@ public class PropertyType extends Named implements IPropertyType {
 		this.visible = visible;
 	}
 
+	
+	
+	public ConceptSource getConceptSource() {
+		return conceptSource;
+	}
+
+	public void setConceptSource(ConceptSource conceptSource) {
+		this.conceptSource = conceptSource;
+	}
+
 	@Override
 	public String toString() {
 		return "PropertyType [type=" + type + ", range=" + range + ", valueQualifier=" + valueQualifier + ", product="
 				+ product + ", itemFieldNames=" + itemFieldNames + ", facet=" + facet + ", boost=" + boost
-				+ ", visible=" + visible + "]";
+				+ ", visible=" + visible + ", conceptSource=" + conceptSource + "]";
 	}
 
 

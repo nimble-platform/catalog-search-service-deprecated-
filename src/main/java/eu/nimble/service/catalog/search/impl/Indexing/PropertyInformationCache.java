@@ -1,10 +1,12 @@
 package eu.nimble.service.catalog.search.impl.Indexing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import eu.nimble.service.catalog.search.impl.dao.PropertyType;
 
@@ -48,6 +50,28 @@ public class PropertyInformationCache {
 		return cachedPropertiesPerNamefield.get(nameField);
 	}
 
+	
+	public PropertyType getPropertyTypeForASingleProperty(String conceptURL, String propertyURL){
+		List<PropertyType> r = getAllCachedPropertiesForAConcept(conceptURL);
+		List<PropertyType> filteredResult = r.stream().filter(x -> x.getUri().equals(propertyURL)).collect(Collectors.toList());
+		if (filteredResult != null && filteredResult.size() > 0){
+			return filteredResult.get(0);
+		}
+		else{
+			Logger.getAnonymousLogger().log(Level.WARNING, "Expect to find the property: " + propertyURL + " for the concept:  " + conceptURL);;
+			return null;
+		}
+	}
+	
+	public List<PropertyType> getAllCachedPropertiesForAConcept(String conceptURL){
+		List<PropertyType> result = new ArrayList<PropertyType>();
+		if(cachedProeprtiesPerConceptURI.containsKey(conceptURL)){
+			cachedProeprtiesPerConceptURI.get(conceptURL).forEach( x-> result.add(x));
+		}
+		
+		return result;
+	}
+	
 	@Override
 	public String toString() {
 		return "PropertyInformationCache [cachedProeprtiesPerConceptURI=" + cachedProeprtiesPerConceptURI
