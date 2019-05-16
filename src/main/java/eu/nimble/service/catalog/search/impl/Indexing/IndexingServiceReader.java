@@ -47,6 +47,7 @@ public class IndexingServiceReader {
 	private String url = "";
 	private String urlForClassInformation = "";
 	private String urlForPropertyInformation = "";
+	private String urlForPropertyInformationUBL = "";
 	private String urlForItemInformation = "";
 	private PropertyInformationCache propertyInformationCache = new PropertyInformationCache();
 
@@ -58,7 +59,16 @@ public class IndexingServiceReader {
 		}
 		urlForClassInformation = url + "class";
 		urlForPropertyInformation = url + "property";
+		urlForPropertyInformationUBL = url + "property";
 		urlForItemInformation = url + "item";
+	}
+
+	public String getUrlForPropertyInformationUBL() {
+		return urlForPropertyInformationUBL;
+	}
+
+	public void setUrlForPropertyInformationUBL(String urlForPropertyInformationUBL) {
+		this.urlForPropertyInformationUBL = urlForPropertyInformationUBL + "property";
 	}
 
 	private String invokeHTTPMethod(String url) {
@@ -89,6 +99,12 @@ public class IndexingServiceReader {
 		return null;
 	}
 
+	
+	/**
+	 * The peroperties have three sources ontology, ubl, unknown. 
+	 * @param urlOfClass
+	 * @return
+	 */
 	public List<String> getAllPropertiesIncludingEverything(String urlOfClass) {
 
 		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
@@ -101,7 +117,11 @@ public class IndexingServiceReader {
 		allProperties.add(result);
 
 		if (!propertyInformationCache.isConceptAlreadyContained(urlOfClass)) {
+			
+			List<PropertyType> propInfosUBL = requestStandradPropertiesFromUBL();
+			
 			List<PropertyType> propInfos = new ArrayList<PropertyType>();
+			propInfos.addAll(propInfosUBL);
 			for (String propertyURL : allProperties) {
 				propInfos.add(requestPropertyInfos(gson, propertyURL));
 			}
@@ -114,6 +134,20 @@ public class IndexingServiceReader {
 		}
 
 		return allProperties;
+	}
+
+	public List<PropertyType> requestStandradPropertiesFromUBL() {
+		//https://nimble-platform.salzburgresearch.at/nimble/indexing-service/property/select?q=nameSpace:%22http://www.nimble-project.org/resource/ubl%23%22)
+		String urlOfUBBL = "http://www.nimble-project.org/resource/ubl#";
+		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:" + URLEncoder.encode("\""+ urlOfUBBL + "\"");
+		String result = invokeHTTPMethod(httpGetURL);
+		System.out.println(result);
+		List<String> allProperties = new ArrayList<String>();
+		Gson gson = new Gson();
+		ClassType r = gson.fromJson(result, ClassType.class);
+		r.getProperties().forEach(x -> allProperties.add(x));
+		allProperties.add(result);
+		return null;
 	}
 
 	public List<Entity> detectPossibleConceptsLanguageSpecific(
@@ -209,6 +243,10 @@ public class IndexingServiceReader {
 		return result;
 
 	}
+	
+	
+	
+	
 
 	private eu.nimble.service.catalog.search.impl.dao.PropertyType requestPropertyInfos(Gson gson, String propertyURL) {
 		String url;

@@ -128,4 +128,13 @@ public class IndexingServiceTest {
 		List<ItemMappingFieldInformation> r = indexingServiceReader.getAllMappableFields();
 	}
 	
+	@Test
+	public void testUBLProperties(){
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		String urlForPropertyInformationUBL = "https://nimble-platform.salzburgresearch.at/nimble/indexing-service/";
+		indexingServiceReader.setUrlForPropertyInformationUBL(urlForPropertyInformationUBL );
+		System.out.println(indexingServiceReader.requestStandradPropertiesFromUBL());
+	}
+	
 }
