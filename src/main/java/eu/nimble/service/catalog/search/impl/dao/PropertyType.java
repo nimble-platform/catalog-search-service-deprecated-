@@ -31,6 +31,8 @@ public class PropertyType extends Named implements IPropertyType {
 	
 	private Double boost;
 
+	private boolean visible;
+	
 	public String getRange() {
 		return range;
 	}
@@ -92,6 +94,21 @@ public class PropertyType extends Named implements IPropertyType {
 
 	public void setBoost(Double boost) {
 		this.boost = boost;
+	}
+
+	public boolean isVisible() {
+		return visible;
+	}
+
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+
+	@Override
+	public String toString() {
+		return "PropertyType [type=" + type + ", range=" + range + ", valueQualifier=" + valueQualifier + ", product="
+				+ product + ", itemFieldNames=" + itemFieldNames + ", facet=" + facet + ", boost=" + boost
+				+ ", visible=" + visible + "]";
 	}
 
 

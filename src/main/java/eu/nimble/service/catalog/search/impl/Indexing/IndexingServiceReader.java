@@ -33,6 +33,7 @@ import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
 import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.PropertyType;
+import eu.nimble.service.catalog.search.impl.dao.UBLResult;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
@@ -42,7 +43,7 @@ import eu.nimble.service.catalog.search.impl.dao.item.SOLRResult;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 
-public class IndexingServiceReader {
+public class IndexingServiceReader extends IndexingServiceConstant {
 
 	private String url = "";
 	private String urlForClassInformation = "";
@@ -99,9 +100,9 @@ public class IndexingServiceReader {
 		return null;
 	}
 
-	
 	/**
-	 * The peroperties have three sources ontology, ubl, unknown. 
+	 * The peroperties have three sources ontology, ubl, unknown.
+	 * 
 	 * @param urlOfClass
 	 * @return
 	 */
@@ -114,16 +115,30 @@ public class IndexingServiceReader {
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
 		r.getProperties().forEach(x -> allProperties.add(x));
-		allProperties.add(result);
+		// allProperties.add(result);
+
+		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
+		propInfosUBL.forEach(x -> {
+			if (x.isVisible()) {
+				allProperties.add(x.getUri());
+			}
+		});
+
+		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
+		propInfosStandard.forEach(x -> allProperties.add(x.getUri()));
 
 		if (!propertyInformationCache.isConceptAlreadyContained(urlOfClass)) {
-			
-			List<PropertyType> propInfosUBL = requestStandradPropertiesFromUBL();
-			
+
 			List<PropertyType> propInfos = new ArrayList<PropertyType>();
 			propInfos.addAll(propInfosUBL);
+			propInfos.addAll(propInfosStandard);
+
 			for (String propertyURL : allProperties) {
-				propInfos.add(requestPropertyInfos(gson, propertyURL));
+				PropertyType p = requestPropertyInfos(gson, propertyURL);
+				if (p!= null && p.isVisible()){
+					propInfos.add(p);
+				}
+				//propInfos.add(requestPropertyInfos(gson, propertyURL));
 			}
 			if (propInfos.size() > 0) {
 				propertyInformationCache.addConcept(urlOfClass, propInfos);
@@ -136,18 +151,24 @@ public class IndexingServiceReader {
 		return allProperties;
 	}
 
-	public List<PropertyType> requestStandradPropertiesFromUBL() {
-		//https://nimble-platform.salzburgresearch.at/nimble/indexing-service/property/select?q=nameSpace:%22http://www.nimble-project.org/resource/ubl%23%22)
+	private List<PropertyType> requestStandardPropertiesFromUnknownSopurce() {
+
+		DefaultPropertyFactory factory = new DefaultPropertyFactory();
+
+		return factory.createProperties();
+	}
+
+	public List<PropertyType> requestStandardPropertiesFromUBL() {
+		// https://nimble-platform.salzburgresearch.at/nimble/indexing-service/property/select?q=nameSpace:%22http://www.nimble-project.org/resource/ubl%23%22)
 		String urlOfUBBL = "http://www.nimble-project.org/resource/ubl#";
-		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:" + URLEncoder.encode("\""+ urlOfUBBL + "\"");
+		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:"
+				+ URLEncoder.encode("\"" + urlOfUBBL + "\"");
 		String result = invokeHTTPMethod(httpGetURL);
 		System.out.println(result);
-		List<String> allProperties = new ArrayList<String>();
+
 		Gson gson = new Gson();
-		ClassType r = gson.fromJson(result, ClassType.class);
-		r.getProperties().forEach(x -> allProperties.add(x));
-		allProperties.add(result);
-		return null;
+		UBLResult r = gson.fromJson(result, UBLResult.class);
+		return r.getResult();
 	}
 
 	public List<Entity> detectPossibleConceptsLanguageSpecific(
@@ -209,29 +230,26 @@ public class IndexingServiceReader {
 
 			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
 					propertyURL);
-			eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
-			entity.setUrl(propertyURL);
-			entity.setTranslatedURL(propertyType.getLabel().get(prefixLanguage));
-			if (isItADatatypeProperty(propertyType)) {
-				completeStructure.addDataproperties(entity);
-			} else {
-				LocalOntologyView localOntologyView2 = new LocalOntologyView();
+			if (propertyType.isVisible()) {
 
-				eu.nimble.service.catalog.search.impl.dao.Entity conceptRange = new eu.nimble.service.catalog.search.impl.dao.Entity();
-				conceptRange.setUrl(propertyType.getRange());
-				conceptRange.setTranslatedURL(entity.getTranslatedURL());
-				// conceptRan
+				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
+						ConceptSource.ONTOLOGICAL);
+			}
+		}
 
-				localOntologyView2.setConcept(conceptRange);
-				localOntologyView2.setObjectPropertySource(entity.getUrl());
-				localOntologyView2.setFrozenConcept(concept.getUrl());
-				localOntologyView2.setDistanceToFrozenConcept(1);
-				List<String> newPaht = new ArrayList<String>(completeStructure.getConceptURIPath());
-				newPaht.add(propertyType.getRange());
-				localOntologyView2.setConceptURIPath(newPaht);
-				completeStructure.getObjectproperties().put(propertyType.getRange(), localOntologyView2);
+		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
+		for (PropertyType propertyType : propInfosUBL) {
+			if (propertyType.isVisible()) {
+				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
+						ConceptSource.CUSTOM);
 			}
 
+		}
+
+		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
+		for (PropertyType propertyType : propInfosStandard) {
+			addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
+					ConceptSource.CUSTOM);
 		}
 
 		outputStructure.setCompleteStructure(completeStructure);
@@ -243,27 +261,57 @@ public class IndexingServiceReader {
 		return result;
 
 	}
-	
-	
-	
-	
+
+	private void addDetailsToProperty(LocalOntologyView completeStructure,
+			eu.nimble.service.catalog.search.impl.dao.Entity concept, String prefixLanguage, String propertyURL,
+			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType, ConceptSource conceptSource) {
+		eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
+		entity.setUrl(propertyURL);
+		entity.setConceptSource(conceptSource);
+		entity.setTranslatedURL(propertyType.getLabel().get(prefixLanguage));
+		if (isItADatatypeProperty(propertyType)) {
+			completeStructure.addDataproperties(entity);
+		} else {
+			LocalOntologyView localOntologyView2 = new LocalOntologyView();
+
+			eu.nimble.service.catalog.search.impl.dao.Entity conceptRange = new eu.nimble.service.catalog.search.impl.dao.Entity();
+			conceptRange.setUrl(propertyType.getRange());
+			conceptRange.setTranslatedURL(entity.getTranslatedURL());
+			// conceptRan
+
+			localOntologyView2.setConcept(conceptRange);
+			localOntologyView2.setObjectPropertySource(entity.getUrl());
+			localOntologyView2.setFrozenConcept(concept.getUrl());
+			localOntologyView2.setDistanceToFrozenConcept(1);
+			List<String> newPaht = new ArrayList<String>(completeStructure.getConceptURIPath());
+			newPaht.add(propertyType.getRange());
+			localOntologyView2.setConceptURIPath(newPaht);
+			completeStructure.getObjectproperties().put(propertyType.getRange(), localOntologyView2);
+		}
+	}
 
 	private eu.nimble.service.catalog.search.impl.dao.PropertyType requestPropertyInfos(Gson gson, String propertyURL) {
-		String url;
-		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = null;
-		url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
-		String propertyInfo = invokeHTTPMethod(url);
-		try {
-			propertyType = gson.fromJson(propertyInfo, eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
-		} catch (Exception e) {
-			Logger.getAnonymousLogger().log(Level.WARNING,
-					"There is no propertyInfos available for: " + propertyURL + "URL: " + url);
+
+		if (!propertyURL.contains(namespace) && (!propertyURL.contains(nameSPACEUBL))) {
+
+			String url;
+			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = null;
+			url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
+			String propertyInfo = invokeHTTPMethod(url);
+			try {
+				propertyType = gson.fromJson(propertyInfo,
+						eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
+			} catch (Exception e) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"There is no propertyInfos available for: " + propertyURL + "URL: " + url);
+			}
+			return propertyType;
 		}
-		return propertyType;
+		return null;
 	}
 
 	private boolean isItADatatypeProperty(eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType) {
-		if (propertyType.getRange().contains("http://www.w3.org/2001/XMLSchema#")) {
+		if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
 			return true;
 		}
 		return false;
@@ -441,47 +489,45 @@ public class IndexingServiceReader {
 		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
 		List<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
 		outputForExecuteSelect.setRows(rows);
-		
 
 		for (ItemType itemType : result.getResult()) {
 			outputForExecuteSelect.getUuids().add(itemType.getUri());
 			ArrayList<String> row = new ArrayList<String>();
 			rows.add(row);
 			for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
-				
+
 				boolean contained = false;
 				String value = "";
-				if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)){
+				if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)) {
 					contained = true;
 					value = String.valueOf(itemType.getBooleanValue().get(propertyURL));
 				}
-				
-				if (itemType.getDoubleValue()!= null && itemType.getDoubleValue().containsKey(propertyURL)){
+
+				if (itemType.getDoubleValue() != null && itemType.getDoubleValue().containsKey(propertyURL)) {
 					contained = true;
 					value = String.valueOf(itemType.getDoubleValue().get(propertyURL));
 				}
-				
-				if (itemType.getStringValue() != null &&itemType.getStringValue().containsKey(propertyURL)){
+
+				if (itemType.getStringValue() != null && itemType.getStringValue().containsKey(propertyURL)) {
 					contained = true;
 					value = String.valueOf(itemType.getStringValue().get(propertyURL));
 				}
-				
-				if (itemType.getCustomProperties()!= null && itemType.getCustomProperties().containsKey(propertyURL)){
+
+				if (itemType.getCustomProperties() != null && itemType.getCustomProperties().containsKey(propertyURL)) {
 					contained = true;
 					value = String.valueOf(itemType.getCustomProperties().get(propertyURL));
 				}
-				
-				if (contained){
+
+				if (contained) {
 					row.add(value);
-				}
-				else{
-					Logger.getAnonymousLogger().log(Level.SEVERE, "found no value for requested property: " + propertyURL);
+				} else {
+					Logger.getAnonymousLogger().log(Level.SEVERE,
+							"found no value for requested property: " + propertyURL);
 					row.add("NUll");
 				}
 			}
 
 		}
-
 
 		System.out.println(result);
 		return outputForExecuteSelect;
