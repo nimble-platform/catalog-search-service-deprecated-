@@ -211,7 +211,7 @@ public class IndexingServiceTest {
 	public void testcreateOPtionalSPARQLAndExecuteIT(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
-		String uuid = "5407";
+		String uuid = "257423";
 		
 		System.out.println(URLEncoder.encode("localName:\"540*\""));
 		
@@ -219,8 +219,8 @@ public class IndexingServiceTest {
 		inputParamaterForExecuteOptionalSelect.setLanguage("en");
 		inputParamaterForExecuteOptionalSelect.setUuid(uuid);
 		
-		String gg= "http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=certificateType:%5B*%20TO%20*%5D&facet.field=certificateType";
-		System.out.println(URLDecoder.decode(gg));
+//		String gg= "http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=certificateType:%5B*%20TO%20*%5D&facet.field=certificateType";
+//		System.out.println(URLDecoder.decode(gg));
 		
 		OutputForExecuteSelect r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect);
 		System.out.println(r);

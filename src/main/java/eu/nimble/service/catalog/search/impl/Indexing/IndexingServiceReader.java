@@ -484,7 +484,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
 		String url = urlForItemInformation + "/select?fq=uri:" + uri;
 		OutputForExecuteSelect result = new OutputForExecuteSelect();
-
+		result.getUuids().add(inputParamaterForExecuteOptionalSelect.getUuid());
 		String response = invokeHTTPMethod(url);
 
 		JSONObject jsonObject = new JSONObject(response);
@@ -504,6 +504,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 						extractValuesOfAFieldName(allValues, fieldName, ob);
 						result.getColumns().add(currentLabel);
 						result.getRows().add((ArrayList<String>) allValues);
+					}
+					else{
+						if (((fieldName.equals("stringValue")) || (fieldName.equals("doubleValue"))|| (fieldName.equals("booleanValue")))){
+							//have to extract ontological properties TODO 
+							Logger.getAnonymousLogger().log(Level.INFO, "Ontological propperty not supported yet...");
+						}
 					}
 				}
 			}
