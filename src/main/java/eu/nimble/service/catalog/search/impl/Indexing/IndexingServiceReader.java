@@ -110,7 +110,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
 		String result = invokeHTTPMethod(httpGetURL);
-		System.out.println(result);
+		Logger.getAnonymousLogger().log(Level.INFO, result);
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
@@ -137,6 +137,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				PropertyType p = requestPropertyInfos(gson, propertyURL);
 				if (p != null && p.isVisible()) {
 					propInfos.add(p);
+				}
+				else{
+					Logger.getAnonymousLogger().log(Level.WARNING, "Ignore property, because it is set to be invisible: " +propertyURL);
 				}
 				// propInfos.add(requestPropertyInfos(gson, propertyURL));
 			}
@@ -357,6 +360,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<String> allValues = new ArrayList<String>();
 		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfosFromCache(conceptURL, propertyURL);
 
+		if (propertyType != null){
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:" + URLEncoder.encode(conceptURL);
 		String items = invokeHTTPMethod(url);
 		JSONObject jsonObject = new JSONObject(items);
@@ -373,6 +377,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		} else {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + propertyURL);
 			return Collections.EMPTY_LIST;
+		}
+		}else{
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property type from: " + propertyURL);
+			return Collections.EMPTY_LIST;
+			
 		}
 
 	}

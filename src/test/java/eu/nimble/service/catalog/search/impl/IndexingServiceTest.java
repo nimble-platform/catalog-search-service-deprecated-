@@ -90,17 +90,41 @@ public class IndexingServiceTest {
 	}
 
 	@Test
-	public void testgetAllDifferentValuesForAProperty() {
+	public void testgetAllDifferentValuesForAnInvalidProperty() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#Product";
 		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice";
 
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 
+		
+		
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		//precondition getProperties to laod the proeprtyCache
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		System.out.println(test);
+		assertTrue(test.size() == 0);
+	}
+	
+	@Test
+	public void testgetAllDifferentValuesForAUnknownPropertySource() {
+		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String property = "http://UnknownSource#name";
+
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		//precondition getProperties to laod the proeprtyCache
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		
 		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
 		System.out.println(test);
 		assertTrue(test.size() > 0);
 	}
+	
 
 	@Test
 	public void testcreateOPtionalSPARQLAndExecuteIT(){
