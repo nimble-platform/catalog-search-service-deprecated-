@@ -504,10 +504,10 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 						extractValuesOfAFieldName(allValues, fieldName, ob);
 						result.getColumns().add(currentLabel);
 						result.getRows().add((ArrayList<String>) allValues);
-					}
-					else{
-						if (((fieldName.equals("stringValue")) || (fieldName.equals("doubleValue"))|| (fieldName.equals("booleanValue")))){
-							//have to extract ontological properties TODO 
+					} else {
+						if (((fieldName.equals("stringValue")) || (fieldName.equals("doubleValue"))
+								|| (fieldName.equals("booleanValue")))) {
+							// have to extract ontological properties TODO
 							Logger.getAnonymousLogger().log(Level.INFO, "Ontological propperty not supported yet...");
 						}
 					}
@@ -596,67 +596,70 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				PropertyType pType = propertyInformationCache
 						.getPropertyTypeForASingleProperty(inputParamaterForExecuteSelect.getConcept(), propertyURL);
 
-				if (pType.getConceptSource().equals(ConceptSource.ONTOLOGICAL)) {
-					boolean contained = false;
-					String value = "";
-					if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)) {
-						contained = true;
-						value = String.valueOf(itemType.getBooleanValue().get(propertyURL));
-					}
+				if (pType != null) {
 
-					if (itemType.getDoubleValue() != null && itemType.getDoubleValue().containsKey(propertyURL)) {
-						contained = true;
-						value = String.valueOf(itemType.getDoubleValue().get(propertyURL));
-					}
-
-					if (itemType.getStringValue() != null && itemType.getStringValue().containsKey(propertyURL)) {
-						contained = true;
-						value = String.valueOf(itemType.getStringValue().get(propertyURL));
-					}
-
-					if (itemType.getCustomProperties() != null
-							&& itemType.getCustomProperties().containsKey(propertyURL)) {
-						contained = true;
-						value = String.valueOf(itemType.getCustomProperties().get(propertyURL));
-					}
-
-					if (contained) {
-						row.add(value);
-					} else {
-						Logger.getAnonymousLogger().log(Level.SEVERE,
-								"found no value for requested property: " + propertyURL);
-						row.add(N_ULL);
-					}
-				} else {
-					// Custom Properties using extractionMethod
-					List<String> allValues = new ArrayList<String>();
-					Iterator iterator = pType.getItemFieldNames().iterator();
-					while (iterator.hasNext()) {
-						String fieldName = (String) iterator.next();
-
-						JSONObject jsonObject = new JSONObject(response);
-						JSONArray results = jsonObject.getJSONArray("result");
-						if (results != null) {
-
-							JSONObject ob = (JSONObject) results.get(index);
-							extractValuesOfAFieldName(allValues, fieldName, ob);
-
+					if (pType.getConceptSource().equals(ConceptSource.ONTOLOGICAL)) {
+						boolean contained = false;
+						String value = "";
+						if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)) {
+							contained = true;
+							value = String.valueOf(itemType.getBooleanValue().get(propertyURL));
 						}
 
-					}
-					if (allValues.size() > 0) {
-						row.add(allValues.get(0));
+						if (itemType.getDoubleValue() != null && itemType.getDoubleValue().containsKey(propertyURL)) {
+							contained = true;
+							value = String.valueOf(itemType.getDoubleValue().get(propertyURL));
+						}
+
+						if (itemType.getStringValue() != null && itemType.getStringValue().containsKey(propertyURL)) {
+							contained = true;
+							value = String.valueOf(itemType.getStringValue().get(propertyURL));
+						}
+
+						if (itemType.getCustomProperties() != null
+								&& itemType.getCustomProperties().containsKey(propertyURL)) {
+							contained = true;
+							value = String.valueOf(itemType.getCustomProperties().get(propertyURL));
+						}
+
+						if (contained) {
+							row.add(value);
+						} else {
+							Logger.getAnonymousLogger().log(Level.SEVERE,
+									"found no value for requested property: " + propertyURL);
+							row.add(N_ULL);
+						}
 					} else {
-						Logger.getAnonymousLogger().log(Level.WARNING, "Found no value for: " + pType.getUri());
-						row.add(N_ULL);
+						// Custom Properties using extractionMethod
+						List<String> allValues = new ArrayList<String>();
+						Iterator iterator = pType.getItemFieldNames().iterator();
+						while (iterator.hasNext()) {
+							String fieldName = (String) iterator.next();
+
+							JSONObject jsonObject = new JSONObject(response);
+							JSONArray results = jsonObject.getJSONArray("result");
+							if (results != null) {
+
+								JSONObject ob = (JSONObject) results.get(index);
+								extractValuesOfAFieldName(allValues, fieldName, ob);
+
+							}
+
+						}
+						if (allValues.size() > 0) {
+							row.add(allValues.get(0));
+						} else {
+							Logger.getAnonymousLogger().log(Level.WARNING, "Found no value for: " + pType.getUri());
+							row.add(N_ULL);
+						}
 					}
+
 				}
 
 			}
 			index++;
 
 		}
-		System.out.println(result);
 		return outputForExecuteSelect;
 	}
 
