@@ -30,12 +30,15 @@ import com.google.gson.JsonObject;
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.ConceptSource;
 import de.biba.triple.store.access.enums.Language;
+import eu.nimble.service.catalog.search.factories.ValueGroupingFactory;
 import eu.nimble.service.catalog.search.impl.dao.ClassType;
 import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
+import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.UBLResult;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
@@ -44,6 +47,8 @@ import eu.nimble.service.catalog.search.impl.dao.item.ItemType;
 import eu.nimble.service.catalog.search.impl.dao.item.SOLRResult;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
 
 public class IndexingServiceReader extends IndexingServiceConstant {
 
@@ -750,4 +755,66 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return outputForExecuteSelect;
 	}
 
+	public OutputForPropertiesFromConcept getAllTransitiveProperties(String conceptURL, Language language) {
+		
+			OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
+			String prefixLanguage = Language.toOntologyPostfix(language)
+					.replaceAll("@", "");
+			
+			
+			List<String> properties =getAllPropertiesIncludingEverything(conceptURL);
+			for (String urlOfProperty : properties) {
+				PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, urlOfProperty);
+				OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
+				outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+				String label = propertyType.getLabel().get(prefixLanguage);
+				outputForPropertyFromConcept.setTranslatedProperty(label);
+				outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+				if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
+					outputForPropertyFromConcept.setDatatypeProperty(true);
+					outputForPropertyFromConcept.setObjectProperty(false);
+				} else {
+					outputForPropertyFromConcept.setDatatypeProperty(false);
+					outputForPropertyFromConcept.setObjectProperty(true);
+				}
+				result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
+			}
+
+			return result;
+		
+	}
+	
+	public Map<String, List<Group>> generateGroup(int amountOfGroups, String conceptURL, String propertyURL, Language language) {
+		
+		
+		String prefixLanguage = Language.toOntologyPostfix(language)
+				.replaceAll("@", "");
+		PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, propertyURL);
+		
+		String shortPropertyName = propertyType.getLabel().get(prefixLanguage);
+		
+		List<String> values = getAllDifferentValuesForAProperty(conceptURL, propertyURL);
+		for (int i = 0; i < values.size(); i++) {
+			String str = values.get(i);
+			int index = str.lastIndexOf("^");
+			if (index > -1) {
+				str = str.substring(0, index - 1);
+			}
+			str = str.replace(",", ".");
+			values.set(i, str);
+		}
+		if (values != null && values.size() > 0) {
+			try {
+				ValueGroupingFactory valueGroupingFactory = new ValueGroupingFactory();
+				return valueGroupingFactory.generateGrouping(amountOfGroups, values, shortPropertyName);
+			
+			} catch (Exception e) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Cannot transform data from " + propertyURL + " into floats");
+			}
+		} else {
+			return new HashMap<String, List<Group>>();
+		}
+		return new HashMap<String, List<Group>>();
+	}
 }
