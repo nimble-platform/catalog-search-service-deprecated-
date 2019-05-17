@@ -3,14 +3,13 @@ package eu.nimble.service.catalog.search.impl.dao;
 import java.util.Collection;
 import java.util.HashSet;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.biba.triple.store.access.enums.ConceptSource;
+
 /**
- * SOLR Document holding the properties out of 
- * any ontologies including label, range and 
- * the usage in distinct classes
+ * SOLR Document holding the properties out of any ontologies including label,
+ * range and the usage in distinct classes
  * 
  * @author dglachs
  *
@@ -22,21 +21,21 @@ public class PropertyType extends Named implements IPropertyType {
 	private String type = TYPE_VALUE;
 
 	private String range;
-	
+
 	private String valueQualifier;
-	
+
 	private Collection<String> product;
-	
+
 	private Collection<String> itemFieldNames;
-	
+
 	private boolean facet = true;
-	
+
 	private Double boost;
 
 	private boolean visible;
-	
+
 	private ConceptSource conceptSource;
-	
+
 	public String getRange() {
 		return range;
 	}
@@ -46,16 +45,18 @@ public class PropertyType extends Named implements IPropertyType {
 	}
 
 	public Collection<String> getProduct() {
-		if (product == null ) {
-			product = new HashSet<String>(); 
+		if (product == null) {
+			product = new HashSet<String>();
 		}
 		return product;
 	}
+
 	public void addProduct(String className) {
-		if ( this.product == null ) {
+		if (this.product == null) {
 			this.product = new HashSet<>();
 		}
 	}
+
 	public void setProduct(Collection<String> className) {
 		this.product = className;
 	}
@@ -83,6 +84,7 @@ public class PropertyType extends Named implements IPropertyType {
 	public void setValueQualifier(String valueQualifier) {
 		this.valueQualifier = valueQualifier;
 	}
+
 	@JsonIgnore
 	public boolean isFacet() {
 		return facet;
@@ -91,6 +93,7 @@ public class PropertyType extends Named implements IPropertyType {
 	public void setFacet(boolean facet) {
 		this.facet = facet;
 	}
+
 	@JsonIgnore
 	public Double getBoost() {
 		return boost;
@@ -108,8 +111,6 @@ public class PropertyType extends Named implements IPropertyType {
 		this.visible = visible;
 	}
 
-	
-	
 	public ConceptSource getConceptSource() {
 		return conceptSource;
 	}
@@ -125,5 +126,31 @@ public class PropertyType extends Named implements IPropertyType {
 				+ ", visible=" + visible + ", conceptSource=" + conceptSource + "]";
 	}
 
+	@Override
+	public boolean equals(Object o) {
 
+		// If the object is compared with itself then return true
+		if (o == this) {
+			return true;
+		}
+
+		/*
+		 * Check if o is an instance of Complex or not "null instanceof [type]"
+		 * also returns false
+		 */
+		if (!(o instanceof PropertyType)) {
+			return false;
+		}
+
+		// typecast o to Complex so that we can compare data members
+		PropertyType c = (PropertyType) o;
+
+		// Compare the data members and return accordingly
+		return c.getItemFieldNames().equals(this.getItemFieldNames() );
+	}
+
+	@Override
+    public int hashCode() {
+        return 1;
+    }
 }

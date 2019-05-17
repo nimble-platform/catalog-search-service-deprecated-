@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -479,6 +480,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		}
 	}
 
+	/**
+	 * This method is used to request all property vlaues for a given product
+	 * (individual/catalogue item). The name is a relict from the ontology
+	 * driven solution
+	 * 
+	 * @param inputParamaterForExecuteOptionalSelect
+	 * @return {@link OutputForExecuteSelect}
+	 */
 	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
 			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect) {
 		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
@@ -486,38 +495,116 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		OutputForExecuteSelect result = new OutputForExecuteSelect();
 		result.getUuids().add(inputParamaterForExecuteOptionalSelect.getUuid());
 		String response = invokeHTTPMethod(url);
-
+		Gson gson = new Gson();
+		SOLRResult responseObject = gson.fromJson(response, SOLRResult.class); 
 		JSONObject jsonObject = new JSONObject(response);
 		JSONArray results = jsonObject.getJSONArray("result");
+		Map<PropertyType, List<List<String>>> intermediateResult = new HashMap<PropertyType, List<List<String>>>();
+		List<PropertyType>  allProps = new ArrayList<PropertyType>();
 		if (results != null) {
+			
+			
+			//Have to define the header information. It is based on standrad, ubl and common result
+			allProps.addAll(propertyInformationCache.getAllStandardProps());
+			allProps.addAll(propertyInformationCache.getAllUBLSpeciifcProperties());
+			//have to collect ontological property
+			ItemType itemType = responseObject.getResult().get(0);
+			for (String key: itemType.getBooleanValue().keySet()){
+				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+				allProps.add(pType);
+			}
+			for (String key: itemType.getDoubleValue().keySet()){
+				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+				allProps.add(pType);
+			}
+			for (String key: itemType.getStringValue().keySet()){
+				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+				allProps.add(pType);
+			}
+			
+			//Create intermediate result + columns list
+			for (PropertyType property : allProps){
+				List<List<String>> r = new ArrayList<List<String>>();
+				intermediateResult.put(property, r);
+				
+				String currentLabel = getLanguageLabel(property,
+						inputParamaterForExecuteOptionalSelect.getLanguage());
+				result.getColumns().add(currentLabel);
+			}
+			
 
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject ob = (JSONObject) results.get(i);
 				updateCacheForFieldNames(ob);
 
+				
+				
+				
 				for (String fieldName : ob.keySet()) {
 					if (propertyInformationCache.isNameFieldAlreadyContained(fieldName)) {
 						PropertyType propertyType = propertyInformationCache.getPropertyTypeForANameField(fieldName);
-						String currentLabel = getLanguageLabel(propertyType,
-								inputParamaterForExecuteOptionalSelect.getLanguage());
+						
+						boolean isContained = false;
+						for (PropertyType p : intermediateResult.keySet()){
+							if (p.equals(propertyType)){
+								isContained = true;
+							}
+						}
+						
+						if (isContained){
+						
 						List<String> allValues = new ArrayList<String>();
 						extractValuesOfAFieldName(allValues, fieldName, ob);
-						result.getColumns().add(currentLabel);
-						result.getRows().add((ArrayList<String>) allValues);
+						intermediateResult.get(propertyType).add(allValues);
+						
+						//result.getRows().add((ArrayList<String>) allValues);
+						
+						}
+						
 					} else {
 						if (((fieldName.equals("stringValue")) || (fieldName.equals("doubleValue"))
 								|| (fieldName.equals("booleanValue")))) {
 							// have to extract ontological properties TODO
-							Logger.getAnonymousLogger().log(Level.INFO, "Ontological propperty not supported yet...");
+							//Logger.getAnonymousLogger().log(Level.INFO, "Ontological propperty not supported yet...");
 						}
 					}
 				}
+				
+				//use the Java object to get access to the ontological properties. It just simplier that using JSON
+				ItemType item =  responseObject.getResult().get(i);
+				for (String key : item.getStringValue().keySet()){
+					PropertyType pType  = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+					Collection<String> values = item.getStringValue().get(i);
+					List<String> list = new ArrayList(values);
+					intermediateResult.get(pType).add(list);
+					
+				}
+				
 			}
 
 		} else {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + uri);
 		}
-
+		
+		if (intermediateResult.size() > 0){
+			PropertyType firstProperty = intermediateResult.keySet().iterator().next();
+			int resultSize = 1;
+			
+			for (int i =0; i < resultSize; i++){
+				for (PropertyType property : allProps){
+					ArrayList<String> oneRow = new ArrayList<String>();
+					result.getRows().add(oneRow);
+					if (intermediateResult.get(property).size() > i){
+				oneRow.add(intermediateResult.get(property).get(i).toString());
+					}
+					else{
+						oneRow.add("Null");
+					}
+				//result.getRows().add(oneRow);
+				}
+			}
+			
+		}
 		return result;
 	}
 
