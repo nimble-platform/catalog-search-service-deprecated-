@@ -361,18 +361,18 @@ public class SearchController {
 			if (userID == 0) {
 				userID = 1217l; // TODO Remove if UI send usually a userId
 			}
-			Object contextInfos = identityClient.getPerson(userID);
-			PartType partype = null;
-			if (contextInfos instanceof PartType) {
-				partype = (PartType) contextInfos;
-			}
-			if (contextInfos instanceof String) {
-				String content = (String) contextInfos;
-				if (((String) content).charAt(0) == '[') {
-					content = content.substring(1, content.length() - 1);
-				}
-				partype = gson.fromJson(content, PartType.class);
-			}
+//			Object contextInfos = identityClient.getPerson(userID);
+//			PartType partype = null;
+//			if (contextInfos instanceof PartType) {
+//				partype = (PartType) contextInfos;
+//			}
+//			if (contextInfos instanceof String) {
+//				String content = (String) contextInfos;
+//				if (((String) content).charAt(0) == '[') {
+//					content = content.substring(1, content.length() - 1);
+//				}
+//				partype = gson.fromJson(content, PartType.class);
+//			}
 
 			if (useIndexingService) {
 				List<Entity> concepts = indexingServiceReader
