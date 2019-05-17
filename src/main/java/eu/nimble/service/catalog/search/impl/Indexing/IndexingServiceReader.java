@@ -505,6 +505,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
 		String url = urlForItemInformation + "/select?fq=uri:" + uri;
 		OutputForExecuteSelect result = new OutputForExecuteSelect();
+		//result.setInput(inputParamaterForExecuteOptionalSelect);
 		result.getUuids().add(inputParamaterForExecuteOptionalSelect.getUuid());
 		String response = invokeHTTPMethod(url);
 		Gson gson = new Gson();
