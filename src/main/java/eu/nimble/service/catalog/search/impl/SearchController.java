@@ -776,6 +776,7 @@ public class SearchController {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 

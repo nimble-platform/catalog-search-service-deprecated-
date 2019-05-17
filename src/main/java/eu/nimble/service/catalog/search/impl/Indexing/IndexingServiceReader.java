@@ -163,7 +163,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			}
 
 		}
-
+		Iterator<String> iterator = allProperties.iterator();
+		while (iterator.hasNext()){
+			String property = iterator.next();
+			PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(urlOfClass, property);
+			if (pType==null){
+				iterator.remove();
+			}
+		}
 		return allProperties;
 	}
 
@@ -771,8 +778,21 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 					urlOfProperty);
 			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
 			outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+			if (propertyType.getLabel() != null){
 			String label = propertyType.getLabel().get(prefixLanguage);
+			if (label == null){
+				if (propertyType.getLabel().containsKey("en")){
+					label = propertyType.getLabel().get("en");
+				}
+			}
 			outputForPropertyFromConcept.setTranslatedProperty(label);
+			}
+			else{
+				Logger.getAnonymousLogger().log(Level.WARNING, prefixLanguage + "Found no translation for: " + urlOfProperty);
+				String label = urlOfProperty.substring(urlOfProperty.indexOf("#")+1);
+				outputForPropertyFromConcept.setTranslatedProperty(label);
+				
+			}
 			outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
 			if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
 				outputForPropertyFromConcept.setDatatypeProperty(true);
