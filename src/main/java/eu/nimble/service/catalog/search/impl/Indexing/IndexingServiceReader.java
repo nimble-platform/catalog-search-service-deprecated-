@@ -187,7 +187,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:"
 				+ URLEncoder.encode("\"" + urlOfUBBL + "\"");
 		String result = invokeHTTPMethod(httpGetURL);
-		System.out.println(result);
+		//System.out.println(result);
 
 		Gson gson = new Gson();
 		UBLResult r = gson.fromJson(result, UBLResult.class);
@@ -257,7 +257,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
 		String resultString = invokeHTTPMethod(url);
-		System.out.println(resultString);
+		//System.out.println(resultString);
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(resultString, ClassType.class);
 		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage())
@@ -609,13 +609,13 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			int resultSize = 1;
 
 			for (int i = 0; i < resultSize; i++) {
+				ArrayList<String> oneRow = new ArrayList<String>();
+				result.getRows().add(oneRow);
 				for (PropertyType property : allProps) {
-					ArrayList<String> oneRow = new ArrayList<String>();
-					result.getRows().add(oneRow);
 					if (intermediateResult.get(property).size() > i) {
 						oneRow.add(intermediateResult.get(property).get(i).toString());
 					} else {
-						oneRow.add("Null");
+						oneRow.add(N_ULL);
 					}
 					// result.getRows().add(oneRow);
 				}
@@ -659,7 +659,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String respoonse = invokeHTTPMethod(url);
 		Gson gson = new Gson();
 		List<ItemMappingFieldInformation> r = gson.fromJson(respoonse, List.class);
-		System.out.println(r);
+		//System.out.println(r);
 		if (r != null) {
 			result.addAll(r);
 		}
@@ -677,7 +677,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
 				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
 		String response = invokeHTTPMethod(url);
-		System.out.println(response);
+		//System.out.println(response);
 		Gson gson = new Gson();
 		SOLRResult result = gson.fromJson(response, SOLRResult.class);
 		List<String> columns = new ArrayList<String>();
