@@ -257,7 +257,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				.replaceAll("@", "");
 
 		concept.setUrl(paramterForGetLogicalView.getConcept());
-		concept.setTranslatedURL(r.getLabel().get(prefixLanguage));
+		if (r != null) {
+			concept.setTranslatedURL(r.getLabel().get(prefixLanguage));
+		} else {
+			concept.setTranslatedURL(paramterForGetLogicalView.getConcept());
+		}
 		concept.setLanguage(paramterForGetLogicalView.getLanguageAsLanguage());
 		completeStructure.setConcept(concept);
 
@@ -294,15 +298,18 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private void requestAllPropertiesFromDifferentSources(InputParamterForGetLogicalView paramterForGetLogicalView,
 			LocalOntologyView completeStructure, eu.nimble.service.catalog.search.impl.dao.Entity concept, Gson gson,
 			ClassType r, String prefixLanguage, List<PropertyType> allPropertyTypes) {
-		for (String propertyURL : r.getProperties()) {
+		if (r != null && r.getProperties() != null) {
 
-			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
-					propertyURL);
-			if (propertyType.isVisible()) {
-				allPropertyTypes.add(propertyType);
-				propertyType.setConceptSource(ConceptSource.ONTOLOGICAL);
-				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
-						ConceptSource.ONTOLOGICAL);
+			for (String propertyURL : r.getProperties()) {
+
+				eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
+						propertyURL);
+				if (propertyType.isVisible()) {
+					allPropertyTypes.add(propertyType);
+					propertyType.setConceptSource(ConceptSource.ONTOLOGICAL);
+					addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
+							ConceptSource.ONTOLOGICAL);
+				}
 			}
 		}
 
@@ -501,114 +508,111 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		result.getUuids().add(inputParamaterForExecuteOptionalSelect.getUuid());
 		String response = invokeHTTPMethod(url);
 		Gson gson = new Gson();
-		SOLRResult responseObject = gson.fromJson(response, SOLRResult.class); 
+		SOLRResult responseObject = gson.fromJson(response, SOLRResult.class);
 		JSONObject jsonObject = new JSONObject(response);
 		JSONArray results = jsonObject.getJSONArray("result");
 		Map<PropertyType, List<List<String>>> intermediateResult = new HashMap<PropertyType, List<List<String>>>();
-		List<PropertyType>  allProps = new ArrayList<PropertyType>();
+		List<PropertyType> allProps = new ArrayList<PropertyType>();
 		if (results != null) {
-			
-			
-			//Have to define the header information. It is based on standrad, ubl and common result
+
+			// Have to define the header information. It is based on standrad,
+			// ubl and common result
 			allProps.addAll(propertyInformationCache.getAllStandardProps());
 			allProps.addAll(propertyInformationCache.getAllUBLSpeciifcProperties());
-			//have to collect ontological property
+			// have to collect ontological property
 			ItemType itemType = responseObject.getResult().get(0);
-			for (String key: itemType.getBooleanValue().keySet()){
+			for (String key : itemType.getBooleanValue().keySet()) {
 				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 				allProps.add(pType);
 			}
-			for (String key: itemType.getDoubleValue().keySet()){
+			for (String key : itemType.getDoubleValue().keySet()) {
 				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 				allProps.add(pType);
 			}
-			for (String key: itemType.getStringValue().keySet()){
+			for (String key : itemType.getStringValue().keySet()) {
 				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 				allProps.add(pType);
 			}
-			
-			//Create intermediate result + columns list
-			for (PropertyType property : allProps){
+
+			// Create intermediate result + columns list
+			for (PropertyType property : allProps) {
 				List<List<String>> r = new ArrayList<List<String>>();
 				intermediateResult.put(property, r);
-				
-				String currentLabel = getLanguageLabel(property,
-						inputParamaterForExecuteOptionalSelect.getLanguage());
+
+				String currentLabel = getLanguageLabel(property, inputParamaterForExecuteOptionalSelect.getLanguage());
 				result.getColumns().add(currentLabel);
 			}
-			
 
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject ob = (JSONObject) results.get(i);
 				updateCacheForFieldNames(ob);
 
-				
-				
-				
 				for (String fieldName : ob.keySet()) {
 					if (propertyInformationCache.isNameFieldAlreadyContained(fieldName)) {
 						PropertyType propertyType = propertyInformationCache.getPropertyTypeForANameField(fieldName);
-						
+
 						boolean isContained = false;
-						for (PropertyType p : intermediateResult.keySet()){
-							if (p.equals(propertyType)){
+						for (PropertyType p : intermediateResult.keySet()) {
+							if (p.equals(propertyType)) {
 								isContained = true;
 							}
 						}
-						
-						if (isContained){
-						
-						List<String> allValues = new ArrayList<String>();
-						extractValuesOfAFieldName(allValues, fieldName, ob);
-						intermediateResult.get(propertyType).add(allValues);
-						
-						//result.getRows().add((ArrayList<String>) allValues);
-						
+
+						if (isContained) {
+
+							List<String> allValues = new ArrayList<String>();
+							extractValuesOfAFieldName(allValues, fieldName, ob);
+							intermediateResult.get(propertyType).add(allValues);
+
+							// result.getRows().add((ArrayList<String>)
+							// allValues);
+
 						}
-						
+
 					} else {
 						if (((fieldName.equals("stringValue")) || (fieldName.equals("doubleValue"))
 								|| (fieldName.equals("booleanValue")))) {
 							// have to extract ontological properties TODO
-							//Logger.getAnonymousLogger().log(Level.INFO, "Ontological propperty not supported yet...");
+							// Logger.getAnonymousLogger().log(Level.INFO,
+							// "Ontological propperty not supported yet...");
 						}
 					}
 				}
-				
-				//use the Java object to get access to the ontological properties. It just simplier that using JSON
-				ItemType item =  responseObject.getResult().get(i);
-				for (String key : item.getStringValue().keySet()){
-					PropertyType pType  = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+
+				// use the Java object to get access to the ontological
+				// properties. It just simplier that using JSON
+				ItemType item = responseObject.getResult().get(i);
+				for (String key : item.getStringValue().keySet()) {
+					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 					Collection<String> values = item.getStringValue().get(i);
 					List<String> list = new ArrayList(values);
 					intermediateResult.get(pType).add(list);
-					
+
 				}
-				
+
 			}
 
 		} else {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + uri);
 		}
-		
-		if (intermediateResult.size() > 0){
+
+		if (intermediateResult.size() > 0) {
 			PropertyType firstProperty = intermediateResult.keySet().iterator().next();
 			int resultSize = 1;
-			
-			for (int i =0; i < resultSize; i++){
-				for (PropertyType property : allProps){
+
+			for (int i = 0; i < resultSize; i++) {
+				for (PropertyType property : allProps) {
 					ArrayList<String> oneRow = new ArrayList<String>();
 					result.getRows().add(oneRow);
-					if (intermediateResult.get(property).size() > i){
-				oneRow.add(intermediateResult.get(property).get(i).toString());
-					}
-					else{
+					if (intermediateResult.get(property).size() > i) {
+						oneRow.add(intermediateResult.get(property).get(i).toString());
+					} else {
 						oneRow.add("Null");
 					}
-				//result.getRows().add(oneRow);
+					// result.getRows().add(oneRow);
 				}
 			}
-			
+
 		}
 		return result;
 	}
@@ -756,43 +760,41 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	public OutputForPropertiesFromConcept getAllTransitiveProperties(String conceptURL, Language language) {
-		
-			OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
-			String prefixLanguage = Language.toOntologyPostfix(language)
-					.replaceAll("@", "");
-			
-			
-			List<String> properties =getAllPropertiesIncludingEverything(conceptURL);
-			for (String urlOfProperty : properties) {
-				PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, urlOfProperty);
-				OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
-				outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
-				String label = propertyType.getLabel().get(prefixLanguage);
-				outputForPropertyFromConcept.setTranslatedProperty(label);
-				outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
-				if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
-					outputForPropertyFromConcept.setDatatypeProperty(true);
-					outputForPropertyFromConcept.setObjectProperty(false);
-				} else {
-					outputForPropertyFromConcept.setDatatypeProperty(false);
-					outputForPropertyFromConcept.setObjectProperty(true);
-				}
-				result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
-			}
 
-			return result;
-		
+		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
+
+		List<String> properties = getAllPropertiesIncludingEverything(conceptURL);
+		for (String urlOfProperty : properties) {
+			PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL,
+					urlOfProperty);
+			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
+			outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+			String label = propertyType.getLabel().get(prefixLanguage);
+			outputForPropertyFromConcept.setTranslatedProperty(label);
+			outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+			if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
+				outputForPropertyFromConcept.setDatatypeProperty(true);
+				outputForPropertyFromConcept.setObjectProperty(false);
+			} else {
+				outputForPropertyFromConcept.setDatatypeProperty(false);
+				outputForPropertyFromConcept.setObjectProperty(true);
+			}
+			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
+		}
+
+		return result;
+
 	}
-	
-	public Map<String, List<Group>> generateGroup(int amountOfGroups, String conceptURL, String propertyURL, Language language) {
-		
-		
-		String prefixLanguage = Language.toOntologyPostfix(language)
-				.replaceAll("@", "");
+
+	public Map<String, List<Group>> generateGroup(int amountOfGroups, String conceptURL, String propertyURL,
+			Language language) {
+
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
 		PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, propertyURL);
-		
+
 		String shortPropertyName = propertyType.getLabel().get(prefixLanguage);
-		
+
 		List<String> values = getAllDifferentValuesForAProperty(conceptURL, propertyURL);
 		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
@@ -807,7 +809,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			try {
 				ValueGroupingFactory valueGroupingFactory = new ValueGroupingFactory();
 				return valueGroupingFactory.generateGrouping(amountOfGroups, values, shortPropertyName);
-			
+
 			} catch (Exception e) {
 				Logger.getAnonymousLogger().log(Level.WARNING,
 						"Cannot transform data from " + propertyURL + " into floats");
