@@ -4,4 +4,6 @@ public abstract class IndexingServiceConstant {
 	public  final String HTTP_WWW_W3_ORG_2001_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema#";
 	public String namespace = "http://UnknownSource#";
 	public String nameSPACEUBL = "http://www.nimble-project.org/resource/ubl#";
+	public static final String HTTP_WWW_NIMBLE_PROJECT_ORG_RESOURCE_UBL = "http://www.nimble-project.org/resource/ubl#";
+	public static final String N_ULL = "NUll";
 }

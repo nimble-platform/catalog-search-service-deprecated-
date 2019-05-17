@@ -354,6 +354,7 @@ public class SearchController {
 		try {
 			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: detectMeaningLanguageSpecific: " + inputAsJson);
 			Gson gson = new Gson();
+			inputAsJson = replaceLanguageStringToOldNaming(inputAsJson);
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
 
@@ -422,6 +423,13 @@ public class SearchController {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+
+	private String replaceLanguageStringToOldNaming(String inputAsJson) {
+		inputAsJson = inputAsJson.replace("\"ENGLISH\"", "\"en\"");
+		inputAsJson = inputAsJson.replace("\"SPANISH\"", "\"es\"");
+		inputAsJson = inputAsJson.replace("\"GERMAN\"", "\"de\"");
+		return inputAsJson;
 	}
 
 	/**
@@ -1256,6 +1264,16 @@ public class SearchController {
 	public HttpEntity<Object> getSupportedLanguages() {
 		try {
 
+			if (useIndexingService){
+				List<String> languages =indexingServiceReader.getSupportedLanguages();
+				OutoutForGetSupportedLanguages supportedLanguages = new OutoutForGetSupportedLanguages();
+				supportedLanguages.getLanguages().addAll(languages);
+				Gson output = new Gson();
+				String result = output.toJson(supportedLanguages);
+
+				return new ResponseEntity<Object>(result, HttpStatus.OK);
+			}
+			else{
 			if (!useSOLRIndex) {
 
 				List<String> languages = sparqlDerivation.getSupportedLanguages();
@@ -1279,6 +1297,7 @@ public class SearchController {
 				result = output.toJson(supportedLanguages);
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
 
+			}
 			}
 
 		} catch (Exception e) {

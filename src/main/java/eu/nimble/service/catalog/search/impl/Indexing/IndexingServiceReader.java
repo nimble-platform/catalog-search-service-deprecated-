@@ -52,7 +52,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromCon
 
 public class IndexingServiceReader extends IndexingServiceConstant {
 
-	private static final String N_ULL = "NUll";
+	
 	private String url = "";
 	private String urlForClassInformation = "";
 	private String urlForPropertyInformation = "";
@@ -176,7 +176,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 	public List<PropertyType> requestStandardPropertiesFromUBL() {
 		// https://nimble-platform.salzburgresearch.at/nimble/indexing-service/property/select?q=nameSpace:%22http://www.nimble-project.org/resource/ubl%23%22)
-		String urlOfUBBL = "http://www.nimble-project.org/resource/ubl#";
+		String urlOfUBBL = HTTP_WWW_NIMBLE_PROJECT_ORG_RESOURCE_UBL;
 		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:"
 				+ URLEncoder.encode("\"" + urlOfUBBL + "\"");
 		String result = invokeHTTPMethod(httpGetURL);
@@ -820,4 +820,19 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		}
 		return new HashMap<String, List<Group>>();
 	}
+
+	public List<String> getSupportedLanguages() {
+		// TODO Auto-generated method stub
+		List<PropertyType> allProps = requestStandardPropertiesFromUBL();
+		List<String> allSupportedLanguages = new ArrayList<>();
+		for (PropertyType pType : allProps){
+			pType.getLabel().keySet().forEach(x -> {
+				if (!allSupportedLanguages.contains(String.valueOf(x))){
+				allSupportedLanguages.add(x);	
+				}
+			});
+		}
+	return allSupportedLanguages;
+	}
+	
 }
