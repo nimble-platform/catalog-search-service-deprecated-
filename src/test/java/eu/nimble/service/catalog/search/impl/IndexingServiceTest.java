@@ -39,6 +39,10 @@ public class IndexingServiceTest {
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		boolean result = indexingServiceReader.checkWhetherPropertyIsRelevant(null, urlForClas);
+		
+		System.out.println(result);
 	}
 	
 	@Test
@@ -69,15 +73,15 @@ public class IndexingServiceTest {
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		InputParamaterForExecuteSelect executeSelect = new InputParamaterForExecuteSelect();
-		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs");
-		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasName");
-		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice");
+		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+//		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasName");
+//		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice");
 		executeSelect.setConcept(urlForClas);
 		
 		//precondition getProperties to laod the proeprtyCache
 				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
 		
-		indexingServiceReader.createSPARQLAndExecuteIT(executeSelect);
+		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
 	}
 	
 	@Test
@@ -198,6 +202,24 @@ public class IndexingServiceTest {
 	
 	
 	@Test
+	public void testgetAllDifferentValuesForAOntologynPropertySource() {
+		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour";
+
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		//precondition getProperties to laod the proeprtyCache
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		System.out.println(test);
+		assertTrue(test.size() > 0);
+	}
+	
+	
+	@Test
 	public void testgetAllDifferentValuesForAUnknownPropertySourceComplexJson() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
 		String property = "http://UnknownSource#price";
@@ -252,6 +274,14 @@ public class IndexingServiceTest {
 		String urlForPropertyInformationUBL = "https://nimble-platform.salzburgresearch.at/nimble/indexing-service/";
 		indexingServiceReader.setUrlForPropertyInformationUBL(urlForPropertyInformationUBL );
 		System.out.println(indexingServiceReader.requestStandardPropertiesFromUBL());
+	}
+	
+	@Test
+	public void testrequestAllIndexFields(){
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		System.out.println(indexingServiceReader.requestAllIndexFields());
+		
 	}
 	
 }

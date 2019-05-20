@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +35,10 @@ import eu.nimble.service.catalog.search.factories.ValueGroupingFactory;
 import eu.nimble.service.catalog.search.impl.dao.ClassType;
 import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
 import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.IndexFields;
 import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.PropertyRelevance;
 import eu.nimble.service.catalog.search.impl.dao.PropertyType;
 import eu.nimble.service.catalog.search.impl.dao.UBLResult;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
@@ -57,7 +60,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private String urlForPropertyInformation = "";
 	private String urlForPropertyInformationUBL = "";
 	private String urlForItemInformation = "";
+	private String urlForIndexFields = "";
 	private PropertyInformationCache propertyInformationCache = new PropertyInformationCache();
+	private IndexFieldCache indexFieldCache = new IndexFieldCache();
 
 	public IndexingServiceReader(String url) {
 		super();
@@ -69,10 +74,25 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		urlForPropertyInformation = url + "property";
 		urlForPropertyInformationUBL = url + "property";
 		urlForItemInformation = url + "item";
+		urlForIndexFields = url + "item/fields";
+
+		Collection<IndexFields> allFields = requestAllIndexFields();
+		indexFieldCache.insertAllIndexFields(allFields);
+
 	}
 
 	public String getUrlForPropertyInformationUBL() {
 		return urlForPropertyInformationUBL;
+	}
+
+	public Collection<IndexFields> requestAllIndexFields() {
+
+		String url = urlForIndexFields;
+		String response = invokeHTTPMethod(url);
+		Gson gson = new Gson();
+		Collection<IndexFields> result = gson.fromJson(response, Collection.class);
+		return result;
+
 	}
 
 	public void setUrlForPropertyInformationUBL(String urlForPropertyInformationUBL) {
@@ -121,7 +141,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
-		if (r.getProperties() != null){
+		if (r.getProperties() != null) {
 			r.getProperties().forEach(x -> allProperties.add(x));
 		}
 		// allProperties.add(result);
@@ -147,7 +167,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			propInfos.addAll(propInfosStandard);
 
 			for (String propertyURL : allProperties) {
-				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL);
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass);
 				if (relevant) {
 					PropertyType p = requestPropertyInfos(gson, propertyURL);
 					if (p != null && p.isVisible()) {
@@ -313,7 +333,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 			for (String propertyURL : r.getProperties()) {
 
-				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL);
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept());
 				if (relevant) {
 					eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
 							propertyURL);
@@ -354,9 +374,42 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		}
 	}
 
-	public boolean checkWhetherPropertyIsRelevant(String propertyURL) {
-		// TODO Auto-generated method stub
-		return true;
+	public boolean checkWhetherPropertyIsRelevant(String propertyURL, String conceptURL) {
+
+		if (indexFieldCache.isPropertyRelevanceInfoContained(conceptURL, propertyURL)) {
+			return indexFieldCache.isPropertyRelevanceGiven(conceptURL, propertyURL);
+		} else {
+			String nameField = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
+			// Happens if no fieldname mapping is available
+			if (nameField == null) {
+				return false;
+			}
+			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
+					+ URLEncoder.encode("\"" + conceptURL + "\"") + "&facet.field==" + nameField + "&rows=1";
+			String response = invokeHTTPMethod(url);
+			// System.out.println(response);
+			Gson gson = new Gson();
+			SOLRResult result = gson.fromJson(response, SOLRResult.class);
+			if (result != null && result.getResult().size() == 1) {
+
+				PropertyRelevance propertyRelevance = new PropertyRelevance();
+				propertyRelevance.setHasItBeenChecked(true);
+				propertyRelevance.setItRelevant(true);
+				propertyRelevance.setLastCheck(new Date());
+				indexFieldCache.addProopertyRelevance(conceptURL, propertyURL, propertyRelevance);
+
+				return true;
+			} else {
+				PropertyRelevance propertyRelevance = new PropertyRelevance();
+				propertyRelevance.setHasItBeenChecked(true);
+				propertyRelevance.setItRelevant(false);
+				propertyRelevance.setLastCheck(new Date());
+				indexFieldCache.addProopertyRelevance(conceptURL, propertyURL, propertyRelevance);
+
+				return false;
+			}
+		}
+
 	}
 
 	private void addDetailsToProperty(LocalOntologyView completeStructure,
@@ -423,6 +476,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		if (propertyType != null) {
 			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
 					+ URLEncoder.encode(conceptURL);
+
+			if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
+				String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
+				url += "&fq=" + fieldName + ":[*%20TO%20*]&facet.field=" + fieldName;
+			}
+
 			String items = invokeHTTPMethod(url);
 			JSONObject jsonObject = new JSONObject(items);
 			JSONArray results = jsonObject.getJSONArray("result");
@@ -431,6 +490,70 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 					for (int i = 0; i < results.length(); i++) {
 						JSONObject ob = (JSONObject) results.get(i);
 						extractValuesOfAFieldName(allValues, fieldName, ob);
+					}
+				}
+				if (allValues.isEmpty()) {
+					gson = new Gson();
+					SOLRResult result = gson.fromJson(items, SOLRResult.class);
+					for (eu.nimble.service.catalog.search.impl.dao.item.ItemType itemType : result.getResult()) {
+
+						// I have to decide which kind of proepty it is. Each
+						// kind needs
+						// an one extraction process
+						PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL,
+								propertyURL);
+
+						if (pType != null) {
+
+							if (pType.getConceptSource().equals(ConceptSource.ONTOLOGICAL)) {
+								boolean contained = false;
+								String value = "";
+								if (itemType.getBooleanValue() != null
+										&& itemType.getBooleanValueDirect().containsKey(propertyURL)) {
+									contained = true;
+									value = String.valueOf(itemType.getBooleanValueDirect().get(propertyURL));
+								}
+
+								if (itemType.getDoubleValue() != null
+										&& itemType.getDoubleValueDirect().containsKey(propertyURL)) {
+									contained = true;
+									value = String.valueOf(itemType.getDoubleValueDirect().get(propertyURL));
+								}
+
+								if (itemType.getStringValue() != null
+										&& itemType.getStringValueDirect().containsKey(propertyURL)) {
+									contained = true;
+									Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect()
+											.get(propertyURL);
+									// TODO need to be chnaged
+									Language chosenLangauge = Language.ENGLISH;
+									String lPrefix = "@" + LanguageAdapter.createPrefix(chosenLangauge);
+									Iterator<String> iterator = valuesInDifferentLangauges.iterator();
+									boolean found = false;
+									String anyValue = null;
+									while (iterator.hasNext()) {
+										String v = iterator.next();
+										if (anyValue == null) {
+											anyValue = v;
+										}
+										value = v.replace(lPrefix, "");
+										found = true;
+									}
+									if (!found) {
+										value = anyValue;
+									}
+									// value =
+									// String.valueOf(itemType.getStringValueDirect().get(propertyURL));
+								}
+
+								if (contained) {
+									if (!allValues.contains(value)) {
+										allValues.add(value);
+									}
+								}
+
+							}
+						}
 					}
 				}
 				// propertyType.getItemFieldNames()?
@@ -688,6 +811,15 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		 */
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
 				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
+
+		// I have to adapt to existing propoerties
+		for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
+			String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
+			if (fieldName != null) {
+				url += "&fq=" + fieldName + ":[*%20TO%20*]";
+			}
+		}
+
 		String response = invokeHTTPMethod(url);
 		// System.out.println(response);
 		Gson gson = new Gson();
@@ -701,7 +833,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
 		outputForExecuteSelect.setRows(rows);
 		int index = 0;
-		for (ItemType itemType : result.getResult()) {
+		for (eu.nimble.service.catalog.search.impl.dao.item.ItemType itemType : result.getResult()) {
 			outputForExecuteSelect.getUuids().add(itemType.getUri());
 			ArrayList<String> row = new ArrayList<String>();
 			rows.add(row);
@@ -717,19 +849,41 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 					if (pType.getConceptSource().equals(ConceptSource.ONTOLOGICAL)) {
 						boolean contained = false;
 						String value = "";
-						if (itemType.getBooleanValue() != null && itemType.getBooleanValue().containsKey(propertyURL)) {
+						if (itemType.getBooleanValue() != null
+								&& itemType.getBooleanValueDirect().containsKey(propertyURL)) {
 							contained = true;
-							value = String.valueOf(itemType.getBooleanValue().get(propertyURL));
+							value = String.valueOf(itemType.getBooleanValueDirect().get(propertyURL));
 						}
 
-						if (itemType.getDoubleValue() != null && itemType.getDoubleValue().containsKey(propertyURL)) {
+						if (itemType.getDoubleValue() != null
+								&& itemType.getDoubleValueDirect().containsKey(propertyURL)) {
 							contained = true;
-							value = String.valueOf(itemType.getDoubleValue().get(propertyURL));
+							value = String.valueOf(itemType.getDoubleValueDirect().get(propertyURL));
 						}
 
-						if (itemType.getStringValue() != null && itemType.getStringValue().containsKey(propertyURL)) {
+						if (itemType.getStringValue() != null
+								&& itemType.getStringValueDirect().containsKey(propertyURL)) {
 							contained = true;
-							value = String.valueOf(itemType.getStringValue().get(propertyURL));
+							Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect()
+									.get(propertyURL);
+							Language chosenLangauge = inputParamaterForExecuteSelect.getLanguage();
+							String lPrefix = "@" + LanguageAdapter.createPrefix(chosenLangauge);
+							Iterator<String> iterator = valuesInDifferentLangauges.iterator();
+							boolean found = false;
+							String anyValue = null;
+							while (iterator.hasNext()) {
+								String v = iterator.next();
+								if (anyValue == null) {
+									anyValue = v;
+								}
+								value = v.replace(lPrefix, "");
+								found = true;
+							}
+							if (!found) {
+								value = anyValue;
+							}
+							// value =
+							// String.valueOf(itemType.getStringValueDirect().get(propertyURL));
 						}
 
 						if (itemType.getCustomProperties() != null
@@ -793,8 +947,8 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			if (propertyType.getLabel() != null) {
 				String label = propertyType.getLabel().get(prefixLanguage);
 				if (label == null) {
-					if (propertyType.getLabel().containsKey("en")) {
-						label = propertyType.getLabel().get("en");
+					if (propertyType.getLabel().containsKey(LanguageAdapter.getEnglishPrefix())) {
+						label = propertyType.getLabel().get(LanguageAdapter.getEnglishPrefix());
 					}
 				}
 				outputForPropertyFromConcept.setTranslatedProperty(label);
