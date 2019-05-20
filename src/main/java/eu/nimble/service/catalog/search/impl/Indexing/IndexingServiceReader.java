@@ -664,15 +664,15 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			allProps.addAll(propertyInformationCache.getAllUBLSpeciifcProperties());
 			// have to collect ontological property
 			ItemType itemType = responseObject.getResult().get(0);
-			for (String key : itemType.getBooleanValue().keySet()) {
+			for (String key : itemType.getBooleanValueDirect().keySet()) {
 				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 				allProps.add(pType);
 			}
-			for (String key : itemType.getDoubleValue().keySet()) {
+			for (String key : itemType.getDoubleValueDirect().keySet()) {
 				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 				allProps.add(pType);
 			}
-			for (String key : itemType.getStringValue().keySet()) {
+			for (String key : itemType.getStringValueDirect().keySet()) {
 				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 				allProps.add(pType);
 			}
@@ -681,9 +681,15 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			for (PropertyType property : allProps) {
 				List<List<String>> r = new ArrayList<List<String>>();
 				intermediateResult.put(property, r);
-
+				Language lang = inputParamaterForExecuteOptionalSelect.getLanguage();
+				if (lang!= null && !(lang.equals(Language.UNKNOWN))){
 				String currentLabel = getLanguageLabel(property, inputParamaterForExecuteOptionalSelect.getLanguage());
 				result.getColumns().add(currentLabel);
+				}
+				else{
+					String currentLabel = getLanguageLabel(property, Language.ENGLISH);
+					result.getColumns().add(currentLabel);
+				}
 			}
 
 			for (int i = 0; i < results.length(); i++) {
@@ -725,10 +731,26 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				// use the Java object to get access to the ontological
 				// properties. It just simplier that using JSON
 				ItemType item = responseObject.getResult().get(i);
-				for (String key : item.getStringValue().keySet()) {
+				for (String key : item.getStringValueDirect().keySet()) {
 					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
-					Collection<String> values = item.getStringValue().get(i);
+					Collection<String> values = item.getStringValueDirect().get(pType.getUri());
 					List<String> list = new ArrayList(values);
+					intermediateResult.get(pType).add(list);
+
+				}
+				for (String key : item.getDoubleValueDirect().keySet()) {
+					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+					Collection<Double> values = item.getDoubleValueDirect().get(pType.getUri());
+					List<String> list = new ArrayList(values);
+					intermediateResult.get(pType).add(list);
+
+				}
+				
+				for (String key : item.getBooleanValueDirect().keySet()) {
+					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+					Boolean values = item.getBooleanValueDirect().get(pType.getUri());
+					List<String> list = new ArrayList();
+					list.add(String.valueOf(values));
 					intermediateResult.get(pType).add(list);
 
 				}
