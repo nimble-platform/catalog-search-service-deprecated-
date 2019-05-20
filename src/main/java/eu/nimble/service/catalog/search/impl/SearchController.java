@@ -354,7 +354,7 @@ public class SearchController {
 		try {
 			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: detectMeaningLanguageSpecific: " + inputAsJson);
 			Gson gson = new Gson();
-			inputAsJson = replaceLanguageStringToOldNaming(inputAsJson);
+			inputAsJson = replaceLanguageStringToOldNamingInJSON(inputAsJson);
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
 
@@ -425,13 +425,20 @@ public class SearchController {
 
 	}
 
-	private String replaceLanguageStringToOldNaming(String inputAsJson) {
+	private String replaceLanguageStringToOldNamingInJSON(String inputAsJson) {
 		inputAsJson = inputAsJson.replace("\"ENGLISH\"", "\"en\"");
 		inputAsJson = inputAsJson.replace("\"SPANISH\"", "\"es\"");
 		inputAsJson = inputAsJson.replace("\"GERMAN\"", "\"de\"");
 		return inputAsJson;
 	}
 
+	private String replaceLanguageStringToOldNamingAsAttribute(String inputAsJson) {
+		inputAsJson = inputAsJson.replace("ENGLISH", "en");
+		inputAsJson = inputAsJson.replace("SPANISH", "es");
+		inputAsJson = inputAsJson.replace("GERMAN", "de");
+		return inputAsJson;
+	}
+	
 	/**
 	 * Returns from a given concept (must be the unique url) the data properties
 	 * and obejctproperties and to each objecproperty a concept in the case the
@@ -516,6 +523,7 @@ public class SearchController {
 
 			String result = "";
 			if (useIndexingService) {
+				correctReceivedLanguageTerm(paramterForGetLogicalView);
 				result = indexingServiceReader.getLogicalView(paramterForGetLogicalView);
 			} else {
 				result = helperForLogicalView(paramterForGetLogicalView);
@@ -523,9 +531,21 @@ public class SearchController {
 
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+
+	/**
+	 * The problem arises that the UI send deifferent terms for the chosen language. For English it is "en" or "ENGLISCH"
+	 * @param paramterForGetLogicalView updated within the reference
+	 */
+	private void correctReceivedLanguageTerm(InputParamterForGetLogicalView paramterForGetLogicalView) {
+		
+		String language =  paramterForGetLogicalView.getLanguage();
+		language = replaceLanguageStringToOldNamingAsAttribute(language);
+		paramterForGetLogicalView.setLanguage(language);
 	}
 
 	public String helperForLogicalView(InputParamterForGetLogicalView paramterForGetLogicalView) {
@@ -712,6 +732,7 @@ public class SearchController {
 			String concept = inputParamterForGetLogicalView.getConcept();
 
 			if (useIndexingService) {
+				correctReceivedLanguageTerm(inputParamterForGetLogicalView);
 				OutputForPropertiesFromConcept propertiesFromConcept = indexingServiceReader
 						.getAllTransitiveProperties(concept, inputParamterForGetLogicalView.getLanguageAsLanguage());
 				String result = "";
