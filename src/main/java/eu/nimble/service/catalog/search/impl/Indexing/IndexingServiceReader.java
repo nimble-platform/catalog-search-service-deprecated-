@@ -221,9 +221,10 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		Language language = inputParameterdetectMeaningLanguageSpecific.getLanguage();
 		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
 		field = prefixLanguage + field;
-
+		String keyword = inputParameterdetectMeaningLanguageSpecific.getKeyword();
+		keyword = keyword.replace(" ", "*");
 		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"
-				+ inputParameterdetectMeaningLanguageSpecific.getKeyword();
+				+ keyword;
 
 		String resultString = invokeHTTPMethod(url);
 
