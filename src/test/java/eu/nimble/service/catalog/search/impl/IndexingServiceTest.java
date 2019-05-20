@@ -33,6 +33,14 @@ public class IndexingServiceTest {
 
 	}
 
+	
+	@Test
+	public void filterProperties(){
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+	}
+	
 	@Test
 	public void testgetLogicalView() {
 		//String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Shelf";

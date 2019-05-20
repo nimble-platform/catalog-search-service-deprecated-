@@ -52,7 +52,6 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromCon
 
 public class IndexingServiceReader extends IndexingServiceConstant {
 
-	
 	private String url = "";
 	private String urlForClassInformation = "";
 	private String urlForPropertyInformation = "";
@@ -122,7 +121,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
-		r.getProperties().forEach(x -> allProperties.add(x));
+		if (r.getProperties() != null){
+			r.getProperties().forEach(x -> allProperties.add(x));
+		}
 		// allProperties.add(result);
 
 		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
@@ -146,13 +147,16 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			propInfos.addAll(propInfosStandard);
 
 			for (String propertyURL : allProperties) {
-				PropertyType p = requestPropertyInfos(gson, propertyURL);
-				if (p != null && p.isVisible()) {
-					p.setConceptSource(ConceptSource.ONTOLOGICAL);
-					propInfos.add(p);
-				} else {
-					Logger.getAnonymousLogger().log(Level.WARNING,
-							"Ignore property, because it is set to be invisible: " + propertyURL);
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL);
+				if (relevant) {
+					PropertyType p = requestPropertyInfos(gson, propertyURL);
+					if (p != null && p.isVisible()) {
+						p.setConceptSource(ConceptSource.ONTOLOGICAL);
+						propInfos.add(p);
+					} else {
+						Logger.getAnonymousLogger().log(Level.WARNING,
+								"Ignore property, because it is set to be invisible: " + propertyURL);
+					}
 				}
 				// propInfos.add(requestPropertyInfos(gson, propertyURL));
 			}
@@ -164,10 +168,10 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		}
 		Iterator<String> iterator = allProperties.iterator();
-		while (iterator.hasNext()){
+		while (iterator.hasNext()) {
 			String property = iterator.next();
 			PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(urlOfClass, property);
-			if (pType==null){
+			if (pType == null) {
 				iterator.remove();
 			}
 		}
@@ -187,7 +191,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:"
 				+ URLEncoder.encode("\"" + urlOfUBBL + "\"");
 		String result = invokeHTTPMethod(httpGetURL);
-		//System.out.println(result);
+		// System.out.println(result);
 
 		Gson gson = new Gson();
 		UBLResult r = gson.fromJson(result, UBLResult.class);
@@ -223,8 +227,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		field = prefixLanguage + field;
 		String keyword = inputParameterdetectMeaningLanguageSpecific.getKeyword();
 		keyword = keyword.replace(" ", "*");
-		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"
-				+ keyword;
+		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*" + keyword;
 
 		String resultString = invokeHTTPMethod(url);
 
@@ -258,7 +261,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
 		String resultString = invokeHTTPMethod(url);
-		//System.out.println(resultString);
+		// System.out.println(resultString);
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(resultString, ClassType.class);
 		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage())
@@ -310,13 +313,16 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 			for (String propertyURL : r.getProperties()) {
 
-				eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
-						propertyURL);
-				if (propertyType.isVisible()) {
-					allPropertyTypes.add(propertyType);
-					propertyType.setConceptSource(ConceptSource.ONTOLOGICAL);
-					addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
-							ConceptSource.ONTOLOGICAL);
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL);
+				if (relevant) {
+					eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
+							propertyURL);
+					if (propertyType.isVisible()) {
+						allPropertyTypes.add(propertyType);
+						propertyType.setConceptSource(ConceptSource.ONTOLOGICAL);
+						addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
+								ConceptSource.ONTOLOGICAL);
+					}
 				}
 			}
 		}
@@ -346,6 +352,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		if (!propertyInformationCache.isConceptAlreadyContained(paramterForGetLogicalView.getConcept())) {
 			propertyInformationCache.addConcept(paramterForGetLogicalView.getConcept(), allPropertyTypes);
 		}
+	}
+
+	public boolean checkWhetherPropertyIsRelevant(String propertyURL) {
+		// TODO Auto-generated method stub
+		return true;
 	}
 
 	private void addDetailsToProperty(LocalOntologyView completeStructure,
@@ -513,7 +524,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
 		String url = urlForItemInformation + "/select?fq=uri:" + uri;
 		OutputForExecuteSelect result = new OutputForExecuteSelect();
-		//result.setInput(inputParamaterForExecuteOptionalSelect);
+		// result.setInput(inputParamaterForExecuteOptionalSelect);
 		result.getUuids().add(inputParamaterForExecuteOptionalSelect.getUuid());
 		String response = invokeHTTPMethod(url);
 		Gson gson = new Gson();
@@ -660,7 +671,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String respoonse = invokeHTTPMethod(url);
 		Gson gson = new Gson();
 		List<ItemMappingFieldInformation> r = gson.fromJson(respoonse, List.class);
-		//System.out.println(r);
+		// System.out.println(r);
 		if (r != null) {
 			result.addAll(r);
 		}
@@ -678,7 +689,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
 				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
 		String response = invokeHTTPMethod(url);
-		//System.out.println(response);
+		// System.out.println(response);
 		Gson gson = new Gson();
 		SOLRResult result = gson.fromJson(response, SOLRResult.class);
 		List<String> columns = new ArrayList<String>();
@@ -779,20 +790,20 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 					urlOfProperty);
 			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
 			outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
-			if (propertyType.getLabel() != null){
-			String label = propertyType.getLabel().get(prefixLanguage);
-			if (label == null){
-				if (propertyType.getLabel().containsKey("en")){
-					label = propertyType.getLabel().get("en");
+			if (propertyType.getLabel() != null) {
+				String label = propertyType.getLabel().get(prefixLanguage);
+				if (label == null) {
+					if (propertyType.getLabel().containsKey("en")) {
+						label = propertyType.getLabel().get("en");
+					}
 				}
-			}
-			outputForPropertyFromConcept.setTranslatedProperty(label);
-			}
-			else{
-				Logger.getAnonymousLogger().log(Level.WARNING, prefixLanguage + "Found no translation for: " + urlOfProperty);
-				String label = urlOfProperty.substring(urlOfProperty.indexOf("#")+1);
 				outputForPropertyFromConcept.setTranslatedProperty(label);
-				
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						prefixLanguage + "Found no translation for: " + urlOfProperty);
+				String label = urlOfProperty.substring(urlOfProperty.indexOf("#") + 1);
+				outputForPropertyFromConcept.setTranslatedProperty(label);
+
 			}
 			outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
 			if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
@@ -846,14 +857,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		// TODO Auto-generated method stub
 		List<PropertyType> allProps = requestStandardPropertiesFromUBL();
 		List<String> allSupportedLanguages = new ArrayList<>();
-		for (PropertyType pType : allProps){
+		for (PropertyType pType : allProps) {
 			pType.getLabel().keySet().forEach(x -> {
-				if (!allSupportedLanguages.contains(String.valueOf(x))){
-				allSupportedLanguages.add(x);	
+				if (!allSupportedLanguages.contains(String.valueOf(x))) {
+					allSupportedLanguages.add(x);
 				}
 			});
 		}
-	return allSupportedLanguages;
+		return allSupportedLanguages;
 	}
-	
+
 }
