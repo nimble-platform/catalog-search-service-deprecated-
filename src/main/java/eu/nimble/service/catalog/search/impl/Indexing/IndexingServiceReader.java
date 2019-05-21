@@ -402,7 +402,8 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				return false;
 			}
 			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-					+ URLEncoder.encode("\"" + conceptURL + "\"") + "&facet.field==" + nameField + "&rows=1";
+					+ URLEncoder.encode("\"" + conceptURL + "\"") + "&fq=" + nameField + ":[*%20TO%20*]"
+					+ "&facet.field==" + nameField + "&rows=1";
 			String response = invokeHTTPMethod(url);
 			// System.out.println(response);
 			Gson gson = new Gson();
@@ -497,6 +498,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
 				String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
 				url += "&fq=" + fieldName + ":[*%20TO%20*]&facet.field=" + fieldName;
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Found no index field dliverd by /index/item/fields: " + propertyURL);
 			}
 
 			String items = invokeHTTPMethod(url);
@@ -696,6 +700,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 			// Create intermediate result + columns list
 			for (PropertyType property : allProps) {
+				if (property == null) {
+					continue;
+				}
 				List<List<String>> r = new ArrayList<List<String>>();
 				intermediateResult.put(property, r);
 				Language lang = inputParamaterForExecuteOptionalSelect.getLanguage();
@@ -718,9 +725,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 						PropertyType propertyType = propertyInformationCache.getPropertyTypeForANameField(fieldName);
 
 						boolean isContained = false;
-						for (PropertyType p : intermediateResult.keySet()) {
-							if (p.equals(propertyType)) {
-								isContained = true;
+						if (propertyType != null) {
+							for (PropertyType p : intermediateResult.keySet()) {
+								if (p.equals(propertyType)) {
+									isContained = true;
+								}
 							}
 						}
 
@@ -750,26 +759,54 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				ItemType item = responseObject.getResult().get(i);
 				for (String key : item.getStringValueDirect().keySet()) {
 					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
-					Collection<String> values = item.getStringValueDirect().get(pType.getUri());
-					List<String> list = new ArrayList(values);
-					intermediateResult.get(pType).add(list);
+					if (pType != null) {
+
+						Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect().get(pType.getUri());
+						Language chosenLangauge = inputParamaterForExecuteOptionalSelect.getLanguage();
+						String lPrefix = "@" + LanguageAdapter.createPrefix(chosenLangauge);
+						Iterator<String> iterator = valuesInDifferentLangauges.iterator();
+						boolean found = true;
+						String anyValue = null;
+						String value = null;
+						while (iterator.hasNext()) {
+							String v = iterator.next();
+							if (anyValue == null) {
+								anyValue = v.substring(0, v.indexOf("@"));
+							}
+							if (v.contains(lPrefix)) {
+								value = v.replace(lPrefix, "");
+
+							}
+						}
+						if (value == null) {
+							value = anyValue;
+						}
+
+						Collection<String> values = item.getStringValueDirect().get(pType.getUri());
+						List<String> list = new ArrayList();
+						list.add(value);
+						intermediateResult.get(pType).add(list);
+					}
 
 				}
 				for (String key : item.getDoubleValueDirect().keySet()) {
 					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
-					Collection<Double> values = item.getDoubleValueDirect().get(pType.getUri());
-					List<String> list = new ArrayList(values);
-					intermediateResult.get(pType).add(list);
+					if (pType != null) {
+						Collection<Double> values = item.getDoubleValueDirect().get(pType.getUri());
+						List<String> list = new ArrayList(values);
+						intermediateResult.get(pType).add(list);
+					}
 
 				}
 
 				for (String key : item.getBooleanValueDirect().keySet()) {
 					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
-					Boolean values = item.getBooleanValueDirect().get(pType.getUri());
-					List<String> list = new ArrayList();
-					list.add(String.valueOf(values));
-					intermediateResult.get(pType).add(list);
-
+					if (pType != null) {
+						Boolean values = item.getBooleanValueDirect().get(pType.getUri());
+						List<String> list = new ArrayList();
+						list.add(String.valueOf(values));
+						intermediateResult.get(pType).add(list);
+					}
 				}
 
 			}
@@ -786,10 +823,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				ArrayList<String> oneRow = new ArrayList<String>();
 				result.getRows().add(oneRow);
 				for (PropertyType property : allProps) {
-					if (intermediateResult.get(property).size() > i) {
-						oneRow.add(intermediateResult.get(property).get(i).toString());
-					} else {
-						oneRow.add(N_ULL);
+					if (property != null) {
+						if (intermediateResult.get(property).size() > i) {
+							oneRow.add(intermediateResult.get(property).get(i).toString());
+						} else {
+							oneRow.add(N_ULL);
+						}
 					}
 					// result.getRows().add(oneRow);
 				}
@@ -913,10 +952,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 							while (iterator.hasNext()) {
 								String v = iterator.next();
 								if (anyValue == null) {
-									anyValue = v;
+									anyValue = v.substring(0, v.indexOf("@"));
 								}
-								value = v.replace(lPrefix, "");
-								found = true;
+								if (v.contains(lPrefix)) {
+									value = v.replace(lPrefix, "");
+									found = true;
+								}
 							}
 							if (!found) {
 								value = anyValue;

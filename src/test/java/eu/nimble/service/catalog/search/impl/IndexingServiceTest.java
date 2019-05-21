@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.validation.constraints.AssertTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.nimble.service.catalog.search.impl.Indexing.IndexingServiceReader;
@@ -103,7 +104,7 @@ public class IndexingServiceTest {
 		System.out.println(r);
 	}
 	
-
+@Ignore
 	@Test
 	public void testcreateSPARQLAndExecuteITPropertyUBLSource(){
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
@@ -145,7 +146,7 @@ public class IndexingServiceTest {
 
 	}
 
-	
+	@Ignore
 	@Test
 	public void testdetectPossibleConceptsLanguageSpecificII() {
 		String serach = "Mdf";
@@ -163,7 +164,7 @@ public class IndexingServiceTest {
 		System.out.println(r);
 
 	}
-	
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAnInvalidProperty() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#Product";
@@ -182,7 +183,7 @@ public class IndexingServiceTest {
 		System.out.println(test);
 		assertTrue(test.size() == 0);
 	}
-	
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAUnknownPropertySource() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
@@ -200,7 +201,7 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAOntologynPropertySource() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
@@ -218,7 +219,7 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAUnknownPropertySourceComplexJson() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
@@ -236,7 +237,7 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 	
-
+	@Ignore
 	@Test
 	public void testcreateOPtionalSPARQLAndExecuteIT(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -261,12 +262,42 @@ public class IndexingServiceTest {
 	
 	
 	@Test
+	public void testcreateOPtionalSPARQLAndExecuteITI(){
+		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		String uuid = "255841";
+		
+		InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect = new InputParamaterForExecuteOptionalSelect();
+		inputParamaterForExecuteOptionalSelect.setLanguage("en");
+		inputParamaterForExecuteOptionalSelect.setUuid(uuid);
+		
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		System.out.println("##########################");
+		OutputForExecuteSelect  r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect);
+		System.out.println(r);
+		System.out.println(r);
+	}
+	@Ignore
+	@Test
+	public void testPropertiesFromfTheGreenGroupI(){
+		//http://www.aidimme.es/FurnitureSectorOntology.owl#hasEAN
+		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasEAN";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		System.out.println(indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property));
+		
+	}
+	@Ignore
+	@Test
 	public void testgetAllMappableFields(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		List<ItemMappingFieldInformation> r = indexingServiceReader.getAllMappableFields();
 	}
-	
+	@Ignore
 	@Test
 	public void testUBLProperties(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -275,7 +306,7 @@ public class IndexingServiceTest {
 		indexingServiceReader.setUrlForPropertyInformationUBL(urlForPropertyInformationUBL );
 		System.out.println(indexingServiceReader.requestStandardPropertiesFromUBL());
 	}
-	
+	@Ignore
 	@Test
 	public void testrequestAllIndexFields(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
