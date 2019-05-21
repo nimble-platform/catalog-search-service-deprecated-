@@ -148,9 +148,15 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
 		propInfosUBL.forEach(x -> {
-			if (x.isVisible()) {
+			String propertyURL = x.getUri();
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass);
+			if (x.isVisible() && relevant) {
 				x.setConceptSource(ConceptSource.CUSTOM);
 				allProperties.add(x.getUri());
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"UBL specifc property is marked as not visible or has no property values in the catalogie: "
+								+ propertyURL);
 			}
 		});
 
@@ -268,20 +274,25 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return result;
 	}
 
+	/**
+	 * This method creates the grapg based view for the explorative search. The
+	 * depth can be defined.
+	 * 
+	 * @param paramterForGetLogicalView
+	 * @return a logical view
+	 */
 	public String getLogicalView(InputParamterForGetLogicalView paramterForGetLogicalView) {
-		// TODO Auto-generated method stub
 
 		OutputForGetLogicalView outputStructure = new OutputForGetLogicalView();
 		LocalOntologyView completeStructure = new LocalOntologyView();
 		eu.nimble.service.catalog.search.impl.dao.Entity concept = new eu.nimble.service.catalog.search.impl.dao.Entity();
 		concept.setUrl(paramterForGetLogicalView.getConcept());
 
-		boolean shallThePropertyCacheUodated = !propertyInformationCache
+		boolean shallThePropertyCacheUpdated = !propertyInformationCache
 				.isConceptAlreadyContained(paramterForGetLogicalView.getConcept());
 
 		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
 		String resultString = invokeHTTPMethod(url);
-		// System.out.println(resultString);
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(resultString, ClassType.class);
 		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage())
@@ -302,13 +313,13 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		List<PropertyType> allPropertyTypes = new ArrayList<PropertyType>();
 
-		if (shallThePropertyCacheUodated) {
+		if (shallThePropertyCacheUpdated) {
 
 			requestAllPropertiesFromDifferentSources(paramterForGetLogicalView, completeStructure, concept, gson, r,
 					prefixLanguage, allPropertyTypes);
 
 		} else {
-			Logger.getAnonymousLogger().log(Level.INFO, "Use the cached proeprties instead of asking them again: "
+			Logger.getAnonymousLogger().log(Level.INFO, "Use the cached properties instead of asking them again: "
 					+ paramterForGetLogicalView.getConcept());
 			List<PropertyType> allProps = propertyInformationCache
 					.getAllCachedPropertiesForAConcept(paramterForGetLogicalView.getConcept());
@@ -349,11 +360,17 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
 		for (PropertyType propertyType : propInfosUBL) {
-			if (propertyType.isVisible()) {
+			String propertyURL = propertyType.getUri();
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept());
+			if (propertyType.isVisible() && relevant) {
 				allPropertyTypes.add(propertyType);
 				propertyType.setConceptSource(ConceptSource.CUSTOM);
 				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
 						ConceptSource.CUSTOM);
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"UBL specifc property is marked as not visible or has no property values in the catalogie: "
+								+ propertyURL);
 			}
 
 		}
@@ -682,11 +699,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				List<List<String>> r = new ArrayList<List<String>>();
 				intermediateResult.put(property, r);
 				Language lang = inputParamaterForExecuteOptionalSelect.getLanguage();
-				if (lang!= null && !(lang.equals(Language.UNKNOWN))){
-				String currentLabel = getLanguageLabel(property, inputParamaterForExecuteOptionalSelect.getLanguage());
-				result.getColumns().add(currentLabel);
-				}
-				else{
+				if (lang != null && !(lang.equals(Language.UNKNOWN))) {
+					String currentLabel = getLanguageLabel(property,
+							inputParamaterForExecuteOptionalSelect.getLanguage());
+					result.getColumns().add(currentLabel);
+				} else {
 					String currentLabel = getLanguageLabel(property, Language.ENGLISH);
 					result.getColumns().add(currentLabel);
 				}
@@ -745,7 +762,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 					intermediateResult.get(pType).add(list);
 
 				}
-				
+
 				for (String key : item.getBooleanValueDirect().keySet()) {
 					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 					Boolean values = item.getBooleanValueDirect().get(pType.getUri());
