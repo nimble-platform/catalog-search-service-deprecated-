@@ -253,13 +253,16 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		field = prefixLanguage + field;
 		String keyword = inputParameterdetectMeaningLanguageSpecific.getKeyword();
 		keyword = keyword.replace(" ", "*");
-		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*" + keyword;
+		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*" + keyword +"&rows=100";
 
 		String resultString = invokeHTTPMethod(url);
 
 		Gson gson = new Gson();
 		ClassTypes r = gson.fromJson(resultString, ClassTypes.class);
 		for (ClassType concept : r.getResult()) {
+			
+			if (checkWhetherIndividualsAreAvailable(concept)){
+			
 			Entity entity = new Entity();
 			entity.setConceptSource(ConceptSource.ONTOLOGICAL);
 			entity.setLanguage(inputParameterdetectMeaningLanguageSpecific.getLanguage());
@@ -268,10 +271,25 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			entity.setHidden(false);
 			result.add(entity);
 		}
+		}
 
 		//
 
 		return result;
+	}
+
+	private boolean checkWhetherIndividualsAreAvailable(ClassType concept) {
+		// TODO Auto-generated method stub --
+		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
+				+ URLEncoder.encode("\"" + concept.getUri() + "\"") +"&rows=1";
+		String response = invokeHTTPMethod(url);
+		// System.out.println(response);
+		Gson gson = new Gson();
+		SOLRResult result = gson.fromJson(response, SOLRResult.class);
+		if (result.getResult() != null && result.getResult().size() > 0){
+			return true;
+		}
+		return false;
 	}
 
 	/**
