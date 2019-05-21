@@ -164,6 +164,30 @@ public class IndexingServiceTest {
 		System.out.println(r);
 
 	}
+	
+	
+	@Test
+	public void testdetectPossibleConceptsLanguageSpecificIII() {
+		//Auxiliary supply, additive, cleaning agent
+		//http://www.nimble-project.org/resource/eclass#0173-1#01-AAC350#007
+		String serach = "agent";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		inputParameterdetectMeaningLanguageSpecific.setKeyword(serach);
+
+		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader
+				.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+		assertTrue(r.size() > 0);
+		System.out.println(r);
+		System.out.println(r);
+
+	}
+	
+	
 	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAnInvalidProperty() {
