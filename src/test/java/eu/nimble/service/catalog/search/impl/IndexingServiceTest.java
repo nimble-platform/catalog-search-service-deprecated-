@@ -81,6 +81,44 @@ public class IndexingServiceTest {
 	
 	@Ignore
 	@Test
+	public void testcreateSPARQLAndExecuteITFILTEROntologicalProperty(){
+		
+		
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		//urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#TableTop";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParamaterForExecuteSelect executeSelect = new InputParamaterForExecuteSelect();
+		executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+		
+		executeSelect.setConcept(urlForClas);
+		
+		Filter filter = new Filter();
+		filter.setProperty("http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+		filter.setExactValue("Natural");
+		executeSelect.getFilters().add(filter);
+		
+		
+//		Filter filter2 = new Filter();
+//		filter2.setProperty("http://UnknownSource#price");
+//		filter2.setExactValue("18.0");
+//		executeSelect.getFilters().add(filter2);
+//		executeSelect.getFilters().add(filter2);
+		
+//		String desc =" MEDILAND XL is made of 100% of Landes Pine selected wood fibres (MDF).\n All the products of the Mediland range are manufactured by FINSA France (Morcenx), the only MDF factory set in the heart of the Landes de Gascogne. The Landes forest is the biggest forest massif of Maritime Pine (Pinus Pinaster) located in the South of Europe. Mediland boards are well-known for their quality. They have a characteristical light colour that helps improve the final results of the product, especially for applications of lacquer, paint or varnish. E1 classification: low formaldehyde content.";
+//		Filter filter3 = new Filter();
+//		filter3.setProperty("http://UnknownSource#description");
+//		filter3.setExactValue(desc);
+//		executeSelect.getFilters().add(filter3);
+		
+		//precondition getProperties to laod the proeprtyCache
+				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+				List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(urlForClas, "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
+	}
+	
+	
+	@Test
 	public void testcreateSPARQLAndExecuteIT(){
 		
 		
@@ -117,6 +155,7 @@ public class IndexingServiceTest {
 		
 		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
 	}
+	
 	
 	@Ignore
 	@Test

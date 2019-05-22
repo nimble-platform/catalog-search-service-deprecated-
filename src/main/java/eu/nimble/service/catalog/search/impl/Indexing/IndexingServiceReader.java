@@ -65,6 +65,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private String urlForIndexFields = "";
 	private PropertyInformationCache propertyInformationCache = new PropertyInformationCache();
 	private IndexFieldCache indexFieldCache = new IndexFieldCache();
+	private Map<String, String> allRelevantPropertyValuesForLanguageCompletion = new HashMap<String,String>();
 
 	public IndexingServiceReader(String url) {
 		super();
@@ -580,6 +581,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 											anyValue = v;
 										}
 										value = v.replace(lPrefix, "");
+										allRelevantPropertyValuesForLanguageCompletion.put(value, v);
 										found = true;
 									}
 									if (!found) {
@@ -1072,7 +1074,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				
 				if (filter.getExactValue() != null && filter.getExactValue().length() > 0){
 					if (dataType.toLowerCase().contains("string")){
-					result +=URLEncoder.encode("\"" + filter.getExactValue() + "\"");
+						
+					String rightValue = filter.getExactValue();
+					if (allRelevantPropertyValuesForLanguageCompletion.containsKey(rightValue)){
+						rightValue = allRelevantPropertyValuesForLanguageCompletion.get(rightValue);
+					}
+					result +=URLEncoder.encode("\"" + rightValue + "\"");
 					result += "";
 					return result;
 					}
