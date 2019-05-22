@@ -525,7 +525,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				Logger.getAnonymousLogger().log(Level.WARNING,
 						"Found no index field dliverd by /index/item/fields: " + propertyURL);
 			}
-
+			url += "&rows=10000";
 			String items = invokeHTTPMethod(url);
 			JSONObject jsonObject = new JSONObject(items);
 			JSONArray results = jsonObject.getJSONArray("result");
