@@ -34,6 +34,7 @@ import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.factories.ValueGroupingFactory;
 import eu.nimble.service.catalog.search.impl.dao.ClassType;
 import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
+import eu.nimble.service.catalog.search.impl.dao.Filter;
 import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.IndexFields;
 import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
@@ -55,6 +56,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromCon
 
 public class IndexingServiceReader extends IndexingServiceConstant {
 
+	private static final String FIND_ANY_VALUE = ":[*%20TO%20*]";
 	private String url = "";
 	private String urlForClassInformation = "";
 	private String urlForPropertyInformation = "";
@@ -422,7 +424,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				return false;
 			}
 			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-					+ URLEncoder.encode("\"" + conceptURL + "\"") + "&fq=" + nameField + ":[*%20TO%20*]"
+					+ URLEncoder.encode("\"" + conceptURL + "\"") + "&fq=" + nameField + FIND_ANY_VALUE
 					+ "&facet.field==" + nameField + "&rows=1";
 			String response = invokeHTTPMethod(url);
 			// System.out.println(response);
@@ -909,15 +911,27 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		 */
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
 				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
-
+		String query = "&q=";
 		// I have to adapt to existing propoerties
 		for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
-			String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
-			if (fieldName != null) {
-				url += "&fq=" + fieldName + ":[*%20TO%20*]";
+			String fieldName = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
+			IndexFields current = indexFieldCache.getIndexFieldForAnyKindOfPropertyAsIndexFields(propertyURL);
+			if (current != null &&  current.isASingleFieldNameToBeConsidered() ) {
+				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(), current.getDataType());
+				url += "&fq=" + fieldName + filterValue;
+			}
+			else{
+				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),  current.getDataType());
+				if (query.length() > 5){
+					query += "AND";
+				}
+				query += "(" + determineORString(current, filterValue) + ")";
 			}
 		}
 
+		if (query.length()> 4){
+			url+= query;
+		}
 		String response = invokeHTTPMethod(url);
 		// System.out.println(response);
 		Gson gson = new Gson();
@@ -1031,6 +1045,51 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		}
 		return outputForExecuteSelect;
+	}
+
+	private String determineORString(IndexFields current, String filterValue) {
+		String result="";
+		for (int i = 0; i < current.getDifferentFieldNames().size(); i++){
+			result += current.getDifferentFieldNames().get(i) + filterValue;
+			
+			if (i < current.getDifferentFieldNames().size()-1){
+				result += "%20OR%20";
+			}
+		}
+		
+		
+		return result;
+		
+	}
+
+	private String determineFQValue(String propertyURL, List<Filter> filters, String dataType) {
+
+		String result = ":";
+		for (Filter filter: filters){
+			if  (filter.getProperty().equals(propertyURL)){
+				
+				
+				
+				if (filter.getExactValue() != null && filter.getExactValue().length() > 0){
+					if (dataType.toLowerCase().contains("string")){
+					result +=URLEncoder.encode("\"" + filter.getExactValue() + "\"");
+					result += "";
+					return result;
+					}
+					else{
+						result +=URLEncoder.encode( filter.getExactValue() );
+						result += "";
+						return result;
+					}
+				}
+				else{
+					result = "[" + filter.getMin()+"%20TO%20" + filter.getMax()+ "]";
+					return result;
+				}
+			}
+		}
+		
+		return FIND_ANY_VALUE;
 	}
 
 	public OutputForPropertiesFromConcept getAllTransitiveProperties(String conceptURL, Language language) {

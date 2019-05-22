@@ -1,8 +1,12 @@
 package eu.nimble.service.catalog.search.impl.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IndexFields {
 
 	private String fieldName;
+	private List<String> differentFieldNames = new ArrayList<String>();
 	private String dataType;
 	private String dynamicBase;
 	private String uri;
@@ -43,6 +47,20 @@ public class IndexFields {
 	}
 	public void setDynamicPart(String dynamicPart) {
 		this.dynamicPart = dynamicPart;
+	}
+	
+	public boolean isASingleFieldNameToBeConsidered(){
+		return differentFieldNames.isEmpty()?true:false;
+	}
+	
+	public boolean isNultipleFieldNameToBeConsidered(){
+		return differentFieldNames.isEmpty()?false:true;
+	}
+	
+	
+	
+	public List<String> getDifferentFieldNames() {
+		return differentFieldNames;
 	}
 	@Override
 	public String toString() {
