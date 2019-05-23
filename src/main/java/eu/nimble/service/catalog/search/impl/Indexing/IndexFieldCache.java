@@ -61,6 +61,12 @@ public class IndexFieldCache extends IndexingServiceConstant{
 		fieldsPrice.setUri(HTTP_UNKNOWN_SOURCE_PRICE);
 		indexFieldPerPropertyURLManuallyAdded.put(HTTP_UNKNOWN_SOURCE_PRICE, fieldsPrice);
 		
+		IndexFields fieldsCatalogueID = new IndexFields();
+		fieldsCatalogueID.setDataType(this.HTTP_WWW_W3_ORG_2001_XML_SCHEMA + "string");
+		fieldsCatalogueID.setFieldName("catalogueId");
+		fieldsCatalogueID.setUri(HTTP_UNKNOWN_SOURCE_PRICE);
+		indexFieldPerPropertyURLManuallyAdded.put(HTTP_UNKNOWN_SOURCE_PRICE, fieldsCatalogueID);
+		
 		
 	}
 	

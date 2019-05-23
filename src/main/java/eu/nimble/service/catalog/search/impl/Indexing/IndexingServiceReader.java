@@ -64,9 +64,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private String urlForItemInformation = "";
 	private String urlForIndexFields = "";
 	private PropertyInformationCache propertyInformationCache = new PropertyInformationCache();
-	private TaxonomyCache   taxonomyCache = new TaxonomyCache();
+	private TaxonomyCache taxonomyCache = new TaxonomyCache();
 	private IndexFieldCache indexFieldCache = new IndexFieldCache();
-	private Map<String, String> allRelevantPropertyValuesForLanguageCompletion = new HashMap<String,String>();
+	private Map<String, String> allRelevantPropertyValuesForLanguageCompletion = new HashMap<String, String>();
 
 	public IndexingServiceReader(String url) {
 		super();
@@ -145,13 +145,13 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
-		if (r!= null){
-		if (r.getProperties() != null) {
-			r.getProperties().forEach(x -> allProperties.add(x));
-		}
-		}
-		else{
-			Logger.getAnonymousLogger().log(Level.WARNING, "Find no class informaiton to: " + urlOfClass+ " by using: " + httpGetURL);
+		if (r != null) {
+			if (r.getProperties() != null) {
+				r.getProperties().forEach(x -> allProperties.add(x));
+			}
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Find no class informaiton to: " + urlOfClass + " by using: " + httpGetURL);
 		}
 		// allProperties.add(result);
 
@@ -214,12 +214,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	private void synchronizeTaxonomyCache(String urlOfClass, ClassType r) {
-		if (r.getAllChildren() != null && r.getAllChildren().size() > 0){
+		if (r.getAllChildren() != null && r.getAllChildren().size() > 0) {
 			List list = new ArrayList(r.getAllChildren());
 			taxonomyCache.addAllSubConcepts(urlOfClass, list);
 		}
-		
-		if (r.getAllParents() != null && r.getAllParents().size() > 0){
+
+		if (r.getAllParents() != null && r.getAllParents().size() > 0) {
 			List list = new ArrayList(r.getAllParents());
 			taxonomyCache.addAllUpperConcepts(urlOfClass, list);
 		}
@@ -274,28 +274,27 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		field = prefixLanguage + field;
 		String keyword = inputParameterdetectMeaningLanguageSpecific.getKeyword();
 
-		
-		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"+URLEncoder.encode("\"" + keyword +"\"") + "&rows=100";
-
+		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"
+				+ URLEncoder.encode("\"" + keyword + "\"") + "&rows=100";
 
 		String resultString = invokeHTTPMethod(url);
 
 		Gson gson = new Gson();
 		ClassTypes r = gson.fromJson(resultString, ClassTypes.class);
 		for (ClassType concept : r.getResult()) {
-			
-			if (checkWhetherIndividualsAreAvailable(concept)){
-			
-			Entity entity = new Entity();
-			entity.setConceptSource(ConceptSource.ONTOLOGICAL);
-			entity.setLanguage(inputParameterdetectMeaningLanguageSpecific.getLanguage());
-			entity.setUrl(concept.getUri());
-			entity.setTranslatedURL(concept.getLabel().get(prefixLanguage));
-			entity.setHidden(false);
-			result.add(entity);
-			
-			synchronizeTaxonomyCache(concept.getUri(), concept);
-		}
+
+			if (checkWhetherIndividualsAreAvailable(concept)) {
+
+				Entity entity = new Entity();
+				entity.setConceptSource(ConceptSource.ONTOLOGICAL);
+				entity.setLanguage(inputParameterdetectMeaningLanguageSpecific.getLanguage());
+				entity.setUrl(concept.getUri());
+				entity.setTranslatedURL(concept.getLabel().get(prefixLanguage));
+				entity.setHidden(false);
+				result.add(entity);
+
+				synchronizeTaxonomyCache(concept.getUri(), concept);
+			}
 		}
 
 		//
@@ -306,12 +305,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private boolean checkWhetherIndividualsAreAvailable(ClassType concept) {
 		// TODO Auto-generated method stub --
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-				+ URLEncoder.encode("\"" + concept.getUri() + "\"") +"&rows=1";
+				+ URLEncoder.encode("\"" + concept.getUri() + "\"") + "&rows=1";
 		String response = invokeHTTPMethod(url);
 		// System.out.println(response);
 		Gson gson = new Gson();
 		SOLRResult result = gson.fromJson(response, SOLRResult.class);
-		if (result.getResult() != null && result.getResult().size() > 0){
+		if (result.getResult() != null && result.getResult().size() > 0) {
 			return true;
 		}
 		return false;
@@ -535,7 +534,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				propertyURL);
 
 		if (propertyType != null) {
-			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL,false);
+			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, false);
 
 			if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
 				String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
@@ -549,7 +548,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			JSONObject jsonObject = new JSONObject(items);
 			JSONArray results = jsonObject.getJSONArray("result");
 			if (results == null || results.length() == 0) {
-				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL,true);
+				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, true);
 
 				if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
 					String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
@@ -559,11 +558,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 							"Found no index field dliverd by /index/item/fields: " + propertyURL);
 				}
 				url += "&rows=10000";
-				 items = invokeHTTPMethod(url);
-				 jsonObject = new JSONObject(items);
-				 results = jsonObject.getJSONArray("result");
+				items = invokeHTTPMethod(url);
+				jsonObject = new JSONObject(items);
+				results = jsonObject.getJSONArray("result");
 			}
-			
+
 			if (results != null && results.length() > 0) {
 				for (String fieldName : propertyType.getItemFieldNames()) {
 					for (int i = 0; i < results.length(); i++) {
@@ -653,21 +652,26 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private String determineRelevantConcepts(String conceptURL, boolean onlyConcept) {
 
 		List<String> children = taxonomyCache.getAllChildrenConcepts(conceptURL);
-		if (onlyConcept){
+		if (onlyConcept) {
 			children.clear();
 		}
 		children.add(conceptURL);
-		
-		String result = "fq=commodityClassficationUri:"; 
-		for (int i =0; i < children.size(); i++){
-			
-			result += URLEncoder.encode("\""+ children.get(i)+ "\"");
-			if (i < children.size()-1){
+
+		String result = "fq=commodityClassficationUri:";
+		if (children.size() > 1) {
+			result += "%28";
+		}
+		for (int i = 0; i < children.size(); i++) {
+
+			result += URLEncoder.encode("\"" + children.get(i) + "\"");
+			if (i < children.size() - 1) {
 				result += "%20OR%20";
 			}
 		}
-		
-		
+		if (children.size() > 1) {
+			result += "%29";
+		}
+
 		return result;
 	}
 
@@ -841,7 +845,8 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
 					if (pType != null) {
 
-						Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect().get(pType.getUri());
+						Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect()
+								.get(pType.getUri());
 						Language chosenLangauge = inputParamaterForExecuteOptionalSelect.getLanguage();
 						String lPrefix = "@" + LanguageAdapter.createPrefix(chosenLangauge);
 						Iterator<String> iterator = valuesInDifferentLangauges.iterator();
@@ -967,66 +972,74 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		 * http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=localName:540*&fq=price:*
 		 * e
 		 */
-		String url = urlForItemInformation + "/select?" + determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), false);
-//		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-//				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
+		String url = urlForItemInformation + "/select?"
+				+ determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), false);
+		// String url = urlForItemInformation +
+		// "/select?fq=commodityClassficationUri:"
+		// + URLEncoder.encode("\"" +
+		// inputParamaterForExecuteSelect.getConcept() + "\"");
 		String query = "&q=";
 		// I have to adapt to existing propoerties
 		for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
 			String fieldName = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
 			IndexFields current = indexFieldCache.getIndexFieldForAnyKindOfPropertyAsIndexFields(propertyURL);
-			if (current != null &&  current.isASingleFieldNameToBeConsidered() ) {
-				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(), current.getDataType());
+			if (current != null && current.isASingleFieldNameToBeConsidered()) {
+				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+						current.getDataType());
 				url += "&fq=" + fieldName + filterValue;
-			}
-			else{
-				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),  current.getDataType());
-				if (query.length() > 5){
+			} else {
+				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+						current.getDataType());
+				if (query.length() > 5) {
 					query += "AND";
 				}
 				query += "(" + determineORString(current, filterValue) + ")";
 			}
 		}
 
-		if (query.length()> 4){
-			url+= query;
+		if (query.length() > 4) {
+			url += query;
 		}
 		String response = invokeHTTPMethod(url);
 		// System.out.println(response);
 		Gson gson = new Gson();
 		SOLRResult result = gson.fromJson(response, SOLRResult.class);
-		
-		if (result.getResult() == null || result.getResult().size() ==0){
-			url = urlForItemInformation + "/select?" + determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), true);
-//			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-//					+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
-			 query = "&q=";
+
+		if (result.getResult() == null || result.getResult().size() == 0) {
+			url = urlForItemInformation + "/select?"
+					+ determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), true);
+			// String url = urlForItemInformation +
+			// "/select?fq=commodityClassficationUri:"
+			// + URLEncoder.encode("\"" +
+			// inputParamaterForExecuteSelect.getConcept() + "\"");
+			query = "&q=";
 			// I have to adapt to existing propoerties
 			for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
 				String fieldName = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
 				IndexFields current = indexFieldCache.getIndexFieldForAnyKindOfPropertyAsIndexFields(propertyURL);
-				if (current != null &&  current.isASingleFieldNameToBeConsidered() ) {
-					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(), current.getDataType());
+				if (current != null && current.isASingleFieldNameToBeConsidered()) {
+					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+							current.getDataType());
 					url += "&fq=" + fieldName + filterValue;
-				}
-				else{
-					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),  current.getDataType());
-					if (query.length() > 5){
+				} else {
+					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+							current.getDataType());
+					if (query.length() > 5) {
 						query += "AND";
 					}
 					query += "(" + determineORString(current, filterValue) + ")";
 				}
 			}
 
-			if (query.length()> 4){
-				url+= query;
+			if (query.length() > 4) {
+				url += query;
 			}
-			 response = invokeHTTPMethod(url);
+			response = invokeHTTPMethod(url);
 			// System.out.println(response);
-			 gson = new Gson();
-			 result = gson.fromJson(response, SOLRResult.class);
+			gson = new Gson();
+			result = gson.fromJson(response, SOLRResult.class);
 		}
-		
+
 		List<String> columns = new ArrayList<String>();
 		columns.addAll(inputParamaterForExecuteSelect.getParameters());
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
@@ -1139,52 +1152,47 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	private String determineORString(IndexFields current, String filterValue) {
-		String result="";
-		for (int i = 0; i < current.getDifferentFieldNames().size(); i++){
+		String result = "";
+		for (int i = 0; i < current.getDifferentFieldNames().size(); i++) {
 			result += current.getDifferentFieldNames().get(i) + filterValue;
-			
-			if (i < current.getDifferentFieldNames().size()-1){
+
+			if (i < current.getDifferentFieldNames().size() - 1) {
 				result += "%20OR%20";
 			}
 		}
-		
-		
+
 		return result;
-		
+
 	}
 
 	private String determineFQValue(String propertyURL, List<Filter> filters, String dataType) {
 
 		String result = ":";
-		for (Filter filter: filters){
-			if  (filter.getProperty().equals(propertyURL)){
-				
-				
-				
-				if (filter.getExactValue() != null && filter.getExactValue().length() > 0){
-					if (dataType.toLowerCase().contains("string")){
-						
-					String rightValue = filter.getExactValue();
-					if (allRelevantPropertyValuesForLanguageCompletion.containsKey(rightValue)){
-						rightValue = allRelevantPropertyValuesForLanguageCompletion.get(rightValue);
-					}
-					result +=URLEncoder.encode("\"" + rightValue + "\"");
-					result += "";
-					return result;
-					}
-					else{
-						result +=URLEncoder.encode( filter.getExactValue() );
+		for (Filter filter : filters) {
+			if (filter.getProperty().equals(propertyURL)) {
+
+				if (filter.getExactValue() != null && filter.getExactValue().length() > 0) {
+					if (dataType.toLowerCase().contains("string")) {
+
+						String rightValue = filter.getExactValue();
+						if (allRelevantPropertyValuesForLanguageCompletion.containsKey(rightValue)) {
+							rightValue = allRelevantPropertyValuesForLanguageCompletion.get(rightValue);
+						}
+						result += URLEncoder.encode("\"" + rightValue + "\"");
+						result += "";
+						return result;
+					} else {
+						result += URLEncoder.encode(filter.getExactValue());
 						result += "";
 						return result;
 					}
-				}
-				else{
-					result = "[" + filter.getMin()+"%20TO%20" + filter.getMax()+ "]";
+				} else {
+					result = "[" + filter.getMin() + "%20TO%20" + filter.getMax() + "]";
 					return result;
 				}
 			}
 		}
-		
+
 		return FIND_ANY_VALUE;
 	}
 
