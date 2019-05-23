@@ -171,8 +171,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
 		propInfosStandard.forEach(x -> {
+			boolean relevant = checkWhetherPropertyIsRelevant(x.getUri(), urlOfClass);
+			if(relevant){
 			x.setConceptSource(ConceptSource.CUSTOM);
 			allProperties.add(x.getUri());
+			}
 		});
 
 		if (!propertyInformationCache.isConceptAlreadyContained(urlOfClass)) {
@@ -419,7 +422,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
 		for (PropertyType propertyType : propInfosStandard) {
-			if (propertyType.isVisible()) {
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyType.getUri(), paramterForGetLogicalView.getConcept());
+			
+			if (propertyType.isVisible() &&relevant) {
 				allPropertyTypes.add(propertyType);
 				propertyType.setConceptSource(ConceptSource.CUSTOM);
 				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
@@ -434,29 +439,58 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	public boolean checkWhetherPropertyIsRelevant(String propertyURL, String conceptURL) {
+		
 
 		if (indexFieldCache.isPropertyRelevanceInfoContained(conceptURL, propertyURL)) {
 			return indexFieldCache.isPropertyRelevanceGiven(conceptURL, propertyURL);
 		} else {
-			String nameField = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
+			String nameField = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
 			// Happens if no fieldname mapping is available
 			if (nameField == null) {
 				return false;
 			}
-			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-					+ URLEncoder.encode("\"" + conceptURL + "\"") + "&fq=" + nameField + FIND_ANY_VALUE
+			
+			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, false);
+			if (propertyURL.contains(this.namespace)){
+				url+= "&fq=" + nameField + FIND_ANY_VALUE+ "&rows=1";
+		}
+			else{
+
+					url+= "&fq=" + nameField + FIND_ANY_VALUE
 					+ "&facet.field==" + nameField + "&rows=1";
+			}
 			String response = invokeHTTPMethod(url);
+			
 			// System.out.println(response);
 			Gson gson = new Gson();
 			SOLRResult result = gson.fromJson(response, SOLRResult.class);
-			if (result != null && result.getResult().size() == 1) {
+			
+			if (result == null || result.getResult().size() == 0 ) {
+				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, true);
+				if (propertyURL.contains(this.namespace)){
+					url+= "&fq=" + nameField + FIND_ANY_VALUE+ "&rows=1";
+			}
+				else{
 
+						url+= "&fq=" + nameField + FIND_ANY_VALUE
+						+ "&facet.field==" + nameField + "&rows=1";
+				}
+				 response = invokeHTTPMethod(url);
+				
+				// System.out.println(response);
+ gson = new Gson();
+				 result = gson.fromJson(response, SOLRResult.class);
+			}
+			
+			if (result != null && result.getResult().size() == 1 ) {
+
+				
 				PropertyRelevance propertyRelevance = new PropertyRelevance();
 				propertyRelevance.setHasItBeenChecked(true);
 				propertyRelevance.setItRelevant(true);
 				propertyRelevance.setLastCheck(new Date());
 				indexFieldCache.addProopertyRelevance(conceptURL, propertyURL, propertyRelevance);
+				
 
 				return true;
 			} else {
@@ -546,7 +580,13 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			url += "&rows=10000";
 			String items = invokeHTTPMethod(url);
 			JSONObject jsonObject = new JSONObject(items);
-			JSONArray results = jsonObject.getJSONArray("result");
+			JSONArray results = null;
+			try{ 
+			results = jsonObject.getJSONArray("result");
+			}
+			catch (Exception e) {
+				// TODO: handle exception
+			}
 			if (results == null || results.length() == 0) {
 				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, true);
 

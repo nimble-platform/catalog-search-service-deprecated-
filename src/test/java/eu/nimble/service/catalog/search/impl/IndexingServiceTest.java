@@ -162,6 +162,53 @@ public class IndexingServiceTest {
 	
 	
 	@Test
+	public void testcreateSPARQLAndExecuteITFILTERName(){
+		
+		
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Board";
+		//urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#TableTop";
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParamaterForExecuteSelect executeSelect = new InputParamaterForExecuteSelect();
+		//executeSelect.getParametersURL().add("http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+		executeSelect.getParametersURL().add("http://UnknownSource#name");
+//		executeSelect.getParametersURL().add("http://UnknownSource#description");
+//		executeSelect.getParametersURL().add("http://UnknownSource#price");
+		executeSelect.setConcept(urlForClas);
+		
+		Filter filter = new Filter();
+		filter.setProperty("http://UnknownSource#name");
+		filter.setExactValue("Mediland XL");
+		executeSelect.getFilters().add(filter);
+		
+		
+//		Filter filter2 = new Filter();
+//		filter2.setProperty("http://UnknownSource#price");
+//		filter2.setExactValue("18.0");
+//		executeSelect.getFilters().add(filter2);
+//		executeSelect.getFilters().add(filter2);
+		
+//		String desc =" MEDILAND XL is made of 100% of Landes Pine selected wood fibres (MDF).\n All the products of the Mediland range are manufactured by FINSA France (Morcenx), the only MDF factory set in the heart of the Landes de Gascogne. The Landes forest is the biggest forest massif of Maritime Pine (Pinus Pinaster) located in the South of Europe. Mediland boards are well-known for their quality. They have a characteristical light colour that helps improve the final results of the product, especially for applications of lacquer, paint or varnish. E1 classification: low formaldehyde content.";
+//		Filter filter3 = new Filter();
+//		filter3.setProperty("http://UnknownSource#description");
+//		filter3.setExactValue(desc);
+//		executeSelect.getFilters().add(filter3);
+		
+		//precondition getProperties to laod the proeprtyCache
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		
+				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+				//List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(urlForClas, "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
+		
+				System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
+				System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
+	}
+	
+	
+	@Test
 	public void testcheckWhetherPropertyIsRelevant(){
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Chair";
 		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs";
@@ -436,6 +483,24 @@ public class IndexingServiceTest {
 	public void testgetAllDifferentValuesForAUnknownPropertySourceComplexJson() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
 		String property = "http://UnknownSource#price";
+
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		//precondition getProperties to laod the proeprtyCache
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		System.out.println(test);
+		assertTrue(test.size() > 0);
+	}
+	
+	
+	@Test
+	public void testgetAllDifferentValuesForAUnknownPropertySourceName() {
+		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String property = "http://UnknownSource#name";
 
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 
