@@ -64,6 +64,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private String urlForItemInformation = "";
 	private String urlForIndexFields = "";
 	private PropertyInformationCache propertyInformationCache = new PropertyInformationCache();
+	private TaxonomyCache   taxonomyCache = new TaxonomyCache();
 	private IndexFieldCache indexFieldCache = new IndexFieldCache();
 	private Map<String, String> allRelevantPropertyValuesForLanguageCompletion = new HashMap<String,String>();
 
@@ -144,6 +145,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
+		
 		if (r.getProperties() != null) {
 			r.getProperties().forEach(x -> allProperties.add(x));
 		}
@@ -205,6 +207,18 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			}
 		}
 		return allProperties;
+	}
+
+	private void synchronizeTaxonomyCache(String urlOfClass, ClassType r) {
+		if (r.getAllChildren() != null && r.getAllChildren().size() > 0){
+			List list = new ArrayList(r.getAllChildren());
+			taxonomyCache.addAllSubConcepts(urlOfClass, list);
+		}
+		
+		if (r.getAllParents() != null && r.getAllParents().size() > 0){
+			List list = new ArrayList(r.getAllParents());
+			taxonomyCache.addAllUpperConcepts(urlOfClass, list);
+		}
 	}
 
 	private List<PropertyType> requestStandardPropertiesFromUnknownSopurce() {
@@ -275,6 +289,8 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			entity.setTranslatedURL(concept.getLabel().get(prefixLanguage));
 			entity.setHidden(false);
 			result.add(entity);
+			
+			synchronizeTaxonomyCache(concept.getUri(), concept);
 		}
 		}
 
