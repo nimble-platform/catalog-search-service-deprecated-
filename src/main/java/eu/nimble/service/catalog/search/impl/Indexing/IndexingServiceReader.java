@@ -145,9 +145,13 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(result, ClassType.class);
-		
+		if (r!= null){
 		if (r.getProperties() != null) {
 			r.getProperties().forEach(x -> allProperties.add(x));
+		}
+		}
+		else{
+			Logger.getAnonymousLogger().log(Level.WARNING, "Find no class informaiton to: " + urlOfClass+ " by using: " + httpGetURL);
 		}
 		// allProperties.add(result);
 
@@ -531,7 +535,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				propertyURL);
 
 		if (propertyType != null) {
-			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL);
+			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL,false);
 
 			if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
 				String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
@@ -544,7 +548,23 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			String items = invokeHTTPMethod(url);
 			JSONObject jsonObject = new JSONObject(items);
 			JSONArray results = jsonObject.getJSONArray("result");
-			if (results != null) {
+			if (results == null || results.length() == 0) {
+				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL,true);
+
+				if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
+					String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
+					url += "&fq=" + fieldName + ":[*%20TO%20*]&facet.field=" + fieldName;
+				} else {
+					Logger.getAnonymousLogger().log(Level.WARNING,
+							"Found no index field dliverd by /index/item/fields: " + propertyURL);
+				}
+				url += "&rows=10000";
+				 items = invokeHTTPMethod(url);
+				 jsonObject = new JSONObject(items);
+				 results = jsonObject.getJSONArray("result");
+			}
+			
+			if (results != null && results.length() > 0) {
 				for (String fieldName : propertyType.getItemFieldNames()) {
 					for (int i = 0; i < results.length(); i++) {
 						JSONObject ob = (JSONObject) results.get(i);
@@ -630,9 +650,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 	}
 
-	private String determineRelevantConcepts(String conceptURL) {
+	private String determineRelevantConcepts(String conceptURL, boolean onlyConcept) {
 
 		List<String> children = taxonomyCache.getAllChildrenConcepts(conceptURL);
+		if (onlyConcept){
+			children.clear();
+		}
 		children.add(conceptURL);
 		
 		String result = "fq=commodityClassficationUri:"; 
@@ -944,7 +967,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		 * http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=localName:540*&fq=price:*
 		 * e
 		 */
-		String url = urlForItemInformation + "/select?" + determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept());
+		String url = urlForItemInformation + "/select?" + determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), false);
 //		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
 //				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
 		String query = "&q=";
@@ -972,6 +995,38 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		// System.out.println(response);
 		Gson gson = new Gson();
 		SOLRResult result = gson.fromJson(response, SOLRResult.class);
+		
+		if (result.getResult() == null || result.getResult().size() ==0){
+			url = urlForItemInformation + "/select?" + determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), true);
+//			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
+//					+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
+			 query = "&q=";
+			// I have to adapt to existing propoerties
+			for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
+				String fieldName = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
+				IndexFields current = indexFieldCache.getIndexFieldForAnyKindOfPropertyAsIndexFields(propertyURL);
+				if (current != null &&  current.isASingleFieldNameToBeConsidered() ) {
+					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(), current.getDataType());
+					url += "&fq=" + fieldName + filterValue;
+				}
+				else{
+					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),  current.getDataType());
+					if (query.length() > 5){
+						query += "AND";
+					}
+					query += "(" + determineORString(current, filterValue) + ")";
+				}
+			}
+
+			if (query.length()> 4){
+				url+= query;
+			}
+			 response = invokeHTTPMethod(url);
+			// System.out.println(response);
+			 gson = new Gson();
+			 result = gson.fromJson(response, SOLRResult.class);
+		}
+		
 		List<String> columns = new ArrayList<String>();
 		columns.addAll(inputParamaterForExecuteSelect.getParameters());
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();

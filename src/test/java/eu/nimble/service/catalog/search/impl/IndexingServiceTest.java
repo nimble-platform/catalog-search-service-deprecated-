@@ -19,6 +19,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.*;
 import eu.nimble.service.catalog.search.impl.Indexing.IndexingServiceReader;
 import eu.nimble.service.catalog.search.impl.dao.Entity;
@@ -29,6 +30,7 @@ import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteS
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
 
 public class IndexingServiceTest {
 
@@ -158,6 +160,45 @@ public class IndexingServiceTest {
 		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
 	}
 	
+	
+	@Test
+	public void testcheckWhetherPropertyIsRelevant(){
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Chair";
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs";
+		
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("chairs");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		
+		
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		
+		boolean properties = indexingServiceReader.checkWhetherPropertyIsRelevant(property, urlForClas);
+		assertTrue(properties);
+		
+		
+	}
+	
+	@Test
+	public void testgetPropertyFromConcept(){
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Chair";
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs";
+		
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("chairs");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		
+		
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		System.out.println(lala);
+		
+		OutputForPropertiesFromConcept r = indexingServiceReader.getAllTransitiveProperties(urlForClas, Language.ENGLISH);
+		System.out.println(r.getOutputForPropertiesFromConcept());
+	}
 	
 	@Test
 	public void testcreateSPARQLAndExecuteIT(){
@@ -339,6 +380,28 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
 		//precondition getProperties to laod the proeprtyCache
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		System.out.println(test);
+		assertTrue(test.size() > 0);
+	}
+	
+	
+	@Test
+	public void testgetAllDifferentValuesForAOntologynPropertySourceLegs() {
+		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#Chair";
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs";
+
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		//precondition getProperties to laod the proeprtyCache
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("chair");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
 		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
 		
 		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
