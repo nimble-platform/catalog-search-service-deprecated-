@@ -531,8 +531,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				propertyURL);
 
 		if (propertyType != null) {
-			String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-					+ URLEncoder.encode(conceptURL);
+			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL);
 
 			if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
 				String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
@@ -629,6 +628,24 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		}
 
+	}
+
+	private String determineRelevantConcepts(String conceptURL) {
+
+		List<String> children = taxonomyCache.getAllChildrenConcepts(conceptURL);
+		children.add(conceptURL);
+		
+		String result = "fq=commodityClassficationUri:"; 
+		for (int i =0; i < children.size(); i++){
+			
+			result += URLEncoder.encode("\""+ children.get(i)+ "\"");
+			if (i < children.size()-1){
+				result += "%20OR%20";
+			}
+		}
+		
+		
+		return result;
 	}
 
 	private PropertyType requestPropertyInfosFromCache(String conceptURL, String propertyURL) {
@@ -927,8 +944,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		 * http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=localName:540*&fq=price:*
 		 * e
 		 */
-		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
-				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
+		String url = urlForItemInformation + "/select?" + determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept());
+//		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
+//				+ URLEncoder.encode("\"" + inputParamaterForExecuteSelect.getConcept() + "\"");
 		String query = "&q=";
 		// I have to adapt to existing propoerties
 		for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {

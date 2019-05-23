@@ -163,7 +163,7 @@ public class IndexingServiceTest {
 	public void testcreateSPARQLAndExecuteIT(){
 		
 		
-		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Board";
 		//urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#TableTop";
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
@@ -192,6 +192,12 @@ public class IndexingServiceTest {
 //		executeSelect.getFilters().add(filter3);
 		
 		//precondition getProperties to laod the proeprtyCache
+		
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("board");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		
 				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
 		
 		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
@@ -340,10 +346,10 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 	
-	@Ignore
+	
 	@Test
 	public void testgetAllDifferentValuesForAOntologynPropertySource() {
-		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#Board";
 		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour";
 
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -351,6 +357,10 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
 		//precondition getProperties to laod the proeprtyCache
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("board");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
 		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
 		
 		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);

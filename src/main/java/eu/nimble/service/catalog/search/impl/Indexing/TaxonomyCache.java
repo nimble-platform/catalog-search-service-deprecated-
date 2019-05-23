@@ -31,10 +31,15 @@ public class TaxonomyCache {
 	}
 	
 	
-	public List<String> getAllChildrenConcepts(String cocneptURL){
+	/**
+	 * Returns all children to a given concept
+	 * @param conceptURL the unique uel of a cocnept/category
+	 * @return in any case a list. If there is no result it returns an empty list
+	 */
+	public List<String> getAllChildrenConcepts(String conceptURL){
 		List<String> result = new ArrayList<String>();
-		if (cacheDownPerConceptURL.containsKey(cocneptURL)){
-			result.addAll(cacheDownPerConceptURL.get(cocneptURL));
+		if (cacheDownPerConceptURL.containsKey(conceptURL)){
+			result.addAll(cacheDownPerConceptURL.get(conceptURL));
 		}
 		else{
 			Logger.getAnonymousLogger().log(Level.WARNING, "Concept is not part of the Taxonomy Cache");
@@ -43,10 +48,15 @@ public class TaxonomyCache {
 	}
 	
 	
-	public List<String> getAllParentsConcepts(String cocneptURL){
+	/**
+	 * Returns all parents to a given concept
+	 * @param conCeptURL the unique uel of a cocnept/category
+	 * @return in any case a list. If there is no result it returns an empty list
+	 */
+	public List<String> getAllParentsConcepts(String conceptURL){
 		List<String> result = new ArrayList<String>();
-		if (cacheUPPerConceptURL.containsKey(cocneptURL)){
-			result.addAll(cacheUPPerConceptURL.get(cocneptURL));
+		if (cacheUPPerConceptURL.containsKey(conceptURL)){
+			result.addAll(cacheUPPerConceptURL.get(conceptURL));
 		}
 		else{
 			Logger.getAnonymousLogger().log(Level.WARNING, "Concept is not part of the Taxonomy Cache");
