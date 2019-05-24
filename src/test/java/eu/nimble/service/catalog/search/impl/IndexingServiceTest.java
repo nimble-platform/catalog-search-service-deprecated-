@@ -33,7 +33,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
 
 public class IndexingServiceTest {
-
+	@Ignore
 	@Test
 	public void justCheckWhetherEndpointIsAvailable() {
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#StoragePieceOfFurniture";
@@ -45,7 +45,7 @@ public class IndexingServiceTest {
 
 	}
 
-	
+	@Ignore
 	@Test
 	public void filterProperties(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -57,21 +57,30 @@ public class IndexingServiceTest {
 		System.out.println(result);
 	}
 	
+	@Ignore
 	@Test
 	public void testgetLogicalView() {
 		//String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Shelf";
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
 		InputParamterForGetLogicalView input = new InputParamterForGetLogicalView();
 		input.setConcept(urlForClas);
 		input.setLanguage("en");
 		input.setDistanceToFrozenConcept(0);
 		input.setStepRange(2);
 		// input.setOldJsonLogicalView(new LocalOntologyView());
+		
+		
+		
 		String r = indexingServiceReader.getLogicalView(input);
 		System.out.println(r);
-		
+		System.out.println(r);
 		String r2 = indexingServiceReader.getLogicalView(input);
 		
 		assertEquals(r, r2);
@@ -120,7 +129,7 @@ public class IndexingServiceTest {
 	}
 	
 	
-	
+	@Ignore
 	@Test
 	public void testcreateSPARQLAndExecuteITFILTERPrice(){
 		
@@ -160,7 +169,7 @@ public class IndexingServiceTest {
 		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testcreateSPARQLAndExecuteITFILTERName(){
 		
@@ -207,7 +216,7 @@ public class IndexingServiceTest {
 				System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testcheckWhetherPropertyIsRelevant(){
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Chair";
@@ -227,7 +236,7 @@ public class IndexingServiceTest {
 		
 		
 	}
-	
+	@Ignore
 	@Test
 	public void testgetPropertyFromConcept(){
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#Chair";
@@ -247,6 +256,24 @@ public class IndexingServiceTest {
 		System.out.println(r.getOutputForPropertiesFromConcept());
 	}
 	
+	public void testgetPropertyFromConceptMDFBoard(){
+		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
+		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs";
+		
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		
+		
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		System.out.println(lala);
+		
+		OutputForPropertiesFromConcept r = indexingServiceReader.getAllTransitiveProperties(urlForClas, Language.ENGLISH);
+		System.out.println(r.getOutputForPropertiesFromConcept());
+	}
+	@Ignore
 	@Test
 	public void testcreateSPARQLAndExecuteIT(){
 		
@@ -374,7 +401,7 @@ public class IndexingServiceTest {
 
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testdetectPossibleConceptsLanguageSpecificIII() {
 		//Auxiliary supply, additive, cleaning agent
@@ -416,7 +443,7 @@ public class IndexingServiceTest {
 		System.out.println(test);
 		assertTrue(test.size() == 0);
 	}
-
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAUnknownPropertySource() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
@@ -434,7 +461,7 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAOntologynPropertySourceLegs() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#Chair";
@@ -456,7 +483,7 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAOntologynPropertySource() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#Board";
@@ -496,7 +523,7 @@ public class IndexingServiceTest {
 		assertTrue(test.size() > 0);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testgetAllDifferentValuesForAUnknownPropertySourceName() {
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
@@ -537,7 +564,7 @@ public class IndexingServiceTest {
 		System.out.println(r);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testcreateOPtionalSPARQLAndExecuteITI(){
 		String cocnept = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
@@ -591,5 +618,8 @@ public class IndexingServiceTest {
 		System.out.println(indexingServiceReader.requestAllIndexFields());
 		
 	}
+	/**
+	 * http://nimble-staging.salzburgresearch.at/search/getPropertyValuesDiscretised?inputAsJson={%22concept%22:%22http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23Chair%22,%22property%22:%22http%3A%2F%2FUnknownSource%23price%22,%22amountOfGroups%22:3,%22language%22:%22ENGLISH%22}
+	 */
 	
 }

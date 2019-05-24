@@ -139,6 +139,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	 */
 	public List<String> getAllPropertiesIncludingEverything(String urlOfClass) {
 
+		List<PropertyType> propInfos = new ArrayList<PropertyType>();
 		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
 		String result = invokeHTTPMethod(httpGetURL);
 		Logger.getAnonymousLogger().log(Level.INFO, result);
@@ -160,6 +161,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			String propertyURL = x.getUri();
 			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass);
 			if (x.isVisible() && relevant) {
+				propInfos.add(x);
 				x.setConceptSource(ConceptSource.CUSTOM);
 				allProperties.add(x.getUri());
 			} else {
@@ -175,14 +177,15 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			if(relevant){
 			x.setConceptSource(ConceptSource.CUSTOM);
 			allProperties.add(x.getUri());
+			propInfos.add(x);
 			}
 		});
 
 		if (!propertyInformationCache.isConceptAlreadyContained(urlOfClass)) {
 
-			List<PropertyType> propInfos = new ArrayList<PropertyType>();
-			propInfos.addAll(propInfosUBL);
-			propInfos.addAll(propInfosStandard);
+			
+			//propInfos.addAll(propInfosUBL);
+			//propInfos.addAll(propInfosStandard);
 
 			for (String propertyURL : allProperties) {
 				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass);

@@ -51,7 +51,7 @@ public class IndexFieldCache extends IndexingServiceConstant{
 		
 		IndexFields fieldsDecription = new IndexFields();
 		fieldsDecription.setDataType(this.HTTP_WWW_W3_ORG_2001_XML_SCHEMA + "string");
-		fieldsDecription.setFieldName("_desc");
+		fieldsDecription.setFieldName("en_desc");
 		fieldsDecription.setUri(HTTP_UNKNOWN_SOURCE_DESCRIPTION);
 		indexFieldPerPropertyURLManuallyAdded.put(HTTP_UNKNOWN_SOURCE_DESCRIPTION, fieldsDecription);
 		
