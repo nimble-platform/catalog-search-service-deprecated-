@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -11,6 +12,7 @@ import java.util.logging.Logger;
 
 import com.google.gson.internal.LinkedTreeMap;
 
+import de.biba.triple.store.access.enums.Language;
 import eu.nimble.service.catalog.search.impl.dao.IndexFields;
 import eu.nimble.service.catalog.search.impl.dao.PropertyRelevance;
 
@@ -29,7 +31,19 @@ public class IndexFieldCache extends IndexingServiceConstant{
 	//private Map<String, PropertyRelevance> propertyRelevanceByPropertyURL  = new HashMap<String, PropertyRelevance>();
 	private Map<String, Map<String, PropertyRelevance>> propertyRelevancesByConceptURL = new HashMap<String, Map<String, PropertyRelevance>>();
 	
-	
+	public List<Language> detectLanguagesNyIndexFields(){
+		
+		List<Language> result = new LinkedList<>();
+		
+		for (IndexFields field :allndexFields){
+			if (field.getFieldName().contains("_labels")){
+				String prefix = field.getDynamicPart();
+				Language language = Language.fromString(prefix);
+				result.add(language);
+			}
+		}
+		return result;
+	}
 	
 	public IndexFieldCache() {
 		super();

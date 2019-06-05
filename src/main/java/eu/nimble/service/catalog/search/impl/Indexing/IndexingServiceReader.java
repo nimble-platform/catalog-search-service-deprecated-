@@ -1316,6 +1316,22 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	public List<String> getSupportedLanguages() {
 		// TODO Auto-generated method stub
 		List<PropertyType> allProps = requestStandardPropertiesFromUBL();
+		
+		//choose another source for detetcting the languages
+		if (allProps == null || allProps.size()==0){
+			List<Language> langs = indexFieldCache.detectLanguagesNyIndexFields();
+			List<String> allSupportedLanguages = new ArrayList<>();
+			for (Language language: langs){
+				String r = Language.toOntologyPostfix(language);
+				if (r != null){
+					r = r.substring(1);
+				}
+				allSupportedLanguages.add(r);
+			}
+			return allSupportedLanguages;
+			
+		}
+		
 		List<String> allSupportedLanguages = new ArrayList<>();
 		for (PropertyType pType : allProps) {
 			pType.getLabel().keySet().forEach(x -> {
