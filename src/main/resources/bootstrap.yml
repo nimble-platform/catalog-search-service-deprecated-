@@ -30,7 +30,7 @@ nimble:
     url: ${IDENTITY_SERVICE_URL:http://nimble-staging.salzburgresearch.at/identity}
   shared:
     property:
-      indexingserviceuri: ${INDEXING_SERVICE_URI:http://nimble-staging.salzburgresearch.at/index/}
+      indexingserviceuri: ${INDEXING_SERVICE_URI:http://nimble-dev.ikap.biba.uni-bremen.de:9101/}
       catalogue:
         search:
           configuration: ${CATALOG_SEARCH_CONFIG:/resources/sqpConfiguration-default.xml}
