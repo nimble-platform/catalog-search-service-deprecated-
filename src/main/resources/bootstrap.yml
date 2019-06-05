@@ -24,6 +24,17 @@ management:
     solr:
       enabled: false
 
+
+nimble:
+  identity:
+    url: ${IDENTITY_SERVICE_URL:http://nimble-staging.salzburgresearch.at/identity}
+  shared:
+    property:
+      indexingserviceuri: ${INDEXING_SERVICE_URI:http://nimble-staging.salzburgresearch.at/index/}
+      catalogue:
+        search:
+          configuration: ${CATALOG_SEARCH_CONFIG:/resources/sqpConfiguration-default.xml}
+
 ---
 
 spring:
