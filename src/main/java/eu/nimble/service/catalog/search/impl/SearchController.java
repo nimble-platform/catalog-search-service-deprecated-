@@ -36,6 +36,7 @@ import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.HybridConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.PartType;
+import eu.nimble.service.catalog.search.impl.dao.SerachConfig;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.enums.TypeOfDataSource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
@@ -121,7 +122,7 @@ public class SearchController {
 
 	@PostConstruct
 	public void init() {
-
+		logger.info("Shall indexing service be used: " + useIndexingService);
 		if (useIndexingService) {
 			logger.info("Initializing with indexingServiceUri:" + indexingserviceuri);
 			indexingServiceReader = new IndexingServiceReader(indexingserviceuri);
@@ -297,11 +298,24 @@ public class SearchController {
 		}
 	}
 
+	
+	
+	
 	@CrossOrigin
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
 	HttpEntity<Object> query() {
+		
 		{
-			String result = "<!DOCTYPE html> <html lang=\"de\">  <head>    <meta charset=\"utf-8\" />    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />    <title>Titel</title>  </head>  <body>  <h1> lala </h1></body></html>";
+			SerachConfig config = new SerachConfig();
+			config.setIndexingActive(useIndexingService);
+			config.setUrlOfIOndexingService(indexingserviceuri);
+			config.setUseSOLRIndex(useSOLRIndex);
+			config.setHybridConfiguration(hybridConfiguration);
+			config.setMarmottaUri(marmottaUri);
+			Gson gson = new Gson();
+			String result = gson.toJson(config);
+			
+			//String result = "<!DOCTYPE html> <html lang=\"de\">  <head>    <meta charset=\"utf-8\" />    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />    <title>Titel</title>  </head>  <body>  <h1> lala </h1></body></html>";
 			return new ResponseEntity<Object>(result, HttpStatus.OK);
 		}
 	}
@@ -375,6 +389,7 @@ public class SearchController {
 //				partype = gson.fromJson(content, PartType.class);
 //			}
 
+			logger.info("Use" + useIndexingService + ": " + indexingserviceuri);
 			if (useIndexingService) {
 				List<Entity> concepts = indexingServiceReader
 						.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);

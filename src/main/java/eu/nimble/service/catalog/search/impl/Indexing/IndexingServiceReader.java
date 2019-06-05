@@ -282,7 +282,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"
 				+ URLEncoder.encode("\"" + keyword + "\"") + "&rows=100";
-
+		
 		String resultString = invokeHTTPMethod(url);
 
 		Gson gson = new Gson();
