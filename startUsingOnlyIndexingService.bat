@@ -1,1 +1,1 @@
-mvnDebug spring-boot:run -Dnimble.shared.property.indexingserviceuri="http://nimble-staging.salzburgresearch.at/index/"
+mvnDebug spring-boot:run -Dnimble.shared.property.indexingserviceuri="http://nimble-dev.ikap.biba.uni-bremen.de:9101/"

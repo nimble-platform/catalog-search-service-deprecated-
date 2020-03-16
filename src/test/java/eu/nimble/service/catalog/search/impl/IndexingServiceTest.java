@@ -34,6 +34,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromC
 
 public class IndexingServiceTest {
 	
+	@Ignore
 	@Test
 	public void justCheckWhetherEndpointIsAvailable() {
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#StoragePieceOfFurniture";
@@ -67,6 +68,7 @@ public class IndexingServiceTest {
 		System.out.println(languages);
 		assertTrue(languages.size() > 0);
 	}
+	
 	
 	@Test
 	public void checkLanguagesStagingEcoHouse() {
@@ -277,7 +279,8 @@ public class IndexingServiceTest {
 		OutputForPropertiesFromConcept r = indexingServiceReader.getAllTransitiveProperties(urlForClas, Language.ENGLISH);
 		System.out.println(r.getOutputForPropertiesFromConcept());
 	}
-	
+	@Ignore
+	@Test
 	public void testgetPropertyFromConceptMDFBoard(){
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
 		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasLegs";
@@ -632,7 +635,7 @@ public class IndexingServiceTest {
 		indexingServiceReader.setUrlForPropertyInformationUBL(urlForPropertyInformationUBL );
 		System.out.println(indexingServiceReader.requestStandardPropertiesFromUBL());
 	}
-	
+	@Ignore
 	@Test
 	public void testrequestAllIndexFields(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -641,7 +644,7 @@ public class IndexingServiceTest {
 		
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testgetDetectMeaningStaging() {
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -654,7 +657,7 @@ public class IndexingServiceTest {
 		
 	}
 	
-	
+	@Ignore
 	@Test
 	public void testgetDetectMeaningEcoHouse() {
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";

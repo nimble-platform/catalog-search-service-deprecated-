@@ -59,8 +59,8 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyValuesF
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForSQPFromOrangeGroup;
 import eu.nimble.service.catalog.search.impl.dao.output.Reference;
 import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
-import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
+//import eu.nimble.service.catalog.search.mediator.MediatorEntryPoint;
+//import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
 import eu.nimble.service.catalog.search.services.NimbleAdaptionServiceOfSearchResults;
 import eu.nimble.service.catalog.search.services.SQPDerivationService;
 
@@ -101,7 +101,7 @@ public class SearchController {
 	@Value("${nimble.shared.property.hybridConfiguration}")
 	private String hybridConfiguration;
 
-	private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
+	//private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
 	private SQPDerivationService sQPDerivationService = null;
 	// private NimbleAdaptionServiceOfSearchResults
 	// nimbleAdaptionServiceOfSearchResults = null;
@@ -132,7 +132,7 @@ public class SearchController {
 
 			if ((ontologyFile == null || ontologyFile.equals(NULL_ASSIGNED_VALUE))
 					&& (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
-				sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
+				//sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
 				if (useSOLRIndex) {
 
 					if (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE)) {
@@ -159,22 +159,22 @@ public class SearchController {
 					File f = new File(ontologyFile);
 					if (f.exists()) {
 						Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
-						sparqlDerivation = new MediatorSPARQLDerivationAndExecution(ontologyFile);
+						//sparqlDerivation = new MediatorSPARQLDerivationAndExecution(ontologyFile);
 					} else {
 						Logger.getAnonymousLogger().log(Level.WARNING,
 								" CANNOT load defined ontology file: " + ontologyFile);
-						Logger.getAnonymousLogger().log(Level.INFO,
-								"Load STANDARD ontology file: " + MediatorSPARQLDerivationAndExecution.FURNITURE2_OWL);
-						sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
+//						Logger.getAnonymousLogger().log(Level.INFO,
+//								"Load STANDARD ontology file: " + MediatorSPARQLDerivationAndExecution.FURNITURE2_OWL);
+//						sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
 					}
 				} else {
-					sparqlDerivation = new MediatorSPARQLDerivationAndExecution(marmottaUri, true,
-							sQPDerivationService);
+					//sparqlDerivation = new MediatorSPARQLDerivationAndExecution(marmottaUri, true,
+					//		sQPDerivationService);
 				}
 			}
-			sparqlDerivation.setLanguagelabel(languageLabel);
-			sQPDerivationService = new SQPDerivationService(sparqlDerivation, sqpConfigurationPath);
-			sparqlDerivation.updatesqpDerivationService(sQPDerivationService);
+			//sparqlDerivation.setLanguagelabel(languageLabel);
+			//sQPDerivationService = new SQPDerivationService(sparqlDerivation, sqpConfigurationPath);
+			//sparqlDerivation.updatesqpDerivationService(sQPDerivationService);
 
 			if (useSOLRIndex && this.solrReader == null) {
 
@@ -286,17 +286,17 @@ public class SearchController {
 		this.ontologyFile = ontologyFile;
 	}
 
-	@RequestMapping(value = "/query", method = RequestMethod.GET)
-	HttpEntity<Object> query(@RequestParam("query") String query) {
-		{
-			Gson gson = new Gson();
-			InputParameter parameter = gson.fromJson(query, InputParameter.class);
-			MediatorEntryPoint service = new MediatorEntryPoint(generalConfigurationPath, parameter);
-			eu.nimble.service.catalog.search.mediator.datatypes.MediatorResult result = service.query();
-
-			return new ResponseEntity<Object>(result.toOutput(parameter.getTypeOfOutput()), HttpStatus.OK);
-		}
-	}
+//	@RequestMapping(value = "/query", method = RequestMethod.GET)
+//	HttpEntity<Object> query(@RequestParam("query") String query) {
+//		{
+//			Gson gson = new Gson();
+//			InputParameter parameter = gson.fromJson(query, InputParameter.class);
+////			MediatorEntryPoint service = new MediatorEntryPoint(generalConfigurationPath, parameter);
+////			eu.nimble.service.catalog.search.mediator.datatypes.MediatorResult result = service.query();
+//
+//			return new ResponseEntity<Object>(result.toOutput(parameter.getTypeOfOutput()), HttpStatus.OK);
+//		}
+//	}
 
 	
 	
@@ -320,47 +320,47 @@ public class SearchController {
 		}
 	}
 
-	@CrossOrigin
-	@Deprecated
-	@RequestMapping(value = "/detectMeaning", method = RequestMethod.GET)
-	HttpEntity<Object> detectMeaning(@RequestParam("keyword") String keyword) {
-		try {
-			List<String> concepts = sparqlDerivation.detectPossibleConcepts(keyword);
-			MeaningResult meaningResult = new MeaningResult();
-			List<Entity> data = new ArrayList<Entity>();
-
-			meaningResult.setConceptOverview(data);
-			meaningResult.setSearchTyp("ExplorativeSearch");
-
-			for (String concept : concepts) {
-				int index = -1;
-				if (index == -1) {
-					index = concept.indexOf("#");
-				}
-				if (index == -1) {
-					index = concept.lastIndexOf("/");
-				}
-				index++;
-				String concept2 = concept.substring(index);
-
-				eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
-				entity.setLanguage(Language.UNKNOWN);
-				entity.setUrl(concept);
-				entity.setTranslatedURL(concept2);
-				data.add(entity);
-
-			}
-
-			Gson gson = new Gson();
-			String result = "";
-			result = gson.toJson(meaningResult);
-
-			return new ResponseEntity<Object>(result, HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
+//	@CrossOrigin
+//	@Deprecated
+//	@RequestMapping(value = "/detectMeaning", method = RequestMethod.GET)
+//	HttpEntity<Object> detectMeaning(@RequestParam("keyword") String keyword) {
+//		try {
+//			List<String> concepts = sparqlDerivation.detectPossibleConcepts(keyword);
+//			MeaningResult meaningResult = new MeaningResult();
+//			List<Entity> data = new ArrayList<Entity>();
+//
+//			meaningResult.setConceptOverview(data);
+//			meaningResult.setSearchTyp("ExplorativeSearch");
+//
+//			for (String concept : concepts) {
+//				int index = -1;
+//				if (index == -1) {
+//					index = concept.indexOf("#");
+//				}
+//				if (index == -1) {
+//					index = concept.lastIndexOf("/");
+//				}
+//				index++;
+//				String concept2 = concept.substring(index);
+//
+//				eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
+//				entity.setLanguage(Language.UNKNOWN);
+//				entity.setUrl(concept);
+//				entity.setTranslatedURL(concept2);
+//				data.add(entity);
+//
+//			}
+//
+//			Gson gson = new Gson();
+//			String result = "";
+//			result = gson.toJson(meaningResult);
+//
+//			return new ResponseEntity<Object>(result, HttpStatus.OK);
+//		} catch (Exception e) {
+//			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//
+//	}
 
 	@CrossOrigin
 	@RequestMapping(value = "/detectMeaningLanguageSpecific", method = RequestMethod.GET)
@@ -407,10 +407,10 @@ public class SearchController {
 			} else {
 
 				if (!useSOLRIndex || hConfiguration.getDetectMeaningLanguageSpecific() != TypeOfDataSource.SOLR) {
-					List<Entity> concepts = sparqlDerivation.detectPossibleConceptsLanguageSpecific(
-							inputParameterdetectMeaningLanguageSpecific.getKeyword(),
-							inputParameterdetectMeaningLanguageSpecific.getLanguage(), languageLabel,
-							useSimplifiedSPARQL);
+					
+					Logger.getAnonymousLogger().log(Level.SEVERE, "Not supported any longer");
+					
+					List<Entity> concepts = new ArrayList<Entity>();
 					MeaningResult meaningResult = new MeaningResult();
 					meaningResult.setConceptOverview(concepts);
 					meaningResult.setSearchTyp("ExplorativeSearch");
@@ -576,8 +576,8 @@ public class SearchController {
 		String label = "";
 
 		if (!useSOLRIndex || hConfiguration.getGetLogicalView() != TypeOfDataSource.SOLR) {
-			label = sparqlDerivation.translateConcept(paramterForGetLogicalView.getConcept(),
-					paramterForGetLogicalView.getLanguageAsLanguage(), languageLabel).getTranslation();
+			Logger.getAnonymousLogger().log(Level.INFO, "Not supported any longer");
+			label = "Not supported";
 		} else {
 			label = solrReader.translateConcept(paramterForGetLogicalView.getConcept(),
 					paramterForGetLogicalView.getLanguageAsLanguage());
@@ -637,9 +637,7 @@ public class SearchController {
 			for (LocalOntologyView concept2 : allAdressedConcepts.keySet()) {
 				LocalOntologyView view = null;
 				if (!useSOLRIndex || hConfiguration.getGetLogicalView() != TypeOfDataSource.SOLR) {
-					view = sparqlDerivation.getViewForOneStepRange(concept2.getConcept().getUrl(), concept2,
-							allAdressedConcepts.get(concept2),
-							Language.fromString(paramterForGetLogicalView.getLanguage()));
+					view = null;
 				} else {
 					view = solrReader.getViewForOneStepRange(concept2.getConcept().getUrl(), concept2,
 							allAdressedConcepts.get(concept2),
@@ -702,30 +700,30 @@ public class SearchController {
 	 *            The URL of the chosen concept the same as getLogicalView
 	 * @return JSON including both groups
 	 */
-	@CrossOrigin
-	@RequestMapping(value = "/getSQPFromOrangeGroup", method = RequestMethod.GET)
-	HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String inputAsJson) {
-		try {
-			Gson gson = new Gson();
-			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
-					InputParamterForGetLogicalView.class);
-
-			String concept = inputParamterForGetLogicalView.getConcept();
-			List<String> entries = sQPDerivationService.getListOfAvailableSQPs(concept);
-
-			OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new OutputForSQPFromOrangeGroup();
-			outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
-			String result = "";
-			result = gson.toJson(outputForSQPFromOrangeGroup);
-
-			return new ResponseEntity<Object>(result, HttpStatus.OK);
-		}
-
-		catch (Exception e) {
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
+//	@CrossOrigin
+//	@RequestMapping(value = "/getSQPFromOrangeGroup", method = RequestMethod.GET)
+//	HttpEntity<Object> getSQP(@RequestParam("inputAsJson") String inputAsJson) {
+//		try {
+//			Gson gson = new Gson();
+//			InputParamterForGetLogicalView inputParamterForGetLogicalView = gson.fromJson(inputAsJson,
+//					InputParamterForGetLogicalView.class);
+//
+//			String concept = inputParamterForGetLogicalView.getConcept();
+//			List<String> entries = sQPDerivationService.getListOfAvailableSQPs(concept);
+//
+//			OutputForSQPFromOrangeGroup outputForSQPFromOrangeGroup = new OutputForSQPFromOrangeGroup();
+//			outputForSQPFromOrangeGroup.getListOfSQP().addAll(entries);
+//			String result = "";
+//			result = gson.toJson(outputForSQPFromOrangeGroup);
+//
+//			return new ResponseEntity<Object>(result, HttpStatus.OK);
+//		}
+//
+//		catch (Exception e) {
+//			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//
+//	}
 
 	/**
 	 * Returns the properties of of a cocnept
@@ -756,27 +754,27 @@ public class SearchController {
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
 			} else {
 
-				if (!useSOLRIndex || hConfiguration.getGetPropertyFromConcept() != TypeOfDataSource.SOLR) {
-					OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation
-							.getAllTransitiveProperties(concept);
-					concept = sparqlDerivation.getURIOfConcept(concept);
-					for (OutputForPropertyFromConcept prop : propertiesFromConcept
-							.getOutputForPropertiesFromConcept()) {
-						if (prop.getPropertySource() == PropertySource.DOMAIN_SPECIFIC_PROPERTY) {
-							TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
-									Language.fromString(inputParamterForGetLogicalView.getLanguage()), languageLabel);
-							prop.setTranslatedProperty(name.getTranslation());
-						} else {
-							String uri = prop.getPropertyURL();
-							String name = uri.substring(uri.indexOf("#") + 1);
-							prop.setTranslatedProperty(name);
-						}
-					}
-					String result = "";
-					result = gson.toJson(propertiesFromConcept);
-
-					return new ResponseEntity<Object>(result, HttpStatus.OK);
-				} else {
+	//			if (!useSOLRIndex || hConfiguration.getGetPropertyFromConcept() != TypeOfDataSource.SOLR) {
+//					OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation
+//							.getAllTransitiveProperties(concept);
+//					concept = sparqlDerivation.getURIOfConcept(concept);
+//					for (OutputForPropertyFromConcept prop : propertiesFromConcept
+//							.getOutputForPropertiesFromConcept()) {
+//						if (prop.getPropertySource() == PropertySource.DOMAIN_SPECIFIC_PROPERTY) {
+//							TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
+//									Language.fromString(inputParamterForGetLogicalView.getLanguage()), languageLabel);
+//							prop.setTranslatedProperty(name.getTranslation());
+//						} else {
+//							String uri = prop.getPropertyURL();
+//							String name = uri.substring(uri.indexOf("#") + 1);
+//							prop.setTranslatedProperty(name);
+//						}
+//					}
+//					String result = "";
+//					result = gson.toJson(propertiesFromConcept);
+//
+//					return new ResponseEntity<Object>(null, HttpStatus.OK);
+//				} else {
 					OutputForPropertiesFromConcept propertiesFromConcept = new OutputForPropertiesFromConcept();
 					propertiesFromConcept.setLanguage(inputParamterForGetLogicalView.getLanguageAsLanguage());
 					List<String> properties = solrReader.getAllPropertiesIncludingEverything(concept);
@@ -810,7 +808,7 @@ public class SearchController {
 
 					return new ResponseEntity<Object>(result, HttpStatus.OK);
 				}
-			}
+	//		}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -845,24 +843,24 @@ public class SearchController {
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
 			} else {
 
-				if (!useSOLRIndex
-						|| hConfiguration.getGetInstantiatedPropertiesFromConcept() != TypeOfDataSource.SOLR) {
-
-					OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation
-							.getAllTransitiveProperties(concept);
-					concept = sparqlDerivation.getURIOfConcept(concept);
-					for (OutputForPropertyFromConcept prop : propertiesFromConcept
-							.getOutputForPropertiesFromConcept()) {
-						TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
-								Language.fromString(inputParamterForGetLogicalView.getLanguage()), languageLabel);
-						prop.setTranslatedProperty(name.getTranslation());
-					}
-					String result = "";
-					result = gson.toJson(propertiesFromConcept);
-
-					return new ResponseEntity<Object>(result, HttpStatus.OK);
-
-				} else {
+//				if (!useSOLRIndex
+//						|| hConfiguration.getGetInstantiatedPropertiesFromConcept() != TypeOfDataSource.SOLR) {
+//
+//					OutputForPropertiesFromConcept propertiesFromConcept = sparqlDerivation
+//							.getAllTransitiveProperties(concept);
+//					concept = sparqlDerivation.getURIOfConcept(concept);
+//					for (OutputForPropertyFromConcept prop : propertiesFromConcept
+//							.getOutputForPropertiesFromConcept()) {
+//						TranslationResult name = sparqlDerivation.translateProperty(prop.getPropertyURL(),
+//								Language.fromString(inputParamterForGetLogicalView.getLanguage()), languageLabel);
+//						prop.setTranslatedProperty(name.getTranslation());
+//					}
+//					String result = "";
+//					result = gson.toJson(propertiesFromConcept);
+//
+//					return new ResponseEntity<Object>(result, HttpStatus.OK);
+//
+//				} else {
 					OutputForPropertiesFromConcept propertiesFromConcept = new OutputForPropertiesFromConcept();
 					propertiesFromConcept.setLanguage(inputParamterForGetLogicalView.getLanguageAsLanguage());
 					List<String> properties = solrReader.getAllPropertiesIncludingEverything(concept);
@@ -898,7 +896,7 @@ public class SearchController {
 
 				}
 
-			}
+//			}
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -966,27 +964,27 @@ public class SearchController {
 
 			} else {
 
-				if (!useSOLRIndex || hConfiguration.getGetPropertyValuesFromGreenGroup() != TypeOfDataSource.SOLR) {
-					String concept = sparqlDerivation
-							.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
-					String property = sparqlDerivation
-							.getURIOfProperty(inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
-
-					checkVariableValuesForJSONONput(inputParameterForPropertyValuesFromGreenGroup);
-
-					List<String> allValues = sparqlDerivation.getAllValuesForAGivenProperty(concept, property,
-							inputParameterForPropertyValuesFromGreenGroup.getPropertySource());
-
-					OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new OutputForPropertyValuesFromGreenGroup();
-					outputForPropertyValuesFromGreenGroup.getAllValues().addAll(allValues);
-
-					String result = "";
-					result = gson.toJson(outputForPropertyValuesFromGreenGroup);
-
-					return new ResponseEntity<Object>(result, HttpStatus.OK);
-				}
-
-				else {
+//				if (!useSOLRIndex || hConfiguration.getGetPropertyValuesFromGreenGroup() != TypeOfDataSource.SOLR) {
+//					String concept = sparqlDerivation
+//							.getURIOfConcept(inputParameterForPropertyValuesFromGreenGroup.getConceptURL());
+//					String property = sparqlDerivation
+//							.getURIOfProperty(inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
+//
+//					checkVariableValuesForJSONONput(inputParameterForPropertyValuesFromGreenGroup);
+//
+//					List<String> allValues = sparqlDerivation.getAllValuesForAGivenProperty(concept, property,
+//							inputParameterForPropertyValuesFromGreenGroup.getPropertySource());
+//
+//					OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new OutputForPropertyValuesFromGreenGroup();
+//					outputForPropertyValuesFromGreenGroup.getAllValues().addAll(allValues);
+//
+//					String result = "";
+//					result = gson.toJson(outputForPropertyValuesFromGreenGroup);
+//
+//					return new ResponseEntity<Object>(result, HttpStatus.OK);
+//				}
+//
+//				else {
 
 					String concept = inputParameterForPropertyValuesFromGreenGroup.getConceptURL();
 					String property = inputParameterForPropertyValuesFromGreenGroup.getPropertyURL();
@@ -1001,7 +999,7 @@ public class SearchController {
 
 					return new ResponseEntity<Object>(result, HttpStatus.OK);
 
-				}
+	//			}
 			}
 
 		} catch (Exception e) {
@@ -1029,7 +1027,7 @@ public class SearchController {
 
 			List<String[]> allReferences = null;
 			if (!useSOLRIndex || hConfiguration.getGetReferencesFromAConcept() != TypeOfDataSource.SOLR) {
-				allReferences = sparqlDerivation.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+				allReferences = indexingServiceReader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
 						inputParameterForGetReferencesFromAConcept);
 			} else {
 				allReferences = solrReader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
@@ -1047,7 +1045,7 @@ public class SearchController {
 								.fromString(inputParameterForGetReferencesFromAConcept.getLanguage());
 						TranslationResult result = null;
 						if (!useSOLRIndex) {
-							result = sparqlDerivation.translateProperty(value, language, languageLabel);
+							result = indexingServiceReader.translateProperty(value, language, languageLabel);
 						} else {
 							result = solrReader.translateProperty(value, language, languageLabel);
 						}
@@ -1055,7 +1053,7 @@ public class SearchController {
 						if (index == -1) {
 							Reference reference = new Reference();
 							if (!useSOLRIndex) {
-								reference.setTranslatedProperty(sparqlDerivation
+								reference.setTranslatedProperty(indexingServiceReader
 										.translateProperty(propertyURL, language, languageLabel).getTranslation());
 							} else {
 								reference.setTranslatedProperty(solrReader
@@ -1095,32 +1093,32 @@ public class SearchController {
 	 * @return JSON including for each property the url and the type (datatype
 	 *         or object)
 	 */
-	@CrossOrigin
-	@RequestMapping(value = "/getPropertyValuesFromOrangeGroup", method = RequestMethod.GET)
-	HttpEntity<Object> getPropertyValuesFromOrangeGroup(@RequestParam("inputAsJson") String inputAsJson) {
-
-		try {
-			Gson gson = new Gson();
-			InputParameterForPropertyValuesFromOrangeGroup inputParameterForPropertyValuesFromOrangeGroup = gson
-					.fromJson(inputAsJson, InputParameterForPropertyValuesFromOrangeGroup.class);
-			String result = "";
-
-			checkVariableValuesForJSONONput(inputParameterForPropertyValuesFromOrangeGroup);
-			if (!useSOLRIndex || hConfiguration.getGetPropertyValuesFromOrangeGroup() != TypeOfDataSource.SOLR) {
-				result = gson.toJson(sparqlDerivation
-						.getPropertyValuesFromOrangeGroup(inputParameterForPropertyValuesFromOrangeGroup));
-				return new ResponseEntity<Object>(result, HttpStatus.OK);
-			} else {
-				result = gson.toJson(
-						solrReader.getPropertyValuesFromOrangeGroup(inputParameterForPropertyValuesFromOrangeGroup));
-				return new ResponseEntity<Object>(result, HttpStatus.OK);
-			}
-
-		} catch (Exception e) {
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
+//	@CrossOrigin
+//	@RequestMapping(value = "/getPropertyValuesFromOrangeGroup", method = RequestMethod.GET)
+//	HttpEntity<Object> getPropertyValuesFromOrangeGroup(@RequestParam("inputAsJson") String inputAsJson) {
+//
+//		try {
+//			Gson gson = new Gson();
+//			InputParameterForPropertyValuesFromOrangeGroup inputParameterForPropertyValuesFromOrangeGroup = gson
+//					.fromJson(inputAsJson, InputParameterForPropertyValuesFromOrangeGroup.class);
+//			String result = "";
+//
+//			checkVariableValuesForJSONONput(inputParameterForPropertyValuesFromOrangeGroup);
+//			if (!useSOLRIndex || hConfiguration.getGetPropertyValuesFromOrangeGroup() != TypeOfDataSource.SOLR) {
+//				result = gson.toJson(sparqlDerivation
+//						.getPropertyValuesFromOrangeGroup(inputParameterForPropertyValuesFromOrangeGroup));
+//				return new ResponseEntity<Object>(result, HttpStatus.OK);
+//			} else {
+//				result = gson.toJson(
+//						solrReader.getPropertyValuesFromOrangeGroup(inputParameterForPropertyValuesFromOrangeGroup));
+//				return new ResponseEntity<Object>(result, HttpStatus.OK);
+//			}
+//
+//		} catch (Exception e) {
+//			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//
+//	}
 
 	/**
 	 * Returns from a given concept the data properties and obejctproperties and
@@ -1151,25 +1149,26 @@ public class SearchController {
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
 			} else {
 
-				if (!useSOLRIndex || hConfiguration.getGetPropertyValuesDiscretised() != TypeOfDataSource.SOLR) {
-					Map<String, List<Group>> mapOfPropertyGroups = sparqlDerivation.generateGroup(
-							paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
-							paramterForGetLogicalView.getProperty(), paramterForGetLogicalView.getPropertySource());
-					String result = "";
-					result = gson.toJson(mapOfPropertyGroups);
-					return new ResponseEntity<Object>(result, HttpStatus.OK);
-				} else {
-					Map<String, List<Group>> mapOfPropertyGroups = solrReader.generateGroup(
-							paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
-							paramterForGetLogicalView.getProperty());
-					String result = "";
-					result = gson.toJson(mapOfPropertyGroups);
-					return new ResponseEntity<Object>(result, HttpStatus.OK);
-				}
+//				if (!useSOLRIndex || hConfiguration.getGetPropertyValuesDiscretised() != TypeOfDataSource.SOLR) {
+//					Map<String, List<Group>> mapOfPropertyGroups = sparqlDerivation.generateGroup(
+//							paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
+//							paramterForGetLogicalView.getProperty(), paramterForGetLogicalView.getPropertySource());
+//					String result = "";
+//					result = gson.toJson(mapOfPropertyGroups);
+//					return new ResponseEntity<Object>(result, HttpStatus.OK);
+//				} else {
+//					Map<String, List<Group>> mapOfPropertyGroups = solrReader.generateGroup(
+//							paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
+//							paramterForGetLogicalView.getProperty());
+//					String result = "";
+//					result = gson.toJson(mapOfPropertyGroups);
+//					return new ResponseEntity<Object>(result, HttpStatus.OK);
+//				}
 			}
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		return null;
 
 	}
 
@@ -1198,12 +1197,12 @@ public class SearchController {
 				outputForExecuteSelect = indexingServiceReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
 			} else {
 
-				if (!useSOLRIndex || hConfiguration.getExecuteSPARQLSelect() != TypeOfDataSource.SOLR) {
-					outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-
-				} else {
-					outputForExecuteSelect = solrReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-				}
+//				if (!useSOLRIndex || hConfiguration.getExecuteSPARQLSelect() != TypeOfDataSource.SOLR) {
+//					outputForExecuteSelect = sparqlDerivation.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+//
+//				} else {
+//					outputForExecuteSelect = solrReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+//				}
 			}
 			String result = "";
 			result = gson.toJson(outputForExecuteSelect);
@@ -1242,23 +1241,24 @@ public class SearchController {
 				if (useIndexingService) {
 					outputForExecuteSelect = indexingServiceReader
 							.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-				} else {
-
-					if (!useSOLRIndex || hConfiguration.getExecuteSPARQLWithOptionalSelect() != TypeOfDataSource.SOLR) {
-
-						outputForExecuteSelect = sparqlDerivation
-								.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-
-					} else {
-						outputForExecuteSelect = solrReader
-								.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
-
-						String result = "";
-						result = gson.toJson(outputForExecuteSelect);
-
-						return new ResponseEntity<Object>(result, HttpStatus.OK);
-					}
-				}
+				} 
+				//else {
+//
+//					if (!useSOLRIndex || hConfiguration.getExecuteSPARQLWithOptionalSelect() != TypeOfDataSource.SOLR) {
+//
+//						outputForExecuteSelect = sparqlDerivation
+//								.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+//
+//					} else {
+//						outputForExecuteSelect = solrReader
+//								.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+//
+//						String result = "";
+//						result = gson.toJson(outputForExecuteSelect);
+//
+//						return new ResponseEntity<Object>(result, HttpStatus.OK);
+//					}
+//				}
 				deleteIncompleteResponse(outputForExecuteSelect);
 
 				String result = "";
@@ -1310,20 +1310,20 @@ public class SearchController {
 
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
 			}
-			else{
-			if (!useSOLRIndex) {
-
-				List<String> languages = sparqlDerivation.getSupportedLanguages();
-
-				Gson output = new Gson();
-				String result = "";
-				OutoutForGetSupportedLanguages supportedLanguages = new OutoutForGetSupportedLanguages();
-				supportedLanguages.getLanguages().addAll(languages);
-				result = output.toJson(supportedLanguages);
-
-				return new ResponseEntity<Object>(result, HttpStatus.OK);
-
-			} else {
+//			else{
+//			if (!useSOLRIndex) {
+//
+//				List<String> languages = sparqlDerivation.getSupportedLanguages();
+//
+//				Gson output = new Gson();
+//				String result = "";
+//				OutoutForGetSupportedLanguages supportedLanguages = new OutoutForGetSupportedLanguages();
+//				supportedLanguages.getLanguages().addAll(languages);
+//				result = output.toJson(supportedLanguages);
+//
+//				return new ResponseEntity<Object>(result, HttpStatus.OK);
+//
+//			} else {
 				List<Language> languages = solrReader.getNativeSupportedLangauges();
 				OutoutForGetSupportedLanguages supportedLanguages = new OutoutForGetSupportedLanguages();
 
@@ -1334,8 +1334,8 @@ public class SearchController {
 				result = output.toJson(supportedLanguages);
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
 
-			}
-			}
+			//}
+		//	}
 
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

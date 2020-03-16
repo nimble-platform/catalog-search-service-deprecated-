@@ -2,11 +2,13 @@ package eu.nimble.service.catalog.search.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.biba.triple.store.access.dmo.Entity;
 import de.biba.triple.store.access.enums.Language;
 import de.biba.triple.store.access.marmotta.MarmottaReader;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
+//import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
 
 /**
  * This class enhance the results or the user defined input to the NIMBLE
@@ -17,13 +19,13 @@ import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExec
  */
 public class NimbleAdaptionServiceOfSearchResults {
 
-	private MediatorSPARQLDerivationAndExecution sparqlDerivation;
+	//private MediatorSPARQLDerivationAndExecution sparqlDerivation;
 	private String languageLabel;
 	public final static String propertyURLForName = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#Name";
 
-	public NimbleAdaptionServiceOfSearchResults(MediatorSPARQLDerivationAndExecution sparqlDerivation, String languageLabel) {
+	public NimbleAdaptionServiceOfSearchResults (String languageLabel) {
 		super();
-		this.sparqlDerivation = sparqlDerivation;
+		//this.sparqlDerivation = sparqlDerivation;
 		this.languageLabel = languageLabel;
 	}
 
@@ -59,8 +61,9 @@ public class NimbleAdaptionServiceOfSearchResults {
 			entity.setHidden(false);
 			entity.setLanguage(language);
 			entity.setUrl(propertyURLForName);
-			entity.setTranslatedURL(
-					sparqlDerivation.translateProperty(propertyURLForName, language, languageLabel).getTranslation());
+			Logger.getAnonymousLogger().log(Level.INFO, "Not supported yet");
+//			entity.setTranslatedURL(
+//					sparqlDerivation.translateProperty(propertyURLForName, language, languageLabel).getTranslation());
 			additionalProperties.add(entity);
 		}
 

@@ -43,6 +43,7 @@ import eu.nimble.service.catalog.search.impl.dao.UBLResult;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.item.ItemType;
@@ -51,6 +52,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 public class IndexingServiceReader extends IndexingServiceConstant {
 
@@ -1356,6 +1358,17 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			});
 		}
 		return allSupportedLanguages;
+	}
+
+	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public TranslationResult translateProperty(String value, Language language, String languageLabel) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
