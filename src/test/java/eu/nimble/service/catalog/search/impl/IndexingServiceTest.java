@@ -33,7 +33,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
 import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
 
 public class IndexingServiceTest {
-	@Ignore
+	
 	@Test
 	public void justCheckWhetherEndpointIsAvailable() {
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#StoragePieceOfFurniture";
@@ -55,6 +55,28 @@ public class IndexingServiceTest {
 		boolean result = indexingServiceReader.checkWhetherPropertyIsRelevant(null, urlForClas);
 		
 		System.out.println(result);
+	}
+	
+	@Test
+	public void checkLanguagesStaging() {
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		List<String> languages = indexingServiceReader.getSupportedLanguages();
+		
+		System.out.println(languages);
+		assertTrue(languages.size() > 0);
+	}
+	
+	@Test
+	public void checkLanguagesStagingEcoHouse() {
+		String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de:9101/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		
+		List<String> languages = indexingServiceReader.getSupportedLanguages();
+		
+		System.out.println(languages);
+		assertTrue(languages.size() > 0);
 	}
 	
 	@Ignore
@@ -610,7 +632,7 @@ public class IndexingServiceTest {
 		indexingServiceReader.setUrlForPropertyInformationUBL(urlForPropertyInformationUBL );
 		System.out.println(indexingServiceReader.requestStandardPropertiesFromUBL());
 	}
-	@Ignore
+	
 	@Test
 	public void testrequestAllIndexFields(){
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -618,6 +640,34 @@ public class IndexingServiceTest {
 		System.out.println(indexingServiceReader.requestAllIndexFields());
 		
 	}
+	
+	
+	@Test
+	public void testgetDetectMeaningStaging() {
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+		System.out.println(r);
+		
+	}
+	
+	
+	@Test
+	public void testgetDetectMeaningEcoHouse() {
+		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
+		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+		System.out.println(r);
+		System.out.println("ddd");
+	}
+	
 	/**
 	 * http://nimble-staging.salzburgresearch.at/search/getPropertyValuesDiscretised?inputAsJson={%22concept%22:%22http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23Chair%22,%22property%22:%22http%3A%2F%2FUnknownSource%23price%22,%22amountOfGroups%22:3,%22language%22:%22ENGLISH%22}
 	 */

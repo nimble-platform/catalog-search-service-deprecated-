@@ -20,8 +20,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -106,6 +104,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	private String invokeHTTPMethod(String url) {
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
+		request.setHeader("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxYnNrM09PZkNzdWF0LXV1X0lqU2JxX2QwMmtZM2NteXJheUpXeE93MmlZIn0.eyJqdGkiOiIzMGVjMTNlMy1lNWMzLTQ0ZTktOTcwYi1mOTczNDM5YmUyYjQiLCJleHAiOjE1ODQzNDUxMjgsIm5iZiI6MCwiaWF0IjoxNTg0MzQxNTI4LCJpc3MiOiJodHRwOi8vbmltYmxlLXN0YWdpbmcuc2FsemJ1cmdyZXNlYXJjaC5hdDo4MDgwL2F1dGgvcmVhbG1zL21hc3RlciIsImF1ZCI6Im5pbWJsZV9jbGllbnQiLCJzdWIiOiJiZDEyZTg5Zi1jMjA5LTQ1OTYtYmM5Zi0xMmY4MzQwOWY3YjIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJuaW1ibGVfY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiZGM0ZjI0NGQtZjRlYS00ZWZjLTlmNGItNWNlZjJjMDMxYmRiIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJuaW1ibGVfdXNlciIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwibmFtZSI6IkZyYW5rZSBNYXJjbyIsInByZWZlcnJlZF91c2VybmFtZSI6Im1hcmNvZnJhbmtlODJAZ29vZ2xlbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiRnJhbmtlIiwiZmFtaWx5X25hbWUiOiJNYXJjbyIsImVtYWlsIjoibWFyY29mcmFua2U4MkBnb29nbGVtYWlsLmNvbSJ9.GdsP7wsjCLnyNFR6dWAEWtwPCysgvYG0YCKu8sRBAtWHeGkZYMQWcivB_vtGCO3Ts53fr-az_R-wrn0rkeSk4hXctTPRa6m3pd3QMxwRhxRAlDZOmxl-cJp2ZXdqZwPTyVtfVdExRycbqycdAlFc2Ig44oqL2rS3r1RMEomK9Vhm80kT22TIKprqcjyLIdoZ6eAIG6l2ini8qpoG_tw4KVkQdu_hMZS_lvkzdk6ahS5cpMOUas36OfZR_ijlpNdKama5LHF6Lhp9wSnu7j6A2ycQ6CltfKRGTbIZX9qJ87Gu845h3yoXp9QYGbvOGHGoZ2ztgXTteZxcjz3AfQZ9WA");
 		StringBuffer stringBuffer = new StringBuffer();
 		try {
 			HttpResponse response = client.execute(request);
@@ -466,7 +465,16 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			
 			// System.out.println(response);
 			Gson gson = new Gson();
-			SOLRResult result = gson.fromJson(response, SOLRResult.class);
+			SOLRResult result = null;
+			try{
+				result = gson.fromJson(response, SOLRResult.class);
+				
+			}
+			catch(Exception e){
+				 Logger.getAnonymousLogger().log(Level.SEVERE, "HTTPGET failed: " + url);
+				Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+				e.printStackTrace();
+			}
 			
 			if (result == null || result.getResult().size() == 0 ) {
 				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, true);
@@ -482,7 +490,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				
 				// System.out.println(response);
  gson = new Gson();
+ try{
 				 result = gson.fromJson(response, SOLRResult.class);
+ }
+ catch(Exception e){
+	 Logger.getAnonymousLogger().log(Level.SEVERE, "HTTPGET failed: " + url);
+	 Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+		e.printStackTrace();
+ }
 			}
 			
 			if (result != null && result.getResult().size() == 1 ) {
