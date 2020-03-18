@@ -1298,7 +1298,21 @@ public class SearchController {
 		}
 
 	}
+	
+	
+	@CrossOrigin
+	@RequestMapping(value = "/getIndexingServiceUri", method = RequestMethod.GET)
+	public HttpEntity<Object> getIndexingserviceuri() {
+		
+		Logger.getAnonymousLogger().log(Level.INFO, "Call service for seeing url of indexing service: "+indexingserviceuri);
+		
+		return new ResponseEntity<Object>(indexingserviceuri, HttpStatus.OK);
+		
+		//return indexingserviceuri;
+	}
 
+	
+	
 	@CrossOrigin
 	@RequestMapping(value = "/getSupportedLanguages", method = RequestMethod.GET)
 	public HttpEntity<Object> getSupportedLanguages() {
