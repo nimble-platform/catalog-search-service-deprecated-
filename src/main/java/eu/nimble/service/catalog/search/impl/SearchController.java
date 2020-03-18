@@ -67,6 +67,8 @@ import eu.nimble.service.catalog.search.services.SQPDerivationService;
 @Controller
 public class SearchController {
 
+	private static final String INDEX = "index";
+
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SearchController.class);
 
 	private static final String NULL_ASSIGNED_VALUE = "null";
@@ -84,7 +86,7 @@ public class SearchController {
 	@Value("${nimble.shared.property.indexingserviceuri:http://nimble-staging.salzburgresearch.at/index/}")
 	//@Value("${nimble.shared.property.indexingserviceuri:http://nimble-dev.ikap.biba.uni-bremen.de/index/}")
 	private String indexingserviceuri;
-
+	private String orginial;
 	@Value("${nimble.shared.property.useSOLRIndex:false}")
 	private boolean useSOLRIndex;
 
@@ -128,6 +130,18 @@ public class SearchController {
 		if (useIndexingService) {
 			//indexingserviceuri = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 			logger.info("Initializing with indexingServiceUri:" + indexingserviceuri);
+			orginial = indexingserviceuri;
+			if (!indexingserviceuri.endsWith(INDEX) && !indexingserviceuri.endsWith(INDEX+"/")) {
+				Logger.getAnonymousLogger().log(Level.SEVERE, "Extend url of indexing service with index");
+				String token = "/";
+				if (indexingserviceuri.endsWith(token)){
+					indexingserviceuri += INDEX;
+				}
+				else {
+					indexingserviceuri += token  + INDEX;
+				}
+			}
+			
 			indexingServiceReader = new IndexingServiceReader(indexingserviceuri);
 		} else {
 			logger.info("Initializing with marmottaUri: {}, languageLabel: {}, sqpConfigurationPath: {}", marmottaUri,
@@ -1306,7 +1320,7 @@ public class SearchController {
 		
 		Logger.getAnonymousLogger().log(Level.INFO, "Call service for seeing url of indexing service: "+indexingserviceuri);
 		
-		return new ResponseEntity<Object>(indexingserviceuri, HttpStatus.OK);
+		return new ResponseEntity<Object>("orginial: " + orginial + "; New one: " +indexingserviceuri, HttpStatus.OK);
 		
 		//return indexingserviceuri;
 	}
