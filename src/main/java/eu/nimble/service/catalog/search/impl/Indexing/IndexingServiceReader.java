@@ -104,6 +104,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	private String invokeHTTPMethod(String url) {
+		Logger.getAnonymousLogger().log(Level.INFO, "Try out: " + url);
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
 		request.setHeader("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxYnNrM09PZkNzdWF0LXV1X0lqU2JxX2QwMmtZM2NteXJheUpXeE93MmlZIn0.eyJqdGkiOiIzMGVjMTNlMy1lNWMzLTQ0ZTktOTcwYi1mOTczNDM5YmUyYjQiLCJleHAiOjE1ODQzNDUxMjgsIm5iZiI6MCwiaWF0IjoxNTg0MzQxNTI4LCJpc3MiOiJodHRwOi8vbmltYmxlLXN0YWdpbmcuc2FsemJ1cmdyZXNlYXJjaC5hdDo4MDgwL2F1dGgvcmVhbG1zL21hc3RlciIsImF1ZCI6Im5pbWJsZV9jbGllbnQiLCJzdWIiOiJiZDEyZTg5Zi1jMjA5LTQ1OTYtYmM5Zi0xMmY4MzQwOWY3YjIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJuaW1ibGVfY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiZGM0ZjI0NGQtZjRlYS00ZWZjLTlmNGItNWNlZjJjMDMxYmRiIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJuaW1ibGVfdXNlciIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwibmFtZSI6IkZyYW5rZSBNYXJjbyIsInByZWZlcnJlZF91c2VybmFtZSI6Im1hcmNvZnJhbmtlODJAZ29vZ2xlbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiRnJhbmtlIiwiZmFtaWx5X25hbWUiOiJNYXJjbyIsImVtYWlsIjoibWFyY29mcmFua2U4MkBnb29nbGVtYWlsLmNvbSJ9.GdsP7wsjCLnyNFR6dWAEWtwPCysgvYG0YCKu8sRBAtWHeGkZYMQWcivB_vtGCO3Ts53fr-az_R-wrn0rkeSk4hXctTPRa6m3pd3QMxwRhxRAlDZOmxl-cJp2ZXdqZwPTyVtfVdExRycbqycdAlFc2Ig44oqL2rS3r1RMEomK9Vhm80kT22TIKprqcjyLIdoZ6eAIG6l2ini8qpoG_tw4KVkQdu_hMZS_lvkzdk6ahS5cpMOUas36OfZR_ijlpNdKama5LHF6Lhp9wSnu7j6A2ycQ6CltfKRGTbIZX9qJ87Gu845h3yoXp9QYGbvOGHGoZ2ztgXTteZxcjz3AfQZ9WA");
@@ -119,15 +120,17 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				stringBuffer.append(line);
 			}
 			rd.close();
-
+			Logger.getAnonymousLogger().log(Level.INFO, "Success: " + url);
 			return stringBuffer.toString();
 
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			Logger.getAnonymousLogger().log(Level.SEVERE, "Error: " + url);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			Logger.getAnonymousLogger().log(Level.SEVERE, "Error: " + url);
 		}
 		return null;
 	}

@@ -131,16 +131,16 @@ public class SearchController {
 			//indexingserviceuri = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 			logger.info("Initializing with indexingServiceUri:" + indexingserviceuri);
 			orginial = indexingserviceuri;
-			if (!indexingserviceuri.endsWith(INDEX) && !indexingserviceuri.endsWith(INDEX+"/")) {
-				Logger.getAnonymousLogger().log(Level.SEVERE, "Extend url of indexing service with index");
-				String token = "/";
-				if (indexingserviceuri.endsWith(token)){
-					indexingserviceuri += INDEX;
-				}
-				else {
-					indexingserviceuri += token  + INDEX;
-				}
-			}
+//			if (!indexingserviceuri.endsWith(INDEX) && !indexingserviceuri.endsWith(INDEX+"/")) {
+//				Logger.getAnonymousLogger().log(Level.SEVERE, "Extend url of indexing service with index");
+//				String token = "/";
+//				if (indexingserviceuri.endsWith(token)){
+//					indexingserviceuri += INDEX;
+//				}
+//				else {
+//					indexingserviceuri += token  + INDEX;
+//				}
+//			}
 			
 			indexingServiceReader = new IndexingServiceReader(indexingserviceuri);
 		} else {
