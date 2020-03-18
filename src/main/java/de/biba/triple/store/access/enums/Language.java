@@ -23,7 +23,7 @@ public enum Language {
 			return Language.SAMI;
 		}
 
-		return UNKNOWN;
+		return ENGLISH;
 
 	}
 
@@ -40,6 +40,6 @@ public enum Language {
 		case SAMI:
 		return "@se";
 		}
-		return null;
+		return "@en";
 	}
 }

@@ -34,6 +34,7 @@ public class DefaultPropertyFactory extends IndexingServiceConstant{
 		Map<String, String> labelMap = new HashMap<String, String>();
 		labelMap.put("en", "Price");
 		labelMap.put("es", "Precios");
+		labelMap.put("sv", "Pris");
 		r.setLabel(labelMap);
 		
 		r.setRange(HTTP_WWW_W3_ORG_2001_XML_SCHEMA+ "float");
@@ -50,6 +51,7 @@ public class DefaultPropertyFactory extends IndexingServiceConstant{
 		Map<String, String> labelMap = new HashMap<String, String>();
 		labelMap.put("en", "Description");
 		labelMap.put("es", "Descripción");
+		labelMap.put("sv", "beskrivning");
 		r.setLabel(labelMap);
 		r.setRange(HTTP_WWW_W3_ORG_2001_XML_SCHEMA+ "string");
 		return r;
@@ -65,6 +67,7 @@ public class DefaultPropertyFactory extends IndexingServiceConstant{
 		Map<String, String> labelMap = new HashMap<String, String>();
 		labelMap.put("en", "Name");
 		labelMap.put("es", "Nombre");
+		labelMap.put("sv", "Namn");
 		r.setRange(HTTP_WWW_W3_ORG_2001_XML_SCHEMA+ "string");
 		r.setLabel(labelMap);
 		return r;
@@ -80,6 +83,7 @@ public class DefaultPropertyFactory extends IndexingServiceConstant{
 		Map<String, String> labelMap = new HashMap<String, String>();
 		labelMap.put("en", "CatalogueId");
 		labelMap.put("es", "ID de catálogo");
+		labelMap.put("sv", "Katalog ID");
 		r.setRange(HTTP_WWW_W3_ORG_2001_XML_SCHEMA+ "string");
 		r.setLabel(labelMap);
 		return r;

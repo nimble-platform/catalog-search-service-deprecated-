@@ -660,7 +660,8 @@ public class IndexingServiceTest {
 	@Ignore
 	@Test
 	public void testgetDetectMeaningEcoHouse() {
-		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
+		//String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de:9101/";
+		String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
 		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
@@ -673,6 +674,10 @@ public class IndexingServiceTest {
 	
 	/**
 	 * http://nimble-staging.salzburgresearch.at/search/getPropertyValuesDiscretised?inputAsJson={%22concept%22:%22http%3A%2F%2Fwww.aidimme.es%2FFurnitureSectorOntology.owl%23Chair%22,%22property%22:%22http%3A%2F%2FUnknownSource%23price%22,%22amountOfGroups%22:3,%22language%22:%22ENGLISH%22}
+	 */
+	
+	/**
+	 * http://www.aidimme.es/FurnitureSectorOntology.owl#Piano
 	 */
 	
 }

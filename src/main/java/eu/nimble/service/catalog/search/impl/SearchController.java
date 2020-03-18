@@ -80,7 +80,9 @@ public class SearchController {
 	@Value("${nimble.shared.property.marmottauri:null}")
 	private String marmottaUri;
 
+	//http://nimble-dev.ikap.biba.uni-bremen.de:9101/
 	@Value("${nimble.shared.property.indexingserviceuri:http://nimble-staging.salzburgresearch.at/index/}")
+	//@Value("${nimble.shared.property.indexingserviceuri:http://nimble-dev.ikap.biba.uni-bremen.de/index/}")
 	private String indexingserviceuri;
 
 	@Value("${nimble.shared.property.useSOLRIndex:false}")
@@ -124,6 +126,7 @@ public class SearchController {
 	public void init() {
 		logger.info("Shall indexing service be used: " + useIndexingService);
 		if (useIndexingService) {
+			//indexingserviceuri = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 			logger.info("Initializing with indexingServiceUri:" + indexingserviceuri);
 			indexingServiceReader = new IndexingServiceReader(indexingserviceuri);
 		} else {
