@@ -385,7 +385,7 @@ public class SearchController {
 		try {
 			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: detectMeaningLanguageSpecific: " + inputAsJson);
 			Gson gson = new Gson();
-			inputAsJson = replaceLanguageStringToOldNamingInJSON(inputAsJson);
+			inputAsJson = Language.replaceLanguageStringToOldNamingInJSON(inputAsJson);
 			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = gson
 					.fromJson(inputAsJson, InputParameterdetectMeaningLanguageSpecific.class);
 
@@ -457,19 +457,9 @@ public class SearchController {
 
 	}
 
-	private String replaceLanguageStringToOldNamingInJSON(String inputAsJson) {
-		inputAsJson = inputAsJson.replace("\"ENGLISH\"", "\"en\"");
-		inputAsJson = inputAsJson.replace("\"SPANISH\"", "\"es\"");
-		inputAsJson = inputAsJson.replace("\"GERMAN\"", "\"de\"");
-		return inputAsJson;
-	}
+	
 
-	private String replaceLanguageStringToOldNamingAsAttribute(String inputAsJson) {
-		inputAsJson = inputAsJson.replace("ENGLISH", "en");
-		inputAsJson = inputAsJson.replace("SPANISH", "es");
-		inputAsJson = inputAsJson.replace("GERMAN", "de");
-		return inputAsJson;
-	}
+	
 	
 	/**
 	 * Returns from a given concept (must be the unique url) the data properties
@@ -576,7 +566,7 @@ public class SearchController {
 	private void correctReceivedLanguageTerm(InputParamterForGetLogicalView paramterForGetLogicalView) {
 		
 		String language =  paramterForGetLogicalView.getLanguage();
-		language = replaceLanguageStringToOldNamingAsAttribute(language);
+		language = Language.replaceLanguageStringToOldNamingAsAttribute(language);
 		paramterForGetLogicalView.setLanguage(language);
 	}
 

@@ -57,7 +57,7 @@ public class IndexingServiceTest {
 		
 		System.out.println(result);
 	}
-	
+	@Ignore
 	@Test
 	public void checkLanguagesStaging() {
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
@@ -69,10 +69,10 @@ public class IndexingServiceTest {
 		assertTrue(languages.size() > 0);
 	}
 	
-	
+	@Ignore
 	@Test
 	public void checkLanguagesStagingEcoHouse() {
-		String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de:9101/";
+		String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
 		List<String> languages = indexingServiceReader.getSupportedLanguages();
@@ -660,7 +660,7 @@ public class IndexingServiceTest {
 	@Ignore
 	@Test
 	public void testgetDetectMeaningEcoHouse() {
-		//String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de:9101/";
+		//String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de:9101/index/";
 		String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();

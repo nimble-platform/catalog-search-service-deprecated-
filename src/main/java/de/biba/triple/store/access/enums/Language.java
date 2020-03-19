@@ -27,6 +27,23 @@ public enum Language {
 
 	}
 
+	public static String replaceLanguageStringToOldNamingAsAttribute(String inputAsJson) {
+		inputAsJson = inputAsJson.replace("ENGLISH", "en");
+		inputAsJson = inputAsJson.replace("SPANISH", "es");
+		inputAsJson = inputAsJson.replace("GERMAN", "de");
+		inputAsJson = inputAsJson.replace("SWEDISH", "sv");
+		return inputAsJson;
+	}
+	
+	
+	public static String replaceLanguageStringToOldNamingInJSON(String inputAsJson) {
+		inputAsJson = inputAsJson.replace("\"ENGLISH\"", "\"en\"");
+		inputAsJson = inputAsJson.replace("\"SPANISH\"", "\"es\"");
+		inputAsJson = inputAsJson.replace("\"GERMAN\"", "\"de\"");
+		inputAsJson = inputAsJson.replace("\"SWEDISH\"", "\"sv\"");
+		return inputAsJson;
+	}
+	
 	public static String toOntologyPostfix(Language language) {
 		switch (language) {
 		case GERMAN:
