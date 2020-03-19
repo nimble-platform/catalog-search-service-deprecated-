@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>de.biba.mediator</groupId>
+  <artifactId>de.biba.reasoning.mediator</artifactId>
+  <versioning>
+    <versions>
+      <version>0.0.4-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20170705151324</lastUpdated>
+  </versioning>
+</metadata>
