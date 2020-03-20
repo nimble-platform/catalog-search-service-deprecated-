@@ -299,7 +299,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				entity.setConceptSource(ConceptSource.ONTOLOGICAL);
 				entity.setLanguage(inputParameterdetectMeaningLanguageSpecific.getLanguage());
 				entity.setUrl(concept.getUri());
-				entity.setTranslatedURL(concept.getLabel().get(prefixLanguage));
+				if (concept.getLabel().get(prefixLanguage)!= null) {
+					entity.setTranslatedURL(concept.getLabel().get(prefixLanguage));
+					entity.setTranslationLabelWasAvailable(true);
+				}
+				else {
+					entity.setTranslatedURL(concept.getLabel().get(Language.getDefaultLanguageID()));
+					entity.setTranslationLabelWasAvailable(false);
+				}
 				entity.setHidden(false);
 				result.add(entity);
 

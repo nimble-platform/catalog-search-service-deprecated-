@@ -36,7 +36,7 @@ import eu.nimble.service.catalog.search.impl.dao.Group;
 import eu.nimble.service.catalog.search.impl.dao.HybridConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
 import eu.nimble.service.catalog.search.impl.dao.PartType;
-import eu.nimble.service.catalog.search.impl.dao.SerachConfig;
+import eu.nimble.service.catalog.search.impl.dao.SearchConfig;
 import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
 import eu.nimble.service.catalog.search.impl.dao.enums.TypeOfDataSource;
 import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
@@ -76,11 +76,11 @@ public class SearchController {
 	@Value("${nimble.shared.property.config.d:C:/Resources/NIMBLE/config.xml}")
 	private String generalConfigurationPath;
 
-	@Value("${nimble.shared.property.ontologyfile:null}")
-	private String ontologyFile;
+//	@Value("${nimble.shared.property.ontologyfile:null}")
+//	private String ontologyFile;
 
-	@Value("${nimble.shared.property.marmottauri:null}")
-	private String marmottaUri;
+//	@Value("${nimble.shared.property.marmottauri:null}")
+//	private String marmottaUri;
 
 	//http://nimble-dev.ikap.biba.uni-bremen.de:9101/
 	@Value("${nimble.shared.property.indexingserviceuri:http://nimble-staging.salzburgresearch.at/index/}")
@@ -131,86 +131,77 @@ public class SearchController {
 			//indexingserviceuri = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 			logger.info("Initializing with indexingServiceUri:" + indexingserviceuri);
 			orginial = indexingserviceuri;
-//			if (!indexingserviceuri.endsWith(INDEX) && !indexingserviceuri.endsWith(INDEX+"/")) {
-//				Logger.getAnonymousLogger().log(Level.SEVERE, "Extend url of indexing service with index");
-//				String token = "/";
-//				if (indexingserviceuri.endsWith(token)){
-//					indexingserviceuri += INDEX;
-//				}
-//				else {
-//					indexingserviceuri += token  + INDEX;
-//				}
-//			}
+
 			
 			indexingServiceReader = new IndexingServiceReader(indexingserviceuri);
 		} else {
-			logger.info("Initializing with marmottaUri: {}, languageLabel: {}, sqpConfigurationPath: {}", marmottaUri,
-					languageLabel, sqpConfigurationPath);
-
-			if ((ontologyFile == null || ontologyFile.equals(NULL_ASSIGNED_VALUE))
-					&& (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
-				//sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
-				if (useSOLRIndex) {
-
-					if (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE)) {
-						this.solrReader = new SOLRReader();
-					} else {
-						String prefix = "";
-						char lastCharacter = marmottaUri.charAt(marmottaUri.length() - 1);
-						if (lastCharacter != '/') {
-							prefix = "/";
-						}
-
-						String url = marmottaUri + prefix + "solr/" + "catalogue2";
-						String urlForIntensionalQueriesProperties = marmottaUri + prefix + "solr/" + "properties";
-						String urlForIntensionalQueriesConcepts = marmottaUri + prefix + "solr/" + "catalogue2";
-						this.solrReader = new SOLRReader(url, urlForIntensionalQueriesProperties,
-								urlForIntensionalQueriesConcepts);
-					}
-
-				}
-			} else {
-
-				if (!ontologyFile.equals(NULL_ASSIGNED_VALUE)) {
-
-					File f = new File(ontologyFile);
-					if (f.exists()) {
-						Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
-						//sparqlDerivation = new MediatorSPARQLDerivationAndExecution(ontologyFile);
-					} else {
-						Logger.getAnonymousLogger().log(Level.WARNING,
-								" CANNOT load defined ontology file: " + ontologyFile);
-//						Logger.getAnonymousLogger().log(Level.INFO,
-//								"Load STANDARD ontology file: " + MediatorSPARQLDerivationAndExecution.FURNITURE2_OWL);
-//						sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
-					}
-				} else {
-					//sparqlDerivation = new MediatorSPARQLDerivationAndExecution(marmottaUri, true,
-					//		sQPDerivationService);
-				}
-			}
+//			logger.info("Initializing with marmottaUri: {}, languageLabel: {}, sqpConfigurationPath: {}", marmottaUri,
+//					languageLabel, sqpConfigurationPath);
+//
+//			if ((ontologyFile == null || ontologyFile.equals(NULL_ASSIGNED_VALUE))
+//					&& (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE))) {
+//				//sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
+//				if (useSOLRIndex) {
+//
+//					if (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE)) {
+//						this.solrReader = new SOLRReader();
+//					} else {
+//						String prefix = "";
+//						char lastCharacter = marmottaUri.charAt(marmottaUri.length() - 1);
+//						if (lastCharacter != '/') {
+//							prefix = "/";
+//						}
+//
+//						String url = marmottaUri + prefix + "solr/" + "catalogue2";
+//						String urlForIntensionalQueriesProperties = marmottaUri + prefix + "solr/" + "properties";
+//						String urlForIntensionalQueriesConcepts = marmottaUri + prefix + "solr/" + "catalogue2";
+//						this.solrReader = new SOLRReader(url, urlForIntensionalQueriesProperties,
+//								urlForIntensionalQueriesConcepts);
+//					}
+//
+//				}
+//			} else {
+//
+//				if (!ontologyFile.equals(NULL_ASSIGNED_VALUE)) {
+//
+//					File f = new File(ontologyFile);
+//					if (f.exists()) {
+//						Logger.getAnonymousLogger().log(Level.INFO, "Load defined ontology file: " + ontologyFile);
+//						//sparqlDerivation = new MediatorSPARQLDerivationAndExecution(ontologyFile);
+//					} else {
+//						Logger.getAnonymousLogger().log(Level.WARNING,
+//								" CANNOT load defined ontology file: " + ontologyFile);
+////						Logger.getAnonymousLogger().log(Level.INFO,
+////								"Load STANDARD ontology file: " + MediatorSPARQLDerivationAndExecution.FURNITURE2_OWL);
+////						sparqlDerivation = new MediatorSPARQLDerivationAndExecution();
+//					}
+//				} else {
+//					//sparqlDerivation = new MediatorSPARQLDerivationAndExecution(marmottaUri, true,
+//					//		sQPDerivationService);
+//				}
+//			}
 			//sparqlDerivation.setLanguagelabel(languageLabel);
 			//sQPDerivationService = new SQPDerivationService(sparqlDerivation, sqpConfigurationPath);
 			//sparqlDerivation.updatesqpDerivationService(sQPDerivationService);
 
-			if (useSOLRIndex && this.solrReader == null) {
-
-				if (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE)) {
-					this.solrReader = new SOLRReader();
-				} else {
-					String prefix = "";
-					char lastCharacter = marmottaUri.charAt(marmottaUri.length() - 1);
-					if (lastCharacter != '/') {
-						prefix = "/";
-					}
-
-					String url = marmottaUri + prefix + "solr/" + "catalogue2";
-					String urlForIntensionalQueriesProperties = marmottaUri + prefix + "solr/" + "properties";
-					String urlForIntensionalQueriesConcepts = marmottaUri + prefix + "solr/" + "catalogue2";
-					this.solrReader = new SOLRReader(url, urlForIntensionalQueriesProperties,
-							urlForIntensionalQueriesConcepts);
-				}
-			}
+//			if (useSOLRIndex && this.solrReader == null) {
+//
+//				if (marmottaUri == null || marmottaUri.equals(NULL_ASSIGNED_VALUE)) {
+//					this.solrReader = new SOLRReader();
+//				} else {
+//					String prefix = "";
+//					char lastCharacter = marmottaUri.charAt(marmottaUri.length() - 1);
+//					if (lastCharacter != '/') {
+//						prefix = "/";
+//					}
+//
+//					String url = marmottaUri + prefix + "solr/" + "catalogue2";
+//					String urlForIntensionalQueriesProperties = marmottaUri + prefix + "solr/" + "properties";
+//					String urlForIntensionalQueriesConcepts = marmottaUri + prefix + "solr/" + "catalogue2";
+//					this.solrReader = new SOLRReader(url, urlForIntensionalQueriesProperties,
+//							urlForIntensionalQueriesConcepts);
+//				}
+//			}
 
 			hConfiguration = createConfigurationBasedOnEnvVariable(hybridConfiguration);
 		}
@@ -295,13 +286,13 @@ public class SearchController {
 		this.sqpConfigurationPath = sqpConfigurationPath;
 	}
 
-	public String getOntologyFile() {
-		return ontologyFile;
-	}
-
-	public void setOntologyFile(String ontologyFile) {
-		this.ontologyFile = ontologyFile;
-	}
+//	public String getOntologyFile() {
+//		return ontologyFile;
+//	}
+//
+//	public void setOntologyFile(String ontologyFile) {
+//		this.ontologyFile = ontologyFile;
+//	}
 
 //	@RequestMapping(value = "/query", method = RequestMethod.GET)
 //	HttpEntity<Object> query(@RequestParam("query") String query) {
@@ -323,12 +314,12 @@ public class SearchController {
 	HttpEntity<Object> query() {
 		
 		{
-			SerachConfig config = new SerachConfig();
+			SearchConfig config = new SearchConfig();
 			config.setIndexingActive(useIndexingService);
 			config.setUrlOfIOndexingService(indexingserviceuri);
 			config.setUseSOLRIndex(useSOLRIndex);
 			config.setHybridConfiguration(hybridConfiguration);
-			config.setMarmottaUri(marmottaUri);
+			//config.setMarmottaUri(marmottaUri);
 			Gson gson = new Gson();
 			String result = gson.toJson(config);
 			
@@ -1369,17 +1360,17 @@ public class SearchController {
 	 * 
 	 * @return true if Marmotta is set as main data source of the search
 	 */
-	public boolean needANimbleSpecificAdapation() {
-		return (marmottaUri != null && marmottaUri.contains("http")) ? true : false;
-	}
-
-	public String getMarmottaUri() {
-		return marmottaUri;
-	}
-
-	public void setMarmottaUri(String marmottaUri) {
-		this.marmottaUri = marmottaUri;
-	}
+//	public boolean needANimbleSpecificAdapation() {
+//		return (marmottaUri != null && marmottaUri.contains("http")) ? true : false;
+//	}
+//
+//	public String getMarmottaUri() {
+//		return marmottaUri;
+//	}
+//
+//	public void setMarmottaUri(String marmottaUri) {
+//		this.marmottaUri = marmottaUri;
+//	}
 
 	public String getLanguageLabel() {
 		return languageLabel;

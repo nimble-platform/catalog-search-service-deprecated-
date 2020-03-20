@@ -7,6 +7,7 @@ public class Entity {
 
 	private String url;
 	private String translatedURL;
+	private boolean translationLabelWasAvailable;
 	private Language language;
 	private ConceptSource conceptSource = ConceptSource.ONTOLOGICAL;
 	// Flag to indict if the entity should be hidden in the local ontological view
@@ -42,10 +43,20 @@ public class Entity {
 	public void setHidden(boolean isHidden) {
 		this.isHidden = isHidden;
 	}
+	
+	
+	public boolean isTranslationLabelWasAvailable() {
+		return translationLabelWasAvailable;
+	}
+	public void setTranslationLabelWasAvailable(boolean translationLabelWasAvailable) {
+		this.translationLabelWasAvailable = translationLabelWasAvailable;
+	}
+	
 	@Override
 	public String toString() {
-		return "Entity [url=" + url + ", translatedURL=" + translatedURL + ", language=" + language + ", conceptSource="
-				+ conceptSource + ", isHidden=" + isHidden + "]";
+		return "Entity [url=" + url + ", translatedURL=" + translatedURL + ", translationLabelWasAvailable="
+				+ translationLabelWasAvailable + ", language=" + language + ", conceptSource=" + conceptSource
+				+ ", isHidden=" + isHidden + "]";
 	}
 
 	

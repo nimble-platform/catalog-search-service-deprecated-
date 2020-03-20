@@ -18,7 +18,7 @@ public enum Language {
 		if (lanuage.equals("sv")) {
 			return Language.SWEDISH;
 		}
-		
+
 		if (lanuage.equals("se")) {
 			return Language.SAMI;
 		}
@@ -34,8 +34,7 @@ public enum Language {
 		inputAsJson = inputAsJson.replace("SWEDISH", "sv");
 		return inputAsJson;
 	}
-	
-	
+
 	public static String replaceLanguageStringToOldNamingInJSON(String inputAsJson) {
 		inputAsJson = inputAsJson.replace("\"ENGLISH\"", "\"en\"");
 		inputAsJson = inputAsJson.replace("\"SPANISH\"", "\"es\"");
@@ -43,7 +42,17 @@ public enum Language {
 		inputAsJson = inputAsJson.replace("\"SWEDISH\"", "\"sv\"");
 		return inputAsJson;
 	}
-	
+
+	/**
+	 * if no translation label is available in a specific language, the english
+	 * translation label should be used
+	 * 
+	 * @return the language id of english
+	 */
+	public static String getDefaultLanguageID() {
+		return "en";
+	}
+
 	public static String toOntologyPostfix(Language language) {
 		switch (language) {
 		case GERMAN:
@@ -55,7 +64,7 @@ public enum Language {
 		case SWEDISH:
 			return "@sv";
 		case SAMI:
-		return "@se";
+			return "@se";
 		}
 		return "@en";
 	}

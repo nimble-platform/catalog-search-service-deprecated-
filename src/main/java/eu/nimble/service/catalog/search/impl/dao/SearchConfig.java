@@ -1,6 +1,6 @@
 package eu.nimble.service.catalog.search.impl.dao;
 
-public class SerachConfig {
+public class SearchConfig {
 
 	private boolean IndexingActive = false;
 	private String urlOfIOndexingService = "";
