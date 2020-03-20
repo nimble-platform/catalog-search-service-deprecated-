@@ -41,7 +41,7 @@ public class IndexingServiceTest {
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
-		List<String> r = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+		List<String> r = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas,null);
 		System.out.println(r.get(0));
 
 	}
@@ -53,7 +53,7 @@ public class IndexingServiceTest {
 		String urlForClas = "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
-		boolean result = indexingServiceReader.checkWhetherPropertyIsRelevant(null, urlForClas);
+		boolean result = indexingServiceReader.checkWhetherPropertyIsRelevant(null, urlForClas,null);
 		
 		System.out.println(result);
 	}
@@ -63,7 +63,7 @@ public class IndexingServiceTest {
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
-		List<String> languages = indexingServiceReader.getSupportedLanguages();
+		List<String> languages = indexingServiceReader.getSupportedLanguages(null);
 		
 		System.out.println(languages);
 		assertTrue(languages.size() > 0);
@@ -75,7 +75,7 @@ public class IndexingServiceTest {
 		String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
-		List<String> languages = indexingServiceReader.getSupportedLanguages();
+		List<String> languages = indexingServiceReader.getSupportedLanguages(null);
 		
 		System.out.println(languages);
 		assertTrue(languages.size() > 0);
@@ -91,8 +91,8 @@ public class IndexingServiceTest {
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
 		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
 		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
-		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null );
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas,null);
 		InputParamterForGetLogicalView input = new InputParamterForGetLogicalView();
 		input.setConcept(urlForClas);
 		input.setLanguage("en");
@@ -102,10 +102,10 @@ public class IndexingServiceTest {
 		
 		
 		
-		String r = indexingServiceReader.getLogicalView(input);
+		String r = indexingServiceReader.getLogicalView(input,null);
 		System.out.println(r);
 		System.out.println(r);
-		String r2 = indexingServiceReader.getLogicalView(input);
+		String r2 = indexingServiceReader.getLogicalView(input,null);
 		
 		assertEquals(r, r2);
 
@@ -147,9 +147,9 @@ public class IndexingServiceTest {
 //		executeSelect.getFilters().add(filter3);
 		
 		//precondition getProperties to laod the proeprtyCache
-				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
-				List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(urlForClas, "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
-		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
+				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas,null);
+				List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(urlForClas, "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour",null);
+		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect,null));
 	}
 	
 	
@@ -188,9 +188,9 @@ public class IndexingServiceTest {
 //		executeSelect.getFilters().add(filter3);
 		
 		//precondition getProperties to laod the proeprtyCache
-				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
-				List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(urlForClas, "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
-		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
+				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas, null);
+				List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(urlForClas, "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour",null);
+		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect,null));
 	}
 	
 	@Ignore
@@ -231,13 +231,13 @@ public class IndexingServiceTest {
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
 		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
 		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
-		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null );
 		
-				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas,null);
 				//List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(urlForClas, "http://www.aidimme.es/FurnitureSectorOntology.owl#hasColour");
 		
-				System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
-				System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
+				System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect,null));
+				System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect,null));
 	}
 	
 	@Ignore
@@ -253,9 +253,9 @@ public class IndexingServiceTest {
 		
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
-		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null );
 		
-		boolean properties = indexingServiceReader.checkWhetherPropertyIsRelevant(property, urlForClas);
+		boolean properties = indexingServiceReader.checkWhetherPropertyIsRelevant(property, urlForClas,null);
 		assertTrue(properties);
 		
 		
@@ -273,10 +273,10 @@ public class IndexingServiceTest {
 		
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
-		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null );
 		System.out.println(lala);
 		
-		OutputForPropertiesFromConcept r = indexingServiceReader.getAllTransitiveProperties(urlForClas, Language.ENGLISH);
+		OutputForPropertiesFromConcept r = indexingServiceReader.getAllTransitiveProperties(urlForClas, Language.ENGLISH,null);
 		System.out.println(r.getOutputForPropertiesFromConcept());
 	}
 	@Ignore
@@ -292,10 +292,10 @@ public class IndexingServiceTest {
 		
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
-		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		List<de.biba.triple.store.access.dmo.Entity> lala = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null );
 		System.out.println(lala);
 		
-		OutputForPropertiesFromConcept r = indexingServiceReader.getAllTransitiveProperties(urlForClas, Language.ENGLISH);
+		OutputForPropertiesFromConcept r = indexingServiceReader.getAllTransitiveProperties(urlForClas, Language.ENGLISH,null);
 		System.out.println(r.getOutputForPropertiesFromConcept());
 	}
 	@Ignore
@@ -336,11 +336,11 @@ public class IndexingServiceTest {
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
 		inputParameterdetectMeaningLanguageSpecific.setKeyword("board");
 		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
-		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null );
 		
-				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+				List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas,null);
 		
-		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect));
+		System.out.println(indexingServiceReader.createSPARQLAndExecuteIT(executeSelect,null));
 	}
 	
 	
@@ -358,9 +358,9 @@ public class IndexingServiceTest {
 		executeSelect.setConcept(urlForClas);
 		
 		//precondition getProperties to laod the proeprtyCache
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas,null);
 		
-		eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect r = indexingServiceReader.createSPARQLAndExecuteIT(executeSelect);
+		eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect r = indexingServiceReader.createSPARQLAndExecuteIT(executeSelect,null);
 		System.out.println(r);
 	}
 	
@@ -378,9 +378,9 @@ public class IndexingServiceTest {
 		executeSelect.setConcept(urlForClas);
 		
 		//precondition getProperties to laod the proeprtyCache
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(urlForClas,null);
 		
-		eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect r = indexingServiceReader.createSPARQLAndExecuteIT(executeSelect);
+		eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect r = indexingServiceReader.createSPARQLAndExecuteIT(executeSelect,null);
 		System.out.println(r);
 	}
 	
@@ -401,7 +401,7 @@ public class IndexingServiceTest {
 		inputParameterdetectMeaningLanguageSpecific.setKeyword(serach);
 
 		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader
-				.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+				.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null);
 		assertTrue(r.size() > 0);
 		System.out.println(r.get(0));
 
@@ -420,7 +420,7 @@ public class IndexingServiceTest {
 		inputParameterdetectMeaningLanguageSpecific.setKeyword(serach);
 
 		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader
-				.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+				.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null);
 		assertTrue(r.size() > 0);
 		System.out.println(r);
 
@@ -441,7 +441,7 @@ public class IndexingServiceTest {
 		inputParameterdetectMeaningLanguageSpecific.setKeyword(serach);
 
 		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader
-				.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+				.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific,null);
 		assertTrue(r.size() > 0);
 		System.out.println(r);
 		System.out.println(r);
@@ -462,9 +462,9 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
 		//precondition getProperties to laod the proeprtyCache
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept,null);
 		
-		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property,null);
 		System.out.println(test);
 		assertTrue(test.size() == 0);
 	}
@@ -479,9 +479,9 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
 		//precondition getProperties to laod the proeprtyCache
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept,null);
 		
-		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property, null);
 		System.out.println(test);
 		assertTrue(test.size() > 0);
 	}
@@ -500,10 +500,10 @@ public class IndexingServiceTest {
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
 		inputParameterdetectMeaningLanguageSpecific.setKeyword("chair");
 		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
-		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific, null );
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept, null);
 		
-		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property, null);
 		System.out.println(test);
 		assertTrue(test.size() > 0);
 	}
@@ -522,10 +522,10 @@ public class IndexingServiceTest {
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
 		inputParameterdetectMeaningLanguageSpecific.setKeyword("board");
 		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
-		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific );
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific, null );
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept, null);
 		
-		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property, null);
 		System.out.println(test);
 		assertTrue(test.size() > 0);
 	}
@@ -541,9 +541,9 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
 		//precondition getProperties to laod the proeprtyCache
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept, null);
 		
-		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property, null);
 		System.out.println(test);
 		assertTrue(test.size() > 0);
 	}
@@ -559,9 +559,9 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		
 		//precondition getProperties to laod the proeprtyCache
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept, null);
 		
-		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property);
+		List<String> test = indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property, null);
 		System.out.println(test);
 		assertTrue(test.size() > 0);
 	}
@@ -582,10 +582,10 @@ public class IndexingServiceTest {
 //		String gg= "http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=certificateType:%5B*%20TO%20*%5D&facet.field=certificateType";
 //		System.out.println(URLDecoder.decode(gg));
 		
-		OutputForExecuteSelect r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect);
+		OutputForExecuteSelect r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect, null);
 		System.out.println(r);
 		System.out.println("##########################");
-		r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect);
+		r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect, null);
 		System.out.println(r);
 	}
 	
@@ -601,9 +601,9 @@ public class IndexingServiceTest {
 		inputParamaterForExecuteOptionalSelect.setLanguage("en");
 		inputParamaterForExecuteOptionalSelect.setUuid(uuid);
 		
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept, null);
 		System.out.println("##########################");
-		OutputForExecuteSelect  r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect);
+		OutputForExecuteSelect  r = indexingServiceReader.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteOptionalSelect, null);
 		System.out.println(r);
 		System.out.println(r);
 	}
@@ -615,8 +615,8 @@ public class IndexingServiceTest {
 		String property = "http://www.aidimme.es/FurnitureSectorOntology.owl#hasEAN";
 		String urlIndexingService = "http://nimble-staging.salzburgresearch.at/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
-		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept);
-		System.out.println(indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property));
+		List<String> properties = indexingServiceReader.getAllPropertiesIncludingEverything(cocnept, null);
+		System.out.println(indexingServiceReader.getAllDifferentValuesForAProperty(cocnept, property, null));
 		
 	}
 	@Ignore
@@ -633,7 +633,7 @@ public class IndexingServiceTest {
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		String urlForPropertyInformationUBL = "https://nimble-platform.salzburgresearch.at/nimble/indexing-service/";
 		indexingServiceReader.setUrlForPropertyInformationUBL(urlForPropertyInformationUBL );
-		System.out.println(indexingServiceReader.requestStandardPropertiesFromUBL());
+		System.out.println(indexingServiceReader.requestStandardPropertiesFromUBL(null));
 	}
 	@Ignore
 	@Test
@@ -652,7 +652,7 @@ public class IndexingServiceTest {
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
 		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
 		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
-		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific, null);
 		System.out.println(r);
 		
 	}
@@ -664,10 +664,10 @@ public class IndexingServiceTest {
 		String urlIndexingService = "http://nimble-dev.ikap.biba.uni-bremen.de/index/";
 		IndexingServiceReader indexingServiceReader = new IndexingServiceReader(urlIndexingService);
 		InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific = new InputParameterdetectMeaningLanguageSpecific();
-		inputParameterdetectMeaningLanguageSpecific.setKeyword("mdf");
-		inputParameterdetectMeaningLanguageSpecific.setLanguage("en");
-		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
-		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+		inputParameterdetectMeaningLanguageSpecific.setKeyword("chair");
+		inputParameterdetectMeaningLanguageSpecific.setLanguage("sv");
+		indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific, null);
+		List<de.biba.triple.store.access.dmo.Entity> r = indexingServiceReader.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific, null);
 		System.out.println(r);
 		System.out.println("ddd");
 	}

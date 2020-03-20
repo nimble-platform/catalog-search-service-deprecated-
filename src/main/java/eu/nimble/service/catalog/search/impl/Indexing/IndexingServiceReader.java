@@ -56,6 +56,7 @@ import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
 
 public class IndexingServiceReader extends IndexingServiceConstant {
 
+	private static final String AUTHORIZATION = "Authorization";
 	private static final String FIND_ANY_VALUE = ":[*%20TO%20*]";
 	private String url = "";
 	private String urlForClassInformation = "";
@@ -92,7 +93,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	public Collection<IndexFields> requestAllIndexFields() {
 
 		String url = urlForIndexFields;
-		String response = invokeHTTPMethod(url);
+		String response = invokeHTTPMethod(url,null);
 		Gson gson = new Gson();
 		Collection<IndexFields> result = gson.fromJson(response, Collection.class);
 		return result;
@@ -103,11 +104,16 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		this.urlForPropertyInformationUBL = urlForPropertyInformationUBL + "property";
 	}
 
-	private String invokeHTTPMethod(String url) {
+	private String invokeHTTPMethod(String url,String bearerToken) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Try out: " + url);
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
-		request.setHeader("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxYnNrM09PZkNzdWF0LXV1X0lqU2JxX2QwMmtZM2NteXJheUpXeE93MmlZIn0.eyJqdGkiOiIzMGVjMTNlMy1lNWMzLTQ0ZTktOTcwYi1mOTczNDM5YmUyYjQiLCJleHAiOjE1ODQzNDUxMjgsIm5iZiI6MCwiaWF0IjoxNTg0MzQxNTI4LCJpc3MiOiJodHRwOi8vbmltYmxlLXN0YWdpbmcuc2FsemJ1cmdyZXNlYXJjaC5hdDo4MDgwL2F1dGgvcmVhbG1zL21hc3RlciIsImF1ZCI6Im5pbWJsZV9jbGllbnQiLCJzdWIiOiJiZDEyZTg5Zi1jMjA5LTQ1OTYtYmM5Zi0xMmY4MzQwOWY3YjIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJuaW1ibGVfY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiZGM0ZjI0NGQtZjRlYS00ZWZjLTlmNGItNWNlZjJjMDMxYmRiIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJuaW1ibGVfdXNlciIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwibmFtZSI6IkZyYW5rZSBNYXJjbyIsInByZWZlcnJlZF91c2VybmFtZSI6Im1hcmNvZnJhbmtlODJAZ29vZ2xlbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiRnJhbmtlIiwiZmFtaWx5X25hbWUiOiJNYXJjbyIsImVtYWlsIjoibWFyY29mcmFua2U4MkBnb29nbGVtYWlsLmNvbSJ9.GdsP7wsjCLnyNFR6dWAEWtwPCysgvYG0YCKu8sRBAtWHeGkZYMQWcivB_vtGCO3Ts53fr-az_R-wrn0rkeSk4hXctTPRa6m3pd3QMxwRhxRAlDZOmxl-cJp2ZXdqZwPTyVtfVdExRycbqycdAlFc2Ig44oqL2rS3r1RMEomK9Vhm80kT22TIKprqcjyLIdoZ6eAIG6l2ini8qpoG_tw4KVkQdu_hMZS_lvkzdk6ahS5cpMOUas36OfZR_ijlpNdKama5LHF6Lhp9wSnu7j6A2ycQ6CltfKRGTbIZX9qJ87Gu845h3yoXp9QYGbvOGHGoZ2ztgXTteZxcjz3AfQZ9WA");
+		if (bearerToken == null) {
+		request.setHeader(AUTHORIZATION, "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxYnNrM09PZkNzdWF0LXV1X0lqU2JxX2QwMmtZM2NteXJheUpXeE93MmlZIn0.eyJqdGkiOiIzMGVjMTNlMy1lNWMzLTQ0ZTktOTcwYi1mOTczNDM5YmUyYjQiLCJleHAiOjE1ODQzNDUxMjgsIm5iZiI6MCwiaWF0IjoxNTg0MzQxNTI4LCJpc3MiOiJodHRwOi8vbmltYmxlLXN0YWdpbmcuc2FsemJ1cmdyZXNlYXJjaC5hdDo4MDgwL2F1dGgvcmVhbG1zL21hc3RlciIsImF1ZCI6Im5pbWJsZV9jbGllbnQiLCJzdWIiOiJiZDEyZTg5Zi1jMjA5LTQ1OTYtYmM5Zi0xMmY4MzQwOWY3YjIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJuaW1ibGVfY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiZGM0ZjI0NGQtZjRlYS00ZWZjLTlmNGItNWNlZjJjMDMxYmRiIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJuaW1ibGVfdXNlciIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwibmFtZSI6IkZyYW5rZSBNYXJjbyIsInByZWZlcnJlZF91c2VybmFtZSI6Im1hcmNvZnJhbmtlODJAZ29vZ2xlbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiRnJhbmtlIiwiZmFtaWx5X25hbWUiOiJNYXJjbyIsImVtYWlsIjoibWFyY29mcmFua2U4MkBnb29nbGVtYWlsLmNvbSJ9.GdsP7wsjCLnyNFR6dWAEWtwPCysgvYG0YCKu8sRBAtWHeGkZYMQWcivB_vtGCO3Ts53fr-az_R-wrn0rkeSk4hXctTPRa6m3pd3QMxwRhxRAlDZOmxl-cJp2ZXdqZwPTyVtfVdExRycbqycdAlFc2Ig44oqL2rS3r1RMEomK9Vhm80kT22TIKprqcjyLIdoZ6eAIG6l2ini8qpoG_tw4KVkQdu_hMZS_lvkzdk6ahS5cpMOUas36OfZR_ijlpNdKama5LHF6Lhp9wSnu7j6A2ycQ6CltfKRGTbIZX9qJ87Gu845h3yoXp9QYGbvOGHGoZ2ztgXTteZxcjz3AfQZ9WA");
+		}
+		else {
+			request.setHeader(AUTHORIZATION, bearerToken);	
+		}
 		StringBuffer stringBuffer = new StringBuffer();
 		try {
 			HttpResponse response = client.execute(request);
@@ -139,13 +145,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	 * The peroperties have three sources ontology, ubl, unknown.
 	 * 
 	 * @param urlOfClass
+	 * @param bearerToken 
 	 * @return
 	 */
-	public List<String> getAllPropertiesIncludingEverything(String urlOfClass) {
+	public List<String> getAllPropertiesIncludingEverything(String urlOfClass, String bearerToken) {
 
 		List<PropertyType> propInfos = new ArrayList<PropertyType>();
 		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
-		String result = invokeHTTPMethod(httpGetURL);
+		String result = invokeHTTPMethod(httpGetURL,bearerToken);
 		Logger.getAnonymousLogger().log(Level.INFO, result);
 		List<String> allProperties = new ArrayList<String>();
 		Gson gson = new Gson();
@@ -160,10 +167,10 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		}
 		// allProperties.add(result);
 
-		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
+		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL(bearerToken);
 		propInfosUBL.forEach(x -> {
 			String propertyURL = x.getUri();
-			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass);
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass,bearerToken);
 			if (x.isVisible() && relevant) {
 				propInfos.add(x);
 				x.setConceptSource(ConceptSource.CUSTOM);
@@ -177,7 +184,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
 		propInfosStandard.forEach(x -> {
-			boolean relevant = checkWhetherPropertyIsRelevant(x.getUri(), urlOfClass);
+			boolean relevant = checkWhetherPropertyIsRelevant(x.getUri(), urlOfClass, bearerToken);
 			if(relevant){
 			x.setConceptSource(ConceptSource.CUSTOM);
 			allProperties.add(x.getUri());
@@ -192,9 +199,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			//propInfos.addAll(propInfosStandard);
 
 			for (String propertyURL : allProperties) {
-				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass);
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass,bearerToken);
 				if (relevant) {
-					PropertyType p = requestPropertyInfos(gson, propertyURL);
+					PropertyType p = requestPropertyInfos(gson, propertyURL,bearerToken);
 					if (p != null && p.isVisible()) {
 						p.setConceptSource(ConceptSource.ONTOLOGICAL);
 						propInfos.add(p);
@@ -242,12 +249,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return factory.createProperties();
 	}
 
-	public List<PropertyType> requestStandardPropertiesFromUBL() {
+	public List<PropertyType> requestStandardPropertiesFromUBL(String bearerToken) {
 		// https://nimble-platform.salzburgresearch.at/nimble/indexing-service/property/select?q=nameSpace:%22http://www.nimble-project.org/resource/ubl%23%22)
 		String urlOfUBBL = HTTP_WWW_NIMBLE_PROJECT_ORG_RESOURCE_UBL;
 		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:"
 				+ URLEncoder.encode("\"" + urlOfUBBL + "\"");
-		String result = invokeHTTPMethod(httpGetURL);
+		String result = invokeHTTPMethod(httpGetURL,bearerToken);
 		// System.out.println(result);
 
 		Gson gson = new Gson();
@@ -276,7 +283,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	public List<Entity> detectPossibleConceptsLanguageSpecific(
-			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific) {
+			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific, String bearerToken) {
 		List<Entity> result = new ArrayList<Entity>();
 		String field = "_txt";
 		Language language = inputParameterdetectMeaningLanguageSpecific.getLanguage();
@@ -287,13 +294,13 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"
 				+ URLEncoder.encode("\"" + keyword + "\"") + "&rows=100";
 		
-		String resultString = invokeHTTPMethod(url);
+		String resultString = invokeHTTPMethod(url,bearerToken);
 
 		Gson gson = new Gson();
 		ClassTypes r = gson.fromJson(resultString, ClassTypes.class);
 		for (ClassType concept : r.getResult()) {
 
-			if (checkWhetherIndividualsAreAvailable(concept)) {
+			if (checkWhetherIndividualsAreAvailable(concept,bearerToken)) {
 
 				Entity entity = new Entity();
 				entity.setConceptSource(ConceptSource.ONTOLOGICAL);
@@ -319,11 +326,11 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return result;
 	}
 
-	private boolean checkWhetherIndividualsAreAvailable(ClassType concept) {
+	private boolean checkWhetherIndividualsAreAvailable(ClassType concept, String bearerToken) {
 		// TODO Auto-generated method stub --
 		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
 				+ URLEncoder.encode("\"" + concept.getUri() + "\"") + "&rows=1";
-		String response = invokeHTTPMethod(url);
+		String response = invokeHTTPMethod(url,bearerToken);
 		// System.out.println(response);
 		Gson gson = new Gson();
 		SOLRResult result = gson.fromJson(response, SOLRResult.class);
@@ -338,9 +345,10 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	 * depth can be defined.
 	 * 
 	 * @param paramterForGetLogicalView
+	 * @param bearerToken 
 	 * @return a logical view
 	 */
-	public String getLogicalView(InputParamterForGetLogicalView paramterForGetLogicalView) {
+	public String getLogicalView(InputParamterForGetLogicalView paramterForGetLogicalView, String bearerToken) {
 
 		OutputForGetLogicalView outputStructure = new OutputForGetLogicalView();
 		LocalOntologyView completeStructure = new LocalOntologyView();
@@ -351,7 +359,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 				.isConceptAlreadyContained(paramterForGetLogicalView.getConcept());
 
 		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
-		String resultString = invokeHTTPMethod(url);
+		String resultString = invokeHTTPMethod(url,bearerToken);
 		Gson gson = new Gson();
 		ClassType r = gson.fromJson(resultString, ClassType.class);
 		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage())
@@ -375,7 +383,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		if (shallThePropertyCacheUpdated) {
 
 			requestAllPropertiesFromDifferentSources(paramterForGetLogicalView, completeStructure, concept, gson, r,
-					prefixLanguage, allPropertyTypes);
+					prefixLanguage, allPropertyTypes,bearerToken);
 
 		} else {
 			Logger.getAnonymousLogger().log(Level.INFO, "Use the cached properties instead of asking them again: "
@@ -398,15 +406,15 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 	private void requestAllPropertiesFromDifferentSources(InputParamterForGetLogicalView paramterForGetLogicalView,
 			LocalOntologyView completeStructure, eu.nimble.service.catalog.search.impl.dao.Entity concept, Gson gson,
-			ClassType r, String prefixLanguage, List<PropertyType> allPropertyTypes) {
+			ClassType r, String prefixLanguage, List<PropertyType> allPropertyTypes, String bearerToken) {
 		if (r != null && r.getProperties() != null) {
 
 			for (String propertyURL : r.getProperties()) {
 
-				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept());
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept(),bearerToken);
 				if (relevant) {
 					eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
-							propertyURL);
+							propertyURL, bearerToken);
 					if (propertyType.isVisible()) {
 						allPropertyTypes.add(propertyType);
 						propertyType.setConceptSource(ConceptSource.ONTOLOGICAL);
@@ -417,10 +425,10 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			}
 		}
 
-		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL();
+		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL(bearerToken);
 		for (PropertyType propertyType : propInfosUBL) {
 			String propertyURL = propertyType.getUri();
-			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept());
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept(),bearerToken);
 			if (propertyType.isVisible() && relevant) {
 				allPropertyTypes.add(propertyType);
 				propertyType.setConceptSource(ConceptSource.CUSTOM);
@@ -436,7 +444,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
 		for (PropertyType propertyType : propInfosStandard) {
-			boolean relevant = checkWhetherPropertyIsRelevant(propertyType.getUri(), paramterForGetLogicalView.getConcept());
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyType.getUri(), paramterForGetLogicalView.getConcept(),bearerToken);
 			
 			if (propertyType.isVisible() &&relevant) {
 				allPropertyTypes.add(propertyType);
@@ -452,7 +460,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		}
 	}
 
-	public boolean checkWhetherPropertyIsRelevant(String propertyURL, String conceptURL) {
+	public boolean checkWhetherPropertyIsRelevant(String propertyURL, String conceptURL, String bearerToken) {
 		
 
 		if (indexFieldCache.isPropertyRelevanceInfoContained(conceptURL, propertyURL)) {
@@ -473,7 +481,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 					url+= "&fq=" + nameField + FIND_ANY_VALUE
 					+ "&facet.field==" + nameField + "&rows=1";
 			}
-			String response = invokeHTTPMethod(url);
+			String response = invokeHTTPMethod(url,bearerToken);
 			
 			// System.out.println(response);
 			Gson gson = new Gson();
@@ -498,7 +506,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 						url+= "&fq=" + nameField + FIND_ANY_VALUE
 						+ "&facet.field==" + nameField + "&rows=1";
 				}
-				 response = invokeHTTPMethod(url);
+				 response = invokeHTTPMethod(url,bearerToken);
 				
 				// System.out.println(response);
  gson = new Gson();
@@ -564,14 +572,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		}
 	}
 
-	private eu.nimble.service.catalog.search.impl.dao.PropertyType requestPropertyInfos(Gson gson, String propertyURL) {
+	private eu.nimble.service.catalog.search.impl.dao.PropertyType requestPropertyInfos(Gson gson, String propertyURL, String bearerToken) {
 
 		if (!propertyURL.contains(namespace) && (!propertyURL.contains(nameSPACEUBL))) {
 
 			String url;
 			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = null;
 			url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
-			String propertyInfo = invokeHTTPMethod(url);
+			String propertyInfo = invokeHTTPMethod(url,bearerToken);
 			try {
 				propertyType = gson.fromJson(propertyInfo,
 						eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
@@ -591,7 +599,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return false;
 	}
 
-	public List<String> getAllDifferentValuesForAProperty(String conceptURL, String propertyURL) {
+	public List<String> getAllDifferentValuesForAProperty(String conceptURL, String propertyURL, String bearerToken) {
 		Gson gson = new Gson();
 		List<String> allValues = new ArrayList<String>();
 		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfosFromCache(conceptURL,
@@ -608,7 +616,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 						"Found no index field dliverd by /index/item/fields: " + propertyURL);
 			}
 			url += "&rows=10000";
-			String items = invokeHTTPMethod(url);
+			String items = invokeHTTPMethod(url,bearerToken);
 			JSONObject jsonObject = new JSONObject(items);
 			JSONArray results = null;
 			try{ 
@@ -628,7 +636,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 							"Found no index field dliverd by /index/item/fields: " + propertyURL);
 				}
 				url += "&rows=10000";
-				items = invokeHTTPMethod(url);
+				items = invokeHTTPMethod(url,bearerToken);
 				jsonObject = new JSONObject(items);
 				results = jsonObject.getJSONArray("result");
 			}
@@ -818,13 +826,13 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	 * @return {@link OutputForExecuteSelect}
 	 */
 	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
-			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect) {
+			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect, String bearerToken) {
 		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
 		String url = urlForItemInformation + "/select?fq=uri:" + uri;
 		OutputForExecuteSelect result = new OutputForExecuteSelect();
 		// result.setInput(inputParamaterForExecuteOptionalSelect);
 		result.getUuids().add(inputParamaterForExecuteOptionalSelect.getUuid());
-		String response = invokeHTTPMethod(url);
+		String response = invokeHTTPMethod(url, bearerToken);
 		Gson gson = new Gson();
 		SOLRResult responseObject = gson.fromJson(response, SOLRResult.class);
 		JSONObject jsonObject = new JSONObject(response);
@@ -872,7 +880,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject ob = (JSONObject) results.get(i);
-				updateCacheForFieldNames(ob);
+				updateCacheForFieldNames(ob,bearerToken);
 
 				for (String fieldName : ob.keySet()) {
 					if (propertyInformationCache.isNameFieldAlreadyContained(fieldName)) {
@@ -993,12 +1001,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return result;
 	}
 
-	private void updateCacheForFieldNames(JSONObject ob) {
+	private void updateCacheForFieldNames(JSONObject ob, String bearerToken) {
 		JSONArray conceptURIArray = ob.getJSONArray("classificationUri");
 		conceptURIArray.forEach(x -> {
 			String conceptURL = (String) x;
 			if (!propertyInformationCache.isConceptAlreadyContained(conceptURL)) {
-				getAllPropertiesIncludingEverything(conceptURL);
+				getAllPropertiesIncludingEverything(conceptURL,bearerToken);
 			}
 		});
 	}
@@ -1024,7 +1032,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	public List<ItemMappingFieldInformation> getAllMappableFields() {
 		List<ItemMappingFieldInformation> result = new ArrayList<ItemMappingFieldInformation>();
 		String url = urlForItemInformation + "/fields";
-		String respoonse = invokeHTTPMethod(url);
+		String respoonse = invokeHTTPMethod(url, null);
 		Gson gson = new Gson();
 		List<ItemMappingFieldInformation> r = gson.fromJson(respoonse, List.class);
 		// System.out.println(r);
@@ -1036,7 +1044,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	public OutputForExecuteSelect createSPARQLAndExecuteIT(
-			InputParamaterForExecuteSelect inputParamaterForExecuteSelect) {
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect, String bearerToken) {
 		// TODO Auto-generated method stub
 		/**
 		 * http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=localName:540*&fq=price:*
@@ -1070,7 +1078,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		if (query.length() > 4) {
 			url += query;
 		}
-		String response = invokeHTTPMethod(url);
+		String response = invokeHTTPMethod(url,bearerToken);
 		// System.out.println(response);
 		Gson gson = new Gson();
 		SOLRResult result = gson.fromJson(response, SOLRResult.class);
@@ -1104,7 +1112,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 			if (query.length() > 4) {
 				url += query;
 			}
-			response = invokeHTTPMethod(url);
+			response = invokeHTTPMethod(url,bearerToken);
 			// System.out.println(response);
 			gson = new Gson();
 			result = gson.fromJson(response, SOLRResult.class);
@@ -1266,12 +1274,12 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return FIND_ANY_VALUE;
 	}
 
-	public OutputForPropertiesFromConcept getAllTransitiveProperties(String conceptURL, Language language) {
+	public OutputForPropertiesFromConcept getAllTransitiveProperties(String conceptURL, Language language, String bearerToken) {
 
 		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
 		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
 
-		List<String> properties = getAllPropertiesIncludingEverything(conceptURL);
+		List<String> properties = getAllPropertiesIncludingEverything(conceptURL,bearerToken);
 		for (String urlOfProperty : properties) {
 			PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL,
 					urlOfProperty);
@@ -1308,14 +1316,14 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	public Map<String, List<Group>> generateGroup(int amountOfGroups, String conceptURL, String propertyURL,
-			Language language) {
+			Language language, String bearerToken) {
 
 		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
 		PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, propertyURL);
 
 		String shortPropertyName = propertyType.getLabel().get(prefixLanguage);
 
-		List<String> values = getAllDifferentValuesForAProperty(conceptURL, propertyURL);
+		List<String> values = getAllDifferentValuesForAProperty(conceptURL, propertyURL,bearerToken);
 		for (int i = 0; i < values.size(); i++) {
 			String str = values.get(i);
 			int index = str.lastIndexOf("^");
@@ -1340,9 +1348,9 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 		return new HashMap<String, List<Group>>();
 	}
 
-	public List<String> getSupportedLanguages() {
+	public List<String> getSupportedLanguages(String bearerToken) {
 		// TODO Auto-generated method stub
-		List<PropertyType> allProps = requestStandardPropertiesFromUBL();
+		List<PropertyType> allProps = requestStandardPropertiesFromUBL(bearerToken);
 		
 		//choose another source for detetcting the languages
 		if (allProps == null || allProps.size()==0){
@@ -1371,7 +1379,7 @@ public class IndexingServiceReader extends IndexingServiceConstant {
 	}
 
 	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
-			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept) {
+			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept, String bearerToken) {
 		// TODO Auto-generated method stub
 		return null;
 	}

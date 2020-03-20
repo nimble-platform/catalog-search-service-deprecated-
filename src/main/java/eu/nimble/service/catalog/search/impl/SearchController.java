@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -372,7 +373,7 @@ public class SearchController {
 
 	@CrossOrigin
 	@RequestMapping(value = "/detectMeaningLanguageSpecific", method = RequestMethod.GET)
-	HttpEntity<Object> detectMeaningLanguageSpecific(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> detectMeaningLanguageSpecific(@RequestParam("inputAsJson") String inputAsJson,@RequestHeader(value = "Authorization") String bearerToken ) {
 		try {
 			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: detectMeaningLanguageSpecific: " + inputAsJson);
 			Gson gson = new Gson();
@@ -400,7 +401,7 @@ public class SearchController {
 			logger.info("Use" + useIndexingService + ": " + indexingserviceuri);
 			if (useIndexingService) {
 				List<Entity> concepts = indexingServiceReader
-						.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific);
+						.detectPossibleConceptsLanguageSpecific(inputParameterdetectMeaningLanguageSpecific, bearerToken);
 				Gson output = new Gson();
 				String result = "";
 
@@ -531,13 +532,13 @@ public class SearchController {
 
 	@CrossOrigin
 	@RequestMapping(value = "/getLogicalView", method = RequestMethod.POST)
-	HttpEntity<Object> getLogicalView(@RequestBody InputParamterForGetLogicalView paramterForGetLogicalView) {
+	HttpEntity<Object> getLogicalView(@RequestBody InputParamterForGetLogicalView paramterForGetLogicalView, @RequestHeader(value = "Authorization") String bearerToken) {
 		try {
 
 			String result = "";
 			if (useIndexingService) {
 				correctReceivedLanguageTerm(paramterForGetLogicalView);
-				result = indexingServiceReader.getLogicalView(paramterForGetLogicalView);
+				result = indexingServiceReader.getLogicalView(paramterForGetLogicalView, bearerToken);
 			} else {
 				result = helperForLogicalView(paramterForGetLogicalView);
 			}
@@ -733,7 +734,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/getPropertyFromConcept", method = RequestMethod.GET)
-	HttpEntity<Object> getPropertyFromConcept(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> getPropertyFromConcept(@RequestParam("inputAsJson") String inputAsJson,@RequestHeader(value = "Authorization") String bearerToken) {
 
 		try {
 			Gson gson = new Gson();
@@ -745,7 +746,7 @@ public class SearchController {
 			if (useIndexingService) {
 				correctReceivedLanguageTerm(inputParamterForGetLogicalView);
 				OutputForPropertiesFromConcept propertiesFromConcept = indexingServiceReader
-						.getAllTransitiveProperties(concept, inputParamterForGetLogicalView.getLanguageAsLanguage());
+						.getAllTransitiveProperties(concept, inputParamterForGetLogicalView.getLanguageAsLanguage(), bearerToken);
 				String result = "";
 				result = gson.toJson(propertiesFromConcept);
 
@@ -824,7 +825,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/getInstantiatedPropertiesFromConcept", method = RequestMethod.GET)
-	HttpEntity<Object> getInstantiatedPropertiesFromConcept(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> getInstantiatedPropertiesFromConcept(@RequestParam("inputAsJson") String inputAsJson,@RequestHeader(value = "Authorization") String bearerToken) {
 
 		try {
 			Gson gson = new Gson();
@@ -834,7 +835,7 @@ public class SearchController {
 			String concept = inputParamterForGetLogicalView.getConcept();
 			if (useIndexingService) {
 				OutputForPropertiesFromConcept propertiesFromConcept = indexingServiceReader
-						.getAllTransitiveProperties(concept, inputParamterForGetLogicalView.getLanguageAsLanguage());
+						.getAllTransitiveProperties(concept, inputParamterForGetLogicalView.getLanguageAsLanguage(),bearerToken);
 				String result = "";
 				result = gson.toJson(propertiesFromConcept);
 
@@ -942,7 +943,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/getPropertyValuesFromGreenGroup", method = RequestMethod.GET)
-	HttpEntity<Object> getPropertyValuesFromGreenGroup(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> getPropertyValuesFromGreenGroup(@RequestParam("inputAsJson") String inputAsJson,@RequestHeader(value = "Authorization") String bearerToken) {
 		try {
 			Gson gson = new Gson();
 			InputParameterForPropertyValuesFromGreenGroup inputParameterForPropertyValuesFromGreenGroup = gson
@@ -951,7 +952,7 @@ public class SearchController {
 			if (useIndexingService) {
 				List<String> allValues = indexingServiceReader.getAllDifferentValuesForAProperty(
 						inputParameterForPropertyValuesFromGreenGroup.getConceptURL(),
-						inputParameterForPropertyValuesFromGreenGroup.getPropertyURL());
+						inputParameterForPropertyValuesFromGreenGroup.getPropertyURL(), bearerToken);
 				OutputForPropertyValuesFromGreenGroup outputForPropertyValuesFromGreenGroup = new OutputForPropertyValuesFromGreenGroup();
 				outputForPropertyValuesFromGreenGroup.getAllValues().addAll(allValues);
 
@@ -1015,7 +1016,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/getReferencesFromAConcept", method = RequestMethod.GET)
-	HttpEntity<Object> getReferencesFromAConcept(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> getReferencesFromAConcept(@RequestParam("inputAsJson") String inputAsJson, @RequestHeader(value = "Authorization") String bearerToken) {
 		try {
 			Gson gson = new Gson();
 			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept = gson
@@ -1026,7 +1027,7 @@ public class SearchController {
 			List<String[]> allReferences = null;
 			if (!useSOLRIndex || hConfiguration.getGetReferencesFromAConcept() != TypeOfDataSource.SOLR) {
 				allReferences = indexingServiceReader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
-						inputParameterForGetReferencesFromAConcept);
+						inputParameterForGetReferencesFromAConcept, bearerToken);
 			} else {
 				allReferences = solrReader.getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
 						inputParameterForGetReferencesFromAConcept);
@@ -1130,7 +1131,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/getPropertyValuesDiscretised", method = RequestMethod.GET)
-	HttpEntity<Object> getPropertyValuesDiscretised(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> getPropertyValuesDiscretised(@RequestParam("inputAsJson") String inputAsJson,@RequestHeader(value = "Authorization") String bearerToken) {
 		try {
 			Logger.getAnonymousLogger().log(Level.INFO, "Invoke: getPropertyValuesDiscretised: " + inputAsJson);
 			Gson gson = new Gson();
@@ -1141,7 +1142,7 @@ public class SearchController {
 				Language language = Language.fromString(paramterForGetLogicalView.getLanguage());
 				Map<String, List<Group>> mapOfPropertyGroups = indexingServiceReader.generateGroup(
 						paramterForGetLogicalView.getAmountOfGroups(), paramterForGetLogicalView.getConcept(),
-						paramterForGetLogicalView.getProperty(), language);
+						paramterForGetLogicalView.getProperty(), language, bearerToken);
 				String result = "";
 				result = gson.toJson(mapOfPropertyGroups);
 				return new ResponseEntity<Object>(result, HttpStatus.OK);
@@ -1182,7 +1183,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/executeSPARQLSelect", method = RequestMethod.GET)
-	HttpEntity<Object> executeSPARQLSelect(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> executeSPARQLSelect(@RequestParam("inputAsJson") String inputAsJson, @RequestHeader(value = "Authorization") String bearerToken) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLSelect: " + inputAsJson);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 
@@ -1192,7 +1193,7 @@ public class SearchController {
 					InputParamaterForExecuteSelect.class);
 
 			if (useIndexingService) {
-				outputForExecuteSelect = indexingServiceReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+				outputForExecuteSelect = indexingServiceReader.createSPARQLAndExecuteIT(inputParamaterForExecuteSelect, bearerToken);
 			} else {
 
 //				if (!useSOLRIndex || hConfiguration.getExecuteSPARQLSelect() != TypeOfDataSource.SOLR) {
@@ -1224,7 +1225,7 @@ public class SearchController {
 	 */
 	@CrossOrigin
 	@RequestMapping(value = "/executeSPARQLOptionalSelect", method = RequestMethod.GET)
-	HttpEntity<Object> executeSPARQLWithOptionalSelect(@RequestParam("inputAsJson") String inputAsJson) {
+	HttpEntity<Object> executeSPARQLWithOptionalSelect(@RequestParam("inputAsJson") String inputAsJson, @RequestHeader(value = "Authorization") String bearerToken) {
 		Logger.getAnonymousLogger().log(Level.INFO, "Invoke: executeSPARQLWithOptionalSelect: " + inputAsJson);
 		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
 		if (inputAsJson == null) {
@@ -1238,7 +1239,7 @@ public class SearchController {
 
 				if (useIndexingService) {
 					outputForExecuteSelect = indexingServiceReader
-							.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect);
+							.createOPtionalSPARQLAndExecuteIT(inputParamaterForExecuteSelect, bearerToken);
 				} 
 				//else {
 //
@@ -1310,11 +1311,11 @@ public class SearchController {
 	
 	@CrossOrigin
 	@RequestMapping(value = "/getSupportedLanguages", method = RequestMethod.GET)
-	public HttpEntity<Object> getSupportedLanguages() {
+	public HttpEntity<Object> getSupportedLanguages(@RequestHeader(value = "Authorization") String bearerToken) {
 		try {
 
 			if (useIndexingService){
-				List<String> languages =indexingServiceReader.getSupportedLanguages();
+				List<String> languages =indexingServiceReader.getSupportedLanguages(bearerToken);
 				OutoutForGetSupportedLanguages supportedLanguages = new OutoutForGetSupportedLanguages();
 				supportedLanguages.getLanguages().addAll(languages);
 				Gson output = new Gson();
