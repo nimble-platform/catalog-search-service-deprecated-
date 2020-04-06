@@ -1,0 +1,1392 @@
+package eu.nimble.service.catalog.search.impl.Indexing;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import de.biba.triple.store.access.dmo.Entity;
+import de.biba.triple.store.access.enums.ConceptSource;
+import de.biba.triple.store.access.enums.Language;
+import eu.nimble.service.catalog.search.factories.ValueGroupingFactory;
+import eu.nimble.service.catalog.search.impl.dao.ClassType;
+import eu.nimble.service.catalog.search.impl.dao.ClassTypes;
+import eu.nimble.service.catalog.search.impl.dao.Filter;
+import eu.nimble.service.catalog.search.impl.dao.Group;
+import eu.nimble.service.catalog.search.impl.dao.IndexFields;
+import eu.nimble.service.catalog.search.impl.dao.ItemMappingFieldInformation;
+import eu.nimble.service.catalog.search.impl.dao.LocalOntologyView;
+import eu.nimble.service.catalog.search.impl.dao.PropertyRelevance;
+import eu.nimble.service.catalog.search.impl.dao.PropertyType;
+import eu.nimble.service.catalog.search.impl.dao.UBLResult;
+import eu.nimble.service.catalog.search.impl.dao.enums.PropertySource;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteOptionalSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamaterForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterForGetReferencesFromAConcept;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParameterdetectMeaningLanguageSpecific;
+import eu.nimble.service.catalog.search.impl.dao.input.InputParamterForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.item.ItemType;
+import eu.nimble.service.catalog.search.impl.dao.item.SOLRResult;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForExecuteSelect;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForGetLogicalView;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertiesFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.OutputForPropertyFromConcept;
+import eu.nimble.service.catalog.search.impl.dao.output.TranslationResult;
+
+public class IndexingServiceReader extends IndexingServiceConstant {
+
+	private static final String AUTHORIZATION = "Authorization";
+	private static final String FIND_ANY_VALUE = ":[*%20TO%20*]";
+	private String url = "";
+	private String urlForClassInformation = "";
+	private String urlForPropertyInformation = "";
+	private String urlForPropertyInformationUBL = "";
+	private String urlForItemInformation = "";
+	private String urlForIndexFields = "";
+	private PropertyInformationCache propertyInformationCache = new PropertyInformationCache();
+	private TaxonomyCache taxonomyCache = new TaxonomyCache();
+	private IndexFieldCache indexFieldCache = new IndexFieldCache();
+	private Map<String, String> allRelevantPropertyValuesForLanguageCompletion = new HashMap<String, String>();
+
+	public IndexingServiceReader(String url) {
+		super();
+		this.url = url;
+		if (url.charAt(url.length() - 1) != '/') {
+			url += "/";
+		}
+		urlForClassInformation = url + "class";
+		urlForPropertyInformation = url + "property";
+		urlForPropertyInformationUBL = url + "property";
+		urlForItemInformation = url + "item";
+		urlForIndexFields = url + "item/fields";
+
+		Collection<IndexFields> allFields = requestAllIndexFields();
+		indexFieldCache.insertAllIndexFields(allFields);
+
+	}
+
+	public String getUrlForPropertyInformationUBL() {
+		return urlForPropertyInformationUBL;
+	}
+
+	public Collection<IndexFields> requestAllIndexFields() {
+
+		String url = urlForIndexFields;
+		String response = invokeHTTPMethod(url,null);
+		Gson gson = new Gson();
+		Collection<IndexFields> result = gson.fromJson(response, Collection.class);
+		return result;
+
+	}
+
+	public void setUrlForPropertyInformationUBL(String urlForPropertyInformationUBL) {
+		this.urlForPropertyInformationUBL = urlForPropertyInformationUBL + "property";
+	}
+
+	private String invokeHTTPMethod(String url,String bearerToken) {
+		Logger.getAnonymousLogger().log(Level.INFO, "Try out: " + url);
+		HttpClient client = new DefaultHttpClient();
+		HttpGet request = new HttpGet(url);
+		if (bearerToken == null) {
+		request.setHeader(AUTHORIZATION, "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxYnNrM09PZkNzdWF0LXV1X0lqU2JxX2QwMmtZM2NteXJheUpXeE93MmlZIn0.eyJqdGkiOiIzMGVjMTNlMy1lNWMzLTQ0ZTktOTcwYi1mOTczNDM5YmUyYjQiLCJleHAiOjE1ODQzNDUxMjgsIm5iZiI6MCwiaWF0IjoxNTg0MzQxNTI4LCJpc3MiOiJodHRwOi8vbmltYmxlLXN0YWdpbmcuc2FsemJ1cmdyZXNlYXJjaC5hdDo4MDgwL2F1dGgvcmVhbG1zL21hc3RlciIsImF1ZCI6Im5pbWJsZV9jbGllbnQiLCJzdWIiOiJiZDEyZTg5Zi1jMjA5LTQ1OTYtYmM5Zi0xMmY4MzQwOWY3YjIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJuaW1ibGVfY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiZGM0ZjI0NGQtZjRlYS00ZWZjLTlmNGItNWNlZjJjMDMxYmRiIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJuaW1ibGVfdXNlciIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwibmFtZSI6IkZyYW5rZSBNYXJjbyIsInByZWZlcnJlZF91c2VybmFtZSI6Im1hcmNvZnJhbmtlODJAZ29vZ2xlbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiRnJhbmtlIiwiZmFtaWx5X25hbWUiOiJNYXJjbyIsImVtYWlsIjoibWFyY29mcmFua2U4MkBnb29nbGVtYWlsLmNvbSJ9.GdsP7wsjCLnyNFR6dWAEWtwPCysgvYG0YCKu8sRBAtWHeGkZYMQWcivB_vtGCO3Ts53fr-az_R-wrn0rkeSk4hXctTPRa6m3pd3QMxwRhxRAlDZOmxl-cJp2ZXdqZwPTyVtfVdExRycbqycdAlFc2Ig44oqL2rS3r1RMEomK9Vhm80kT22TIKprqcjyLIdoZ6eAIG6l2ini8qpoG_tw4KVkQdu_hMZS_lvkzdk6ahS5cpMOUas36OfZR_ijlpNdKama5LHF6Lhp9wSnu7j6A2ycQ6CltfKRGTbIZX9qJ87Gu845h3yoXp9QYGbvOGHGoZ2ztgXTteZxcjz3AfQZ9WA");
+		}
+		else {
+			request.setHeader(AUTHORIZATION, bearerToken);	
+		}
+		StringBuffer stringBuffer = new StringBuffer();
+		try {
+			HttpResponse response = client.execute(request);
+
+			// Get the response
+			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				stringBuffer.append(line);
+			}
+			rd.close();
+			Logger.getAnonymousLogger().log(Level.INFO, "Success: " + url);
+			return stringBuffer.toString();
+
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Logger.getAnonymousLogger().log(Level.SEVERE, "Error: " + url);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Logger.getAnonymousLogger().log(Level.SEVERE, "Error: " + url);
+		}
+		return null;
+	}
+
+	/**
+	 * The peroperties have three sources ontology, ubl, unknown.
+	 * 
+	 * @param urlOfClass
+	 * @param bearerToken 
+	 * @return
+	 */
+	public List<String> getAllPropertiesIncludingEverything(String urlOfClass, String bearerToken) {
+
+		List<PropertyType> propInfos = new ArrayList<PropertyType>();
+		String httpGetURL = urlForClassInformation + "?uri=" + URLEncoder.encode(urlOfClass);
+		String result = invokeHTTPMethod(httpGetURL,bearerToken);
+		Logger.getAnonymousLogger().log(Level.INFO, result);
+		List<String> allProperties = new ArrayList<String>();
+		Gson gson = new Gson();
+		ClassType r = gson.fromJson(result, ClassType.class);
+		if (r != null) {
+			if (r.getProperties() != null) {
+				r.getProperties().forEach(x -> allProperties.add(x));
+			}
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Find no class informaiton to: " + urlOfClass + " by using: " + httpGetURL);
+		}
+		// allProperties.add(result);
+
+		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL(bearerToken);
+		propInfosUBL.forEach(x -> {
+			String propertyURL = x.getUri();
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass,bearerToken);
+			if (x.isVisible() && relevant) {
+				propInfos.add(x);
+				x.setConceptSource(ConceptSource.CUSTOM);
+				allProperties.add(x.getUri());
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"UBL specifc property is marked as not visible or has no property values in the catalogie: "
+								+ propertyURL);
+			}
+		});
+
+		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
+		propInfosStandard.forEach(x -> {
+			boolean relevant = checkWhetherPropertyIsRelevant(x.getUri(), urlOfClass, bearerToken);
+			if(relevant){
+			x.setConceptSource(ConceptSource.CUSTOM);
+			allProperties.add(x.getUri());
+			propInfos.add(x);
+			}
+		});
+
+		if (!propertyInformationCache.isConceptAlreadyContained(urlOfClass)) {
+
+			
+			//propInfos.addAll(propInfosUBL);
+			//propInfos.addAll(propInfosStandard);
+
+			for (String propertyURL : allProperties) {
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, urlOfClass,bearerToken);
+				if (relevant) {
+					PropertyType p = requestPropertyInfos(gson, propertyURL,bearerToken);
+					if (p != null && p.isVisible()) {
+						p.setConceptSource(ConceptSource.ONTOLOGICAL);
+						propInfos.add(p);
+					} else {
+						Logger.getAnonymousLogger().log(Level.WARNING,
+								"Ignore property, because it is set to be invisible: " + propertyURL);
+					}
+				}
+				// propInfos.add(requestPropertyInfos(gson, propertyURL));
+			}
+			if (propInfos.size() > 0) {
+				propertyInformationCache.addConcept(urlOfClass, propInfos);
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot request property infos of class " + urlOfClass);
+			}
+
+		}
+		Iterator<String> iterator = allProperties.iterator();
+		while (iterator.hasNext()) {
+			String property = iterator.next();
+			PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(urlOfClass, property);
+			if (pType == null) {
+				iterator.remove();
+			}
+		}
+		return allProperties;
+	}
+
+	private void synchronizeTaxonomyCache(String urlOfClass, ClassType r) {
+		if (r.getAllChildren() != null && r.getAllChildren().size() > 0) {
+			List list = new ArrayList(r.getAllChildren());
+			taxonomyCache.addAllSubConcepts(urlOfClass, list);
+		}
+
+		if (r.getAllParents() != null && r.getAllParents().size() > 0) {
+			List list = new ArrayList(r.getAllParents());
+			taxonomyCache.addAllUpperConcepts(urlOfClass, list);
+		}
+	}
+
+	private List<PropertyType> requestStandardPropertiesFromUnknownSopurce() {
+
+		DefaultPropertyFactory factory = new DefaultPropertyFactory();
+
+		return factory.createProperties();
+	}
+
+	public List<PropertyType> requestStandardPropertiesFromUBL(String bearerToken) {
+		// https://nimble-platform.salzburgresearch.at/nimble/indexing-service/property/select?q=nameSpace:%22http://www.nimble-project.org/resource/ubl%23%22)
+		String urlOfUBBL = HTTP_WWW_NIMBLE_PROJECT_ORG_RESOURCE_UBL;
+		String httpGetURL = urlForPropertyInformationUBL + "/select?q=nameSpace:"
+				+ URLEncoder.encode("\"" + urlOfUBBL + "\"");
+		String result = invokeHTTPMethod(httpGetURL,bearerToken);
+		// System.out.println(result);
+
+		Gson gson = new Gson();
+		UBLResult r = gson.fromJson(result, UBLResult.class);
+		for (PropertyType pType : r.getResult()) {
+			if (pType.getUri().equals("http://www.nimble-project.org/resource/ubl#certificateType")) {
+
+				if (!pType.getItemFieldNames().contains("certificateType")) {
+					pType.getItemFieldNames().add("certificateType");
+				}
+			}
+			if (pType.getUri().equals("http://www.nimble-project.org/resource/ubl#freeOfCharge")) {
+
+				if (!pType.getItemFieldNames().contains("freeOfCharge")) {
+					pType.getItemFieldNames().add("freeOfCharge");
+				}
+			}
+			if (pType.getUri().equals("http://www.nimble-project.org/resource/ubl#manufacturerId")) {
+
+				if (!pType.getItemFieldNames().contains("manufacturerId")) {
+					pType.getItemFieldNames().add("manufacturerId");
+				}
+			}
+		}
+		return r.getResult();
+	}
+
+	public List<Entity> detectPossibleConceptsLanguageSpecific(
+			InputParameterdetectMeaningLanguageSpecific inputParameterdetectMeaningLanguageSpecific, String bearerToken) {
+		List<Entity> result = new ArrayList<Entity>();
+		String field = "_txt";
+		Language language = inputParameterdetectMeaningLanguageSpecific.getLanguage();
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
+		field = prefixLanguage + field;
+		String keyword = inputParameterdetectMeaningLanguageSpecific.getKeyword();
+
+		String url = this.urlForClassInformation + "/select?" + "q=" + field + ":*"
+				+ URLEncoder.encode("\"" + keyword + "\"") + "&rows=100";
+		
+		String resultString = invokeHTTPMethod(url,bearerToken);
+
+		Gson gson = new Gson();
+		ClassTypes r = gson.fromJson(resultString, ClassTypes.class);
+		for (ClassType concept : r.getResult()) {
+
+			if (checkWhetherIndividualsAreAvailable(concept,bearerToken)) {
+
+				Entity entity = new Entity();
+				entity.setConceptSource(ConceptSource.ONTOLOGICAL);
+				entity.setLanguage(inputParameterdetectMeaningLanguageSpecific.getLanguage());
+				entity.setUrl(concept.getUri());
+				if (concept.getLabel().get(prefixLanguage)!= null) {
+					entity.setTranslatedURL(concept.getLabel().get(prefixLanguage));
+					entity.setTranslationLabelWasAvailable(true);
+				}
+				else {
+					entity.setTranslatedURL(concept.getLabel().get(Language.getDefaultLanguageID()));
+					entity.setTranslationLabelWasAvailable(false);
+				}
+				entity.setHidden(false);
+				result.add(entity);
+
+				synchronizeTaxonomyCache(concept.getUri(), concept);
+			}
+		}
+
+		//
+
+		return result;
+	}
+
+	private boolean checkWhetherIndividualsAreAvailable(ClassType concept, String bearerToken) {
+		// TODO Auto-generated method stub --
+		String url = urlForItemInformation + "/select?fq=commodityClassficationUri:"
+				+ URLEncoder.encode("\"" + concept.getUri() + "\"") + "&rows=1";
+		String response = invokeHTTPMethod(url,bearerToken);
+		// System.out.println(response);
+		Gson gson = new Gson();
+		SOLRResult result = gson.fromJson(response, SOLRResult.class);
+		if (result.getResult() != null && result.getResult().size() > 0) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * This method creates the grapg based view for the explorative search. The
+	 * depth can be defined.
+	 * 
+	 * @param paramterForGetLogicalView
+	 * @param bearerToken 
+	 * @return a logical view
+	 */
+	public String getLogicalView(InputParamterForGetLogicalView paramterForGetLogicalView, String bearerToken) {
+
+		OutputForGetLogicalView outputStructure = new OutputForGetLogicalView();
+		LocalOntologyView completeStructure = new LocalOntologyView();
+		eu.nimble.service.catalog.search.impl.dao.Entity concept = new eu.nimble.service.catalog.search.impl.dao.Entity();
+		concept.setUrl(paramterForGetLogicalView.getConcept());
+
+		boolean shallThePropertyCacheUpdated = !propertyInformationCache
+				.isConceptAlreadyContained(paramterForGetLogicalView.getConcept());
+
+		String url = urlForClassInformation + "?uri=" + URLEncoder.encode(paramterForGetLogicalView.getConcept());
+		String resultString = invokeHTTPMethod(url,bearerToken);
+		Gson gson = new Gson();
+		ClassType r = gson.fromJson(resultString, ClassType.class);
+		String prefixLanguage = Language.toOntologyPostfix(paramterForGetLogicalView.getLanguageAsLanguage())
+				.replaceAll("@", "");
+
+		concept.setUrl(paramterForGetLogicalView.getConcept());
+		if (r != null) {
+			concept.setTranslatedURL(r.getLabel().get(prefixLanguage));
+		} else {
+			concept.setTranslatedURL(paramterForGetLogicalView.getConcept());
+		}
+		concept.setLanguage(paramterForGetLogicalView.getLanguageAsLanguage());
+		completeStructure.setConcept(concept);
+
+		List<String> uriPath = new ArrayList<String>();
+		uriPath.add(concept.getUrl());
+		completeStructure.setConceptURIPath(uriPath);
+
+		List<PropertyType> allPropertyTypes = new ArrayList<PropertyType>();
+
+		if (shallThePropertyCacheUpdated) {
+
+			requestAllPropertiesFromDifferentSources(paramterForGetLogicalView, completeStructure, concept, gson, r,
+					prefixLanguage, allPropertyTypes,bearerToken);
+
+		} else {
+			Logger.getAnonymousLogger().log(Level.INFO, "Use the cached properties instead of asking them again: "
+					+ paramterForGetLogicalView.getConcept());
+			List<PropertyType> allProps = propertyInformationCache
+					.getAllCachedPropertiesForAConcept(paramterForGetLogicalView.getConcept());
+			allProps.forEach(pType -> addDetailsToProperty(completeStructure, concept, prefixLanguage, pType.getUri(),
+					pType, pType.getConceptSource()));
+		}
+
+		outputStructure.setCompleteStructure(completeStructure);
+		LocalOntologyView structureForView = completeStructure.getVisibleLocalOntologyViewStructure();
+		outputStructure.setViewStructure(structureForView);
+		outputStructure.setCurrentSelections(paramterForGetLogicalView.getCurrentSelections());
+
+		String result = gson.toJson(outputStructure);
+		return result;
+
+	}
+
+	private void requestAllPropertiesFromDifferentSources(InputParamterForGetLogicalView paramterForGetLogicalView,
+			LocalOntologyView completeStructure, eu.nimble.service.catalog.search.impl.dao.Entity concept, Gson gson,
+			ClassType r, String prefixLanguage, List<PropertyType> allPropertyTypes, String bearerToken) {
+		if (r != null && r.getProperties() != null) {
+
+			for (String propertyURL : r.getProperties()) {
+
+				boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept(),bearerToken);
+				if (relevant) {
+					eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfos(gson,
+							propertyURL, bearerToken);
+					if (propertyType.isVisible()) {
+						allPropertyTypes.add(propertyType);
+						propertyType.setConceptSource(ConceptSource.ONTOLOGICAL);
+						addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyURL, propertyType,
+								ConceptSource.ONTOLOGICAL);
+					}
+				}
+			}
+		}
+
+		List<PropertyType> propInfosUBL = requestStandardPropertiesFromUBL(bearerToken);
+		for (PropertyType propertyType : propInfosUBL) {
+			String propertyURL = propertyType.getUri();
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyURL, paramterForGetLogicalView.getConcept(),bearerToken);
+			if (propertyType.isVisible() && relevant) {
+				allPropertyTypes.add(propertyType);
+				propertyType.setConceptSource(ConceptSource.CUSTOM);
+				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
+						ConceptSource.CUSTOM);
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"UBL specifc property is marked as not visible or has no property values in the catalogie: "
+								+ propertyURL);
+			}
+
+		}
+
+		List<PropertyType> propInfosStandard = requestStandardPropertiesFromUnknownSopurce();
+		for (PropertyType propertyType : propInfosStandard) {
+			boolean relevant = checkWhetherPropertyIsRelevant(propertyType.getUri(), paramterForGetLogicalView.getConcept(),bearerToken);
+			
+			if (propertyType.isVisible() &&relevant) {
+				allPropertyTypes.add(propertyType);
+				propertyType.setConceptSource(ConceptSource.CUSTOM);
+				addDetailsToProperty(completeStructure, concept, prefixLanguage, propertyType.getUri(), propertyType,
+						ConceptSource.CUSTOM);
+			}
+		}
+
+		// store The Property Types in the cache.
+		if (!propertyInformationCache.isConceptAlreadyContained(paramterForGetLogicalView.getConcept())) {
+			propertyInformationCache.addConcept(paramterForGetLogicalView.getConcept(), allPropertyTypes);
+		}
+	}
+
+	public boolean checkWhetherPropertyIsRelevant(String propertyURL, String conceptURL, String bearerToken) {
+		
+
+		if (indexFieldCache.isPropertyRelevanceInfoContained(conceptURL, propertyURL)) {
+			return indexFieldCache.isPropertyRelevanceGiven(conceptURL, propertyURL);
+		} else {
+			String nameField = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
+			// Happens if no fieldname mapping is available
+			if (nameField == null) {
+				return false;
+			}
+			
+			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, false);
+			if (propertyURL.contains(this.namespace)){
+				url+= "&fq=" + nameField + FIND_ANY_VALUE+ "&rows=1";
+		}
+			else{
+
+					url+= "&fq=" + nameField + FIND_ANY_VALUE
+					+ "&facet.field==" + nameField + "&rows=1";
+			}
+			String response = invokeHTTPMethod(url,bearerToken);
+			
+			// System.out.println(response);
+			Gson gson = new Gson();
+			SOLRResult result = null;
+			try{
+				result = gson.fromJson(response, SOLRResult.class);
+				
+			}
+			catch(Exception e){
+				 Logger.getAnonymousLogger().log(Level.SEVERE, "HTTPGET failed: " + url);
+				Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+				e.printStackTrace();
+			}
+			
+			if (result == null || result.getResult().size() == 0 ) {
+				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, true);
+				if (propertyURL.contains(this.namespace)){
+					url+= "&fq=" + nameField + FIND_ANY_VALUE+ "&rows=1";
+			}
+				else{
+
+						url+= "&fq=" + nameField + FIND_ANY_VALUE
+						+ "&facet.field==" + nameField + "&rows=1";
+				}
+				 response = invokeHTTPMethod(url,bearerToken);
+				
+				// System.out.println(response);
+ gson = new Gson();
+ try{
+				 result = gson.fromJson(response, SOLRResult.class);
+ }
+ catch(Exception e){
+	 Logger.getAnonymousLogger().log(Level.SEVERE, "HTTPGET failed: " + url);
+	 Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+		e.printStackTrace();
+ }
+			}
+			
+			if (result != null && result.getResult().size() == 1 ) {
+
+				
+				PropertyRelevance propertyRelevance = new PropertyRelevance();
+				propertyRelevance.setHasItBeenChecked(true);
+				propertyRelevance.setItRelevant(true);
+				propertyRelevance.setLastCheck(new Date());
+				indexFieldCache.addProopertyRelevance(conceptURL, propertyURL, propertyRelevance);
+				
+
+				return true;
+			} else {
+				PropertyRelevance propertyRelevance = new PropertyRelevance();
+				propertyRelevance.setHasItBeenChecked(true);
+				propertyRelevance.setItRelevant(false);
+				propertyRelevance.setLastCheck(new Date());
+				indexFieldCache.addProopertyRelevance(conceptURL, propertyURL, propertyRelevance);
+
+				return false;
+			}
+		}
+
+	}
+
+	private void addDetailsToProperty(LocalOntologyView completeStructure,
+			eu.nimble.service.catalog.search.impl.dao.Entity concept, String prefixLanguage, String propertyURL,
+			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType, ConceptSource conceptSource) {
+		eu.nimble.service.catalog.search.impl.dao.Entity entity = new eu.nimble.service.catalog.search.impl.dao.Entity();
+		entity.setUrl(propertyURL);
+		entity.setConceptSource(conceptSource);
+		entity.setTranslatedURL(propertyType.getLabel().get(prefixLanguage));
+		if (isItADatatypeProperty(propertyType)) {
+			completeStructure.addDataproperties(entity);
+		} else {
+			LocalOntologyView localOntologyView2 = new LocalOntologyView();
+
+			eu.nimble.service.catalog.search.impl.dao.Entity conceptRange = new eu.nimble.service.catalog.search.impl.dao.Entity();
+			conceptRange.setUrl(propertyType.getRange());
+			conceptRange.setTranslatedURL(entity.getTranslatedURL());
+			// conceptRan
+
+			localOntologyView2.setConcept(conceptRange);
+			localOntologyView2.setObjectPropertySource(entity.getUrl());
+			localOntologyView2.setFrozenConcept(concept.getUrl());
+			localOntologyView2.setDistanceToFrozenConcept(1);
+			List<String> newPaht = new ArrayList<String>(completeStructure.getConceptURIPath());
+			newPaht.add(propertyType.getRange());
+			localOntologyView2.setConceptURIPath(newPaht);
+			completeStructure.getObjectproperties().put(propertyType.getRange(), localOntologyView2);
+		}
+	}
+
+	private eu.nimble.service.catalog.search.impl.dao.PropertyType requestPropertyInfos(Gson gson, String propertyURL, String bearerToken) {
+
+		if (!propertyURL.contains(namespace) && (!propertyURL.contains(nameSPACEUBL))) {
+
+			String url;
+			eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = null;
+			url = urlForPropertyInformation + "?uri=" + URLEncoder.encode(propertyURL);
+			String propertyInfo = invokeHTTPMethod(url,bearerToken);
+			try {
+				propertyType = gson.fromJson(propertyInfo,
+						eu.nimble.service.catalog.search.impl.dao.PropertyType.class);
+			} catch (Exception e) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"There is no propertyInfos available for: " + propertyURL + "URL: " + url);
+			}
+			return propertyType;
+		}
+		return null;
+	}
+
+	private boolean isItADatatypeProperty(eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType) {
+		if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
+			return true;
+		}
+		return false;
+	}
+
+	public List<String> getAllDifferentValuesForAProperty(String conceptURL, String propertyURL, String bearerToken) {
+		Gson gson = new Gson();
+		List<String> allValues = new ArrayList<String>();
+		eu.nimble.service.catalog.search.impl.dao.PropertyType propertyType = requestPropertyInfosFromCache(conceptURL,
+				propertyURL);
+
+		if (propertyType != null) {
+			String url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, false);
+
+			if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
+				String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
+				url += "&fq=" + fieldName + ":[*%20TO%20*]&facet.field=" + fieldName;
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Found no index field dliverd by /index/item/fields: " + propertyURL);
+			}
+			url += "&rows=10000";
+			String items = invokeHTTPMethod(url,bearerToken);
+			JSONObject jsonObject = new JSONObject(items);
+			JSONArray results = null;
+			try{ 
+			results = jsonObject.getJSONArray("result");
+			}
+			catch (Exception e) {
+				// TODO: handle exception
+			}
+			if (results == null || results.length() == 0) {
+				url = urlForItemInformation + "/select?" + determineRelevantConcepts(conceptURL, true);
+
+				if (indexFieldCache.isIndexFieldInfoContained(propertyURL)) {
+					String fieldName = indexFieldCache.getIndexFieldForAOntologicalProperty(propertyURL);
+					url += "&fq=" + fieldName + ":[*%20TO%20*]&facet.field=" + fieldName;
+				} else {
+					Logger.getAnonymousLogger().log(Level.WARNING,
+							"Found no index field dliverd by /index/item/fields: " + propertyURL);
+				}
+				url += "&rows=10000";
+				items = invokeHTTPMethod(url,bearerToken);
+				jsonObject = new JSONObject(items);
+				results = jsonObject.getJSONArray("result");
+			}
+
+			if (results != null && results.length() > 0) {
+				for (String fieldName : propertyType.getItemFieldNames()) {
+					for (int i = 0; i < results.length(); i++) {
+						JSONObject ob = (JSONObject) results.get(i);
+						extractValuesOfAFieldName(allValues, fieldName, ob);
+					}
+				}
+				if (allValues.isEmpty()) {
+					gson = new Gson();
+					SOLRResult result = gson.fromJson(items, SOLRResult.class);
+					for (eu.nimble.service.catalog.search.impl.dao.item.ItemType itemType : result.getResult()) {
+
+						// I have to decide which kind of proepty it is. Each
+						// kind needs
+						// an one extraction process
+						PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL,
+								propertyURL);
+
+						if (pType != null) {
+
+							if (pType.getConceptSource().equals(ConceptSource.ONTOLOGICAL)) {
+								boolean contained = false;
+								String value = "";
+								if (itemType.getBooleanValue() != null
+										&& itemType.getBooleanValueDirect().containsKey(propertyURL)) {
+									contained = true;
+									value = String.valueOf(itemType.getBooleanValueDirect().get(propertyURL));
+								}
+
+								if (itemType.getDoubleValue() != null
+										&& itemType.getDoubleValueDirect().containsKey(propertyURL)) {
+									contained = true;
+									value = String.valueOf(itemType.getDoubleValueDirect().get(propertyURL));
+								}
+
+								if (itemType.getStringValue() != null
+										&& itemType.getStringValueDirect().containsKey(propertyURL)) {
+									contained = true;
+									Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect()
+											.get(propertyURL);
+									// TODO need to be chnaged
+									Language chosenLangauge = Language.ENGLISH;
+									String lPrefix = "@" + LanguageAdapter.createPrefix(chosenLangauge);
+									Iterator<String> iterator = valuesInDifferentLangauges.iterator();
+									boolean found = false;
+									String anyValue = null;
+									while (iterator.hasNext()) {
+										String v = iterator.next();
+										if (anyValue == null) {
+											anyValue = v;
+										}
+										value = v.replace(lPrefix, "");
+										allRelevantPropertyValuesForLanguageCompletion.put(value, v);
+										found = true;
+									}
+									if (!found) {
+										value = anyValue;
+									}
+									// value =
+									// String.valueOf(itemType.getStringValueDirect().get(propertyURL));
+								}
+
+								if (contained) {
+									if (!allValues.contains(value)) {
+										allValues.add(value);
+									}
+								}
+
+							}
+						}
+					}
+				}
+				// propertyType.getItemFieldNames()?
+				return allValues;
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + propertyURL);
+				return Collections.EMPTY_LIST;
+			}
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property type from: " + propertyURL);
+			return Collections.EMPTY_LIST;
+
+		}
+
+	}
+
+	private String determineRelevantConcepts(String conceptURL, boolean onlyConcept) {
+
+		List<String> children = taxonomyCache.getAllChildrenConcepts(conceptURL);
+		if (onlyConcept) {
+			children.clear();
+		}
+		children.add(conceptURL);
+
+		String result = "fq=commodityClassficationUri:";
+		if (children.size() > 1) {
+			result += "%28";
+		}
+		for (int i = 0; i < children.size(); i++) {
+
+			result += URLEncoder.encode("\"" + children.get(i) + "\"");
+			if (i < children.size() - 1) {
+				result += "%20OR%20";
+			}
+		}
+		if (children.size() > 1) {
+			result += "%29";
+		}
+
+		return result;
+	}
+
+	private PropertyType requestPropertyInfosFromCache(String conceptURL, String propertyURL) {
+		if (propertyInformationCache.isConceptAlreadyContained(conceptURL)) {
+			return propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, propertyURL);
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"getDifferentValues has been executed before getLogicalView/getProperties. Is not valid");
+		}
+		return null;
+	}
+
+	private void extractValuesOfAFieldName(List<String> allValues, String fieldName, JSONObject ob) {
+		if (ob.has(fieldName)) {
+			Object targetValue = ob.get(fieldName);
+			if (targetValue instanceof JSONObject) {
+				JSONObject elment = (JSONObject) targetValue;
+				if (elment.keySet().size() == 1) {
+					elment.keys().forEachRemaining(x -> {
+						String v = elment.get(x).toString();
+						if (!allValues.contains(v)) {
+							allValues.add(v);
+						}
+					});
+
+				} else {
+					Logger.getAnonymousLogger().log(Level.WARNING,
+							"More than one key. what is the default key fpr the value:" + fieldName);
+				}
+			}
+			if (targetValue instanceof String) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+
+			if (targetValue instanceof Integer) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+
+			if (targetValue instanceof Float) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+			if (targetValue instanceof Double) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+			if (targetValue instanceof Boolean) {
+				String v = String.valueOf(targetValue);
+				if (!allValues.contains(v)) {
+					allValues.add(v);
+				}
+			}
+
+		}
+	}
+
+	/**
+	 * This method is used to request all property vlaues for a given product
+	 * (individual/catalogue item). The name is a relict from the ontology
+	 * driven solution
+	 * 
+	 * @param inputParamaterForExecuteOptionalSelect
+	 * @return {@link OutputForExecuteSelect}
+	 */
+	public OutputForExecuteSelect createOPtionalSPARQLAndExecuteIT(
+			InputParamaterForExecuteOptionalSelect inputParamaterForExecuteOptionalSelect, String bearerToken) {
+		String uri = inputParamaterForExecuteOptionalSelect.getUuid();
+		String url = urlForItemInformation + "/select?fq=uri:" + uri;
+		OutputForExecuteSelect result = new OutputForExecuteSelect();
+		// result.setInput(inputParamaterForExecuteOptionalSelect);
+		result.getUuids().add(inputParamaterForExecuteOptionalSelect.getUuid());
+		String response = invokeHTTPMethod(url, bearerToken);
+		Gson gson = new Gson();
+		SOLRResult responseObject = gson.fromJson(response, SOLRResult.class);
+		JSONObject jsonObject = new JSONObject(response);
+		JSONArray results = jsonObject.getJSONArray("result");
+		Map<PropertyType, List<List<String>>> intermediateResult = new HashMap<PropertyType, List<List<String>>>();
+		List<PropertyType> allProps = new ArrayList<PropertyType>();
+		if (results != null) {
+
+			// Have to define the header information. It is based on standrad,
+			// ubl and common result
+			allProps.addAll(propertyInformationCache.getAllStandardProps());
+			allProps.addAll(propertyInformationCache.getAllUBLSpeciifcProperties());
+			// have to collect ontological property
+			ItemType itemType = responseObject.getResult().get(0);
+			for (String key : itemType.getBooleanValueDirect().keySet()) {
+				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+				allProps.add(pType);
+			}
+			for (String key : itemType.getDoubleValueDirect().keySet()) {
+				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+				allProps.add(pType);
+			}
+			for (String key : itemType.getStringValueDirect().keySet()) {
+				PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+				allProps.add(pType);
+			}
+
+			// Create intermediate result + columns list
+			for (PropertyType property : allProps) {
+				if (property == null) {
+					continue;
+				}
+				List<List<String>> r = new ArrayList<List<String>>();
+				intermediateResult.put(property, r);
+				Language lang = inputParamaterForExecuteOptionalSelect.getLanguage();
+				if (lang != null && !(lang.equals(Language.UNKNOWN))) {
+					String currentLabel = getLanguageLabel(property,
+							inputParamaterForExecuteOptionalSelect.getLanguage());
+					result.getColumns().add(currentLabel);
+				} else {
+					String currentLabel = getLanguageLabel(property, Language.ENGLISH);
+					result.getColumns().add(currentLabel);
+				}
+			}
+
+			for (int i = 0; i < results.length(); i++) {
+				JSONObject ob = (JSONObject) results.get(i);
+				updateCacheForFieldNames(ob,bearerToken);
+
+				for (String fieldName : ob.keySet()) {
+					if (propertyInformationCache.isNameFieldAlreadyContained(fieldName)) {
+						PropertyType propertyType = propertyInformationCache.getPropertyTypeForANameField(fieldName);
+
+						boolean isContained = false;
+						if (propertyType != null) {
+							for (PropertyType p : intermediateResult.keySet()) {
+								if (p.equals(propertyType)) {
+									isContained = true;
+								}
+							}
+						}
+
+						if (isContained) {
+
+							List<String> allValues = new ArrayList<String>();
+							extractValuesOfAFieldName(allValues, fieldName, ob);
+							intermediateResult.get(propertyType).add(allValues);
+
+							// result.getRows().add((ArrayList<String>)
+							// allValues);
+
+						}
+
+					} else {
+						if (((fieldName.equals("stringValue")) || (fieldName.equals("doubleValue"))
+								|| (fieldName.equals("booleanValue")))) {
+							// have to extract ontological properties TODO
+							// Logger.getAnonymousLogger().log(Level.INFO,
+							// "Ontological propperty not supported yet...");
+						}
+					}
+				}
+
+				// use the Java object to get access to the ontological
+				// properties. It just simplier that using JSON
+				ItemType item = responseObject.getResult().get(i);
+				for (String key : item.getStringValueDirect().keySet()) {
+					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+					if (pType != null) {
+
+						Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect()
+								.get(pType.getUri());
+						Language chosenLangauge = inputParamaterForExecuteOptionalSelect.getLanguage();
+						String lPrefix = "@" + LanguageAdapter.createPrefix(chosenLangauge);
+						Iterator<String> iterator = valuesInDifferentLangauges.iterator();
+						boolean found = true;
+						String anyValue = null;
+						String value = null;
+						while (iterator.hasNext()) {
+							String v = iterator.next();
+							if (anyValue == null) {
+								anyValue = v.substring(0, v.indexOf("@"));
+							}
+							if (v.contains(lPrefix)) {
+								value = v.replace(lPrefix, "");
+
+							}
+						}
+						if (value == null) {
+							value = anyValue;
+						}
+
+						Collection<String> values = item.getStringValueDirect().get(pType.getUri());
+						List<String> list = new ArrayList();
+						list.add(value);
+						intermediateResult.get(pType).add(list);
+					}
+
+				}
+				for (String key : item.getDoubleValueDirect().keySet()) {
+					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+					if (pType != null) {
+						Collection<Double> values = item.getDoubleValueDirect().get(pType.getUri());
+						List<String> list = new ArrayList(values);
+						intermediateResult.get(pType).add(list);
+					}
+
+				}
+
+				for (String key : item.getBooleanValueDirect().keySet()) {
+					PropertyType pType = propertyInformationCache.getPropertyTypeForASingleProperty(key);
+					if (pType != null) {
+						Boolean values = item.getBooleanValueDirect().get(pType.getUri());
+						List<String> list = new ArrayList();
+						list.add(String.valueOf(values));
+						intermediateResult.get(pType).add(list);
+					}
+				}
+
+			}
+
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Cannot get property values from: " + uri);
+		}
+
+		if (intermediateResult.size() > 0) {
+			PropertyType firstProperty = intermediateResult.keySet().iterator().next();
+			int resultSize = 1;
+
+			for (int i = 0; i < resultSize; i++) {
+				ArrayList<String> oneRow = new ArrayList<String>();
+				result.getRows().add(oneRow);
+				for (PropertyType property : allProps) {
+					if (property != null) {
+						if (intermediateResult.get(property).size() > i) {
+							oneRow.add(intermediateResult.get(property).get(i).toString());
+						} else {
+							oneRow.add(N_ULL);
+						}
+					}
+					// result.getRows().add(oneRow);
+				}
+			}
+
+		}
+		return result;
+	}
+
+	private void updateCacheForFieldNames(JSONObject ob, String bearerToken) {
+		JSONArray conceptURIArray = ob.getJSONArray("classificationUri");
+		conceptURIArray.forEach(x -> {
+			String conceptURL = (String) x;
+			if (!propertyInformationCache.isConceptAlreadyContained(conceptURL)) {
+				getAllPropertiesIncludingEverything(conceptURL,bearerToken);
+			}
+		});
+	}
+
+	private String getLanguageLabel(PropertyType propertyType, Language language) {
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
+		String label = propertyType.getLabel().get(prefixLanguage);
+		if (label != null) {
+			return label;
+		} else {
+			Logger.getAnonymousLogger().log(Level.WARNING,
+					"Found no language label for: " + propertyType.getUri() + " for language: " + language);
+			return propertyType.getLocalName();
+		}
+	}
+
+	/**
+	 * This method returns all mappable fieldNames which can be used to filter a
+	 * product with specific property values
+	 * 
+	 * @return
+	 */
+	public List<ItemMappingFieldInformation> getAllMappableFields() {
+		List<ItemMappingFieldInformation> result = new ArrayList<ItemMappingFieldInformation>();
+		String url = urlForItemInformation + "/fields";
+		String respoonse = invokeHTTPMethod(url, null);
+		Gson gson = new Gson();
+		List<ItemMappingFieldInformation> r = gson.fromJson(respoonse, List.class);
+		// System.out.println(r);
+		if (r != null) {
+			result.addAll(r);
+		}
+		return result;
+
+	}
+
+	public OutputForExecuteSelect createSPARQLAndExecuteIT(
+			InputParamaterForExecuteSelect inputParamaterForExecuteSelect, String bearerToken) {
+		// TODO Auto-generated method stub
+		/**
+		 * http://nimble-staging.salzburgresearch.at/index/item/select?fq=commodityClassficationUri:%22http://www.aidimme.es/FurnitureSectorOntology.owl%23Product%22&fq=localName:540*&fq=price:*
+		 * e
+		 */
+		String url = urlForItemInformation + "/select?"
+				+ determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), false);
+		// String url = urlForItemInformation +
+		// "/select?fq=commodityClassficationUri:"
+		// + URLEncoder.encode("\"" +
+		// inputParamaterForExecuteSelect.getConcept() + "\"");
+		String query = "&q=";
+		// I have to adapt to existing propoerties
+		for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
+			String fieldName = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
+			IndexFields current = indexFieldCache.getIndexFieldForAnyKindOfPropertyAsIndexFields(propertyURL);
+			if (current != null && current.isASingleFieldNameToBeConsidered()) {
+				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+						current.getDataType());
+				url += "&fq=" + fieldName + filterValue;
+			} else {
+				String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+						current.getDataType());
+				if (query.length() > 5) {
+					query += "AND";
+				}
+				query += "(" + determineORString(current, filterValue) + ")";
+			}
+		}
+
+		if (query.length() > 4) {
+			url += query;
+		}
+		String response = invokeHTTPMethod(url,bearerToken);
+		// System.out.println(response);
+		Gson gson = new Gson();
+		SOLRResult result = gson.fromJson(response, SOLRResult.class);
+
+		if (result.getResult() == null || result.getResult().size() == 0) {
+			url = urlForItemInformation + "/select?"
+					+ determineRelevantConcepts(inputParamaterForExecuteSelect.getConcept(), true);
+			// String url = urlForItemInformation +
+			// "/select?fq=commodityClassficationUri:"
+			// + URLEncoder.encode("\"" +
+			// inputParamaterForExecuteSelect.getConcept() + "\"");
+			query = "&q=";
+			// I have to adapt to existing propoerties
+			for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
+				String fieldName = indexFieldCache.getIndexFieldForAnyKindOfProperty(propertyURL);
+				IndexFields current = indexFieldCache.getIndexFieldForAnyKindOfPropertyAsIndexFields(propertyURL);
+				if (current != null && current.isASingleFieldNameToBeConsidered()) {
+					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+							current.getDataType());
+					url += "&fq=" + fieldName + filterValue;
+				} else {
+					String filterValue = determineFQValue(propertyURL, inputParamaterForExecuteSelect.getFilters(),
+							current.getDataType());
+					if (query.length() > 5) {
+						query += "AND";
+					}
+					query += "(" + determineORString(current, filterValue) + ")";
+				}
+			}
+
+			if (query.length() > 4) {
+				url += query;
+			}
+			response = invokeHTTPMethod(url,bearerToken);
+			// System.out.println(response);
+			gson = new Gson();
+			result = gson.fromJson(response, SOLRResult.class);
+		}
+
+		List<String> columns = new ArrayList<String>();
+		columns.addAll(inputParamaterForExecuteSelect.getParameters());
+		OutputForExecuteSelect outputForExecuteSelect = new OutputForExecuteSelect();
+
+		outputForExecuteSelect.setColumns(columns);
+		outputForExecuteSelect.setInput(inputParamaterForExecuteSelect);
+		List<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
+		outputForExecuteSelect.setRows(rows);
+		int index = 0;
+		for (eu.nimble.service.catalog.search.impl.dao.item.ItemType itemType : result.getResult()) {
+			outputForExecuteSelect.getUuids().add(itemType.getUri());
+			ArrayList<String> row = new ArrayList<String>();
+			rows.add(row);
+			for (String propertyURL : inputParamaterForExecuteSelect.getParametersURL()) {
+
+				// I have to decide which kind of proepty it is. Each kind needs
+				// an one extraction process
+				PropertyType pType = propertyInformationCache
+						.getPropertyTypeForASingleProperty(inputParamaterForExecuteSelect.getConcept(), propertyURL);
+
+				if (pType != null) {
+
+					if (pType.getConceptSource().equals(ConceptSource.ONTOLOGICAL)) {
+						boolean contained = false;
+						String value = "";
+						if (itemType.getBooleanValue() != null
+								&& itemType.getBooleanValueDirect().containsKey(propertyURL)) {
+							contained = true;
+							value = String.valueOf(itemType.getBooleanValueDirect().get(propertyURL));
+						}
+
+						if (itemType.getDoubleValue() != null
+								&& itemType.getDoubleValueDirect().containsKey(propertyURL)) {
+							contained = true;
+							value = String.valueOf(itemType.getDoubleValueDirect().get(propertyURL));
+						}
+
+						if (itemType.getStringValue() != null
+								&& itemType.getStringValueDirect().containsKey(propertyURL)) {
+							contained = true;
+							Collection<String> valuesInDifferentLangauges = itemType.getStringValueDirect()
+									.get(propertyURL);
+							Language chosenLangauge = inputParamaterForExecuteSelect.getLanguage();
+							String lPrefix = "@" + LanguageAdapter.createPrefix(chosenLangauge);
+							Iterator<String> iterator = valuesInDifferentLangauges.iterator();
+							boolean found = false;
+							String anyValue = null;
+							while (iterator.hasNext()) {
+								String v = iterator.next();
+								if (anyValue == null) {
+									anyValue = v.substring(0, v.indexOf("@"));
+								}
+								if (v.contains(lPrefix)) {
+									value = v.replace(lPrefix, "");
+									found = true;
+								}
+							}
+							if (!found) {
+								value = anyValue;
+							}
+							// value =
+							// String.valueOf(itemType.getStringValueDirect().get(propertyURL));
+						}
+
+						if (itemType.getCustomProperties() != null
+								&& itemType.getCustomProperties().containsKey(propertyURL)) {
+							contained = true;
+							value = String.valueOf(itemType.getCustomProperties().get(propertyURL));
+						}
+
+						if (contained) {
+							row.add(value);
+						} else {
+							Logger.getAnonymousLogger().log(Level.SEVERE,
+									"found no value for requested property: " + propertyURL);
+							row.add(N_ULL);
+						}
+					} else {
+						// Custom Properties using extractionMethod
+						List<String> allValues = new ArrayList<String>();
+						Iterator iterator = pType.getItemFieldNames().iterator();
+						while (iterator.hasNext()) {
+							String fieldName = (String) iterator.next();
+
+							JSONObject jsonObject = new JSONObject(response);
+							JSONArray results = jsonObject.getJSONArray("result");
+							if (results != null) {
+
+								JSONObject ob = (JSONObject) results.get(index);
+								extractValuesOfAFieldName(allValues, fieldName, ob);
+
+							}
+
+						}
+						if (allValues.size() > 0) {
+							row.add(allValues.get(0));
+						} else {
+							Logger.getAnonymousLogger().log(Level.WARNING, "Found no value for: " + pType.getUri());
+							row.add(N_ULL);
+						}
+					}
+
+				}
+
+			}
+			index++;
+
+		}
+		return outputForExecuteSelect;
+	}
+
+	private String determineORString(IndexFields current, String filterValue) {
+		String result = "";
+		for (int i = 0; i < current.getDifferentFieldNames().size(); i++) {
+			result += current.getDifferentFieldNames().get(i) + filterValue;
+
+			if (i < current.getDifferentFieldNames().size() - 1) {
+				result += "%20OR%20";
+			}
+		}
+
+		return result;
+
+	}
+
+	private String determineFQValue(String propertyURL, List<Filter> filters, String dataType) {
+
+		String result = ":";
+		for (Filter filter : filters) {
+			if (filter.getProperty().equals(propertyURL)) {
+
+				if (filter.getExactValue() != null && filter.getExactValue().length() > 0) {
+					if (dataType.toLowerCase().contains("string")) {
+
+						String rightValue = filter.getExactValue();
+						if (allRelevantPropertyValuesForLanguageCompletion.containsKey(rightValue)) {
+							rightValue = allRelevantPropertyValuesForLanguageCompletion.get(rightValue);
+						}
+						result += URLEncoder.encode("\"" + rightValue + "\"");
+						result += "";
+						return result;
+					} else {
+						result += URLEncoder.encode(filter.getExactValue());
+						result += "";
+						return result;
+					}
+				} else {
+					result = "[" + filter.getMin() + "%20TO%20" + filter.getMax() + "]";
+					return result;
+				}
+			}
+		}
+
+		return FIND_ANY_VALUE;
+	}
+
+	public OutputForPropertiesFromConcept getAllTransitiveProperties(String conceptURL, Language language, String bearerToken) {
+
+		OutputForPropertiesFromConcept result = new OutputForPropertiesFromConcept();
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
+
+		List<String> properties = getAllPropertiesIncludingEverything(conceptURL,bearerToken);
+		for (String urlOfProperty : properties) {
+			PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL,
+					urlOfProperty);
+			OutputForPropertyFromConcept outputForPropertyFromConcept = new OutputForPropertyFromConcept();
+			outputForPropertyFromConcept.setPropertyURL(urlOfProperty);
+			if (propertyType.getLabel() != null) {
+				String label = propertyType.getLabel().get(prefixLanguage);
+				if (label == null) {
+					if (propertyType.getLabel().containsKey(LanguageAdapter.getEnglishPrefix())) {
+						label = propertyType.getLabel().get(LanguageAdapter.getEnglishPrefix());
+					}
+				}
+				outputForPropertyFromConcept.setTranslatedProperty(label);
+			} else {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						prefixLanguage + "Found no translation for: " + urlOfProperty);
+				String label = urlOfProperty.substring(urlOfProperty.indexOf("#") + 1);
+				outputForPropertyFromConcept.setTranslatedProperty(label);
+
+			}
+			outputForPropertyFromConcept.setPropertySource(PropertySource.DOMAIN_SPECIFIC_PROPERTY);
+			if (propertyType.getRange().contains(HTTP_WWW_W3_ORG_2001_XML_SCHEMA)) {
+				outputForPropertyFromConcept.setDatatypeProperty(true);
+				outputForPropertyFromConcept.setObjectProperty(false);
+			} else {
+				outputForPropertyFromConcept.setDatatypeProperty(false);
+				outputForPropertyFromConcept.setObjectProperty(true);
+			}
+			result.getOutputForPropertiesFromConcept().add(outputForPropertyFromConcept);
+		}
+
+		return result;
+
+	}
+
+	public Map<String, List<Group>> generateGroup(int amountOfGroups, String conceptURL, String propertyURL,
+			Language language, String bearerToken) {
+
+		String prefixLanguage = Language.toOntologyPostfix(language).replaceAll("@", "");
+		PropertyType propertyType = propertyInformationCache.getPropertyTypeForASingleProperty(conceptURL, propertyURL);
+
+		String shortPropertyName = propertyType.getLabel().get(prefixLanguage);
+
+		List<String> values = getAllDifferentValuesForAProperty(conceptURL, propertyURL,bearerToken);
+		for (int i = 0; i < values.size(); i++) {
+			String str = values.get(i);
+			int index = str.lastIndexOf("^");
+			if (index > -1) {
+				str = str.substring(0, index - 1);
+			}
+			str = str.replace(",", ".");
+			values.set(i, str);
+		}
+		if (values != null && values.size() > 0) {
+			try {
+				ValueGroupingFactory valueGroupingFactory = new ValueGroupingFactory();
+				return valueGroupingFactory.generateGrouping(amountOfGroups, values, shortPropertyName);
+
+			} catch (Exception e) {
+				Logger.getAnonymousLogger().log(Level.WARNING,
+						"Cannot transform data from " + propertyURL + " into floats");
+			}
+		} else {
+			return new HashMap<String, List<Group>>();
+		}
+		return new HashMap<String, List<Group>>();
+	}
+
+	public List<String> getSupportedLanguages(String bearerToken) {
+		// TODO Auto-generated method stub
+		List<PropertyType> allProps = requestStandardPropertiesFromUBL(bearerToken);
+		
+		//choose another source for detetcting the languages
+		if (allProps == null || allProps.size()==0){
+			List<Language> langs = indexFieldCache.detectLanguagesNyIndexFields();
+			List<String> allSupportedLanguages = new ArrayList<>();
+			for (Language language: langs){
+				String r = Language.toOntologyPostfix(language);
+				if (r != null){
+					r = r.substring(1);
+				}
+				allSupportedLanguages.add(r);
+			}
+			return allSupportedLanguages;
+			
+		}
+		
+		List<String> allSupportedLanguages = new ArrayList<>();
+		for (PropertyType pType : allProps) {
+			pType.getLabel().keySet().forEach(x -> {
+				if (!allSupportedLanguages.contains(String.valueOf(x))) {
+					allSupportedLanguages.add(x);
+				}
+			});
+		}
+		return allSupportedLanguages;
+	}
+
+	public List<String[]> getAllObjectPropertiesIncludingEverythingAndReturnItsRange(
+			InputParameterForGetReferencesFromAConcept inputParameterForGetReferencesFromAConcept, String bearerToken) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public TranslationResult translateProperty(String value, Language language, String languageLabel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

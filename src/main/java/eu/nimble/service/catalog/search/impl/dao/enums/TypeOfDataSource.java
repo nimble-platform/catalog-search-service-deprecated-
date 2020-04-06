@@ -2,7 +2,7 @@ package eu.nimble.service.catalog.search.impl.dao.enums;
 
 public enum TypeOfDataSource {
 
-	LOCAL_ONTOLOGY, MARMOTTA, SOLR, UNKOWN;
+	LOCAL_ONTOLOGY, MARMOTTA, SOLR, INDEXING_SERVICE,UNKOWN;
 	
 	public static TypeOfDataSource fromString(String str){
 		if (str.equals(LOCAL_ONTOLOGY.toString())){

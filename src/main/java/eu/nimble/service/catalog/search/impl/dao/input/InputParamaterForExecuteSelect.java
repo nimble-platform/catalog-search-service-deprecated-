@@ -91,4 +91,12 @@ public class InputParamaterForExecuteSelect {
 		this.parametersURL = parametersURL;
 	}
 
+	@Override
+	public String toString() {
+		return "InputParamaterForExecuteSelect [concept=" + concept + ", language=" + language + ", parameters="
+				+ parameters + ", parametersURL=" + parametersURL + ", parametersIncludingPath="
+				+ parametersIncludingPath + ", filters=" + filters + ", orangeCommandSelected=" + orangeCommandSelected
+				+ ", propertySources=" + propertySources + "]";
+	}
+
 }

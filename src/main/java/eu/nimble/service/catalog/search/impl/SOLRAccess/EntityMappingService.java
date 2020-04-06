@@ -1,13 +1,20 @@
 package eu.nimble.service.catalog.search.impl.SOLRAccess;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 public class EntityMappingService {
 	
-	public String mapPropertyURIToFieldName(String proeprtyUI){
-		Logger.getAnonymousLogger().log(Level.WARNING, "No entity mapping available. Return URI: " + proeprtyUI);
-		return proeprtyUI;
+	private SOLRReader solrReader = null;
+	
+	
+	
+	public EntityMappingService(SOLRReader solrReader) {
+		super();
+		this.solrReader = solrReader;
+	}
+
+	public String mapPropertyURIToFieldName(String propertyUrl, String conceptURL){
+		return solrReader.getNameForIdxField(propertyUrl, conceptURL);
 	}
 
 	public boolean isAPropertySpecificField(String column) {
@@ -15,9 +22,8 @@ public class EntityMappingService {
 		return column.contains("lmf.")?false:true;
 	}
 
-	public String mapFieldNameToProperty(String fieldName){
-		Logger.getAnonymousLogger().log(Level.WARNING, "No entity mapping available. Return URI: " + fieldName);
-		return fieldName;
+	public String mapFieldNameToProperty(String propertyUrl, String conceptURL){
+		return solrReader.getPropertyURLBasedOnIdxField(propertyUrl, conceptURL);
 	}
 	
 	

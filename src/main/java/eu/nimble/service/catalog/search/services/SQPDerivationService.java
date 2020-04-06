@@ -14,7 +14,7 @@ import javax.xml.bind.Unmarshaller;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPConfiguration;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPConfigurations;
 import eu.nimble.service.catalog.search.impl.dao.sqp.SQPMapping;
-import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
+//import eu.nimble.service.catalog.search.mediator.MediatorSPARQLDerivationAndExecution;
 
 /**
  * This service will be used to dtermine the sqps for a given concepts
@@ -26,18 +26,18 @@ public class SQPDerivationService {
 
 	private Map<String, List<SQPConfiguration>> availableSQPsUsingConceptsAsKey = new HashMap<String, List<SQPConfiguration>>();
 	private Map<String, SQPConfiguration> availableSQPsUsingNameAsKey = new HashMap<String, SQPConfiguration>();
-	private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
+	//private MediatorSPARQLDerivationAndExecution sparqlDerivation = null;
 
 	/**
 	 * Must be extenbded for using a database for lookup
 	 * 
 	 * @param sqpConfigurationPath
 	 */
-	public SQPDerivationService(MediatorSPARQLDerivationAndExecution sparqlDerivation, String sqpConfigurationPath) {
-
-		this.sparqlDerivation = sparqlDerivation;
-		init(sqpConfigurationPath);
-	}
+//	public SQPDerivationService(MediatorSPARQLDerivationAndExecution sparqlDerivation, String sqpConfigurationPath) {
+//
+//		this.sparqlDerivation = sparqlDerivation;
+//		init(sqpConfigurationPath);
+//	}
 
 	public SQPConfiguration getSpecificSQPConfiguration(String command) {
 		return availableSQPsUsingNameAsKey.get(command);
@@ -73,25 +73,25 @@ public class SQPDerivationService {
 		}
 	}
 
-	/**
-	 * Get all parent concepts and ask for each of them the available set
-	 * 
-	 * @param concept
-	 * @return
-	 */
-	public List<String> getListOfAvailableSQPs(String concept) {
-		List<String> result = new ArrayList<String>();
-		List<String> allDerivedConcepts = sparqlDerivation.getAllDerivedConcepts(concept);
-		for (String dependantConcept : allDerivedConcepts) {
-			if (availableSQPsUsingConceptsAsKey.containsKey(dependantConcept)) {
-				for (SQPConfiguration sqpConfiguration : availableSQPsUsingConceptsAsKey.get(concept)) {
-					result.add(sqpConfiguration.getSQPName());
-				}
-
-			}
-		}
-		return result;
-	}
+//	/**
+//	 * Get all parent concepts and ask for each of them the available set
+//	 * 
+//	 * @param concept
+//	 * @return
+//	 */
+//	public List<String> getListOfAvailableSQPs(String concept) {
+//		List<String> result = new ArrayList<String>();
+//		List<String> allDerivedConcepts = sparqlDerivation.getAllDerivedConcepts(concept);
+//		for (String dependantConcept : allDerivedConcepts) {
+//			if (availableSQPsUsingConceptsAsKey.containsKey(dependantConcept)) {
+//				for (SQPConfiguration sqpConfiguration : availableSQPsUsingConceptsAsKey.get(concept)) {
+//					result.add(sqpConfiguration.getSQPName());
+//				}
+//
+//			}
+//		}
+//		return result;
+//	}
 
 	public SQPConfiguration getSQPConfiguration(String concept, String orangeCommand) {
 		if (availableSQPsUsingConceptsAsKey.containsKey(concept)) {
